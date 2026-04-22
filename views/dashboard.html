@@ -1,0 +1,25 @@
+<div id="view-dashboard" class="view-panel">
+  <h1 style="font-size:22px;font-weight:700;margin-bottom:20px">Dashboard</h1>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-num" id="statTires">0</div>
+      <div class="stat-label">Llantas Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--accent2)" id="statVehicles">0</div>
+      <div class="stat-label">Vehículos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--warning)" id="statAlerts">0</div>
+      <div class="stat-label">Alertas Activas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--danger)" id="statCritical">0</div>
+      <div class="stat-label">Llantas Críticas</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">Últimas Inspecciones</h3>
+    <div id="recentInspections" style="color:var(--text2);font-size:13px">Sin inspecciones registradas</div>
+  </div>
+</div>
