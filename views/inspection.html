@@ -1,0 +1,15 @@
+<div id="view-inspection" class="view-panel">
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+    <h1 style="font-size:22px;font-weight:700">Inspección de Llantas</h1>
+    <button class="btn btn-primary" onclick="openInspectionModal()"><i data-lucide="clipboard-check" style="width:14px;height:14px"></i>Nueva Inspección</button>
+  </div>
+  <div class="card">
+    <div class="search-box mb-4"><i data-lucide="search" style="width:16px;height:16px"></i><input type="text" id="inspSearch" placeholder="Buscar por placa o ID llanta..." oninput="renderInspections()"></div>
+    <div class="overflow-x-auto">
+      <table>
+        <thead><tr><th>Fecha</th><th>Placa</th><th>Km</th><th>Pos</th><th>ID Llanta</th><th>Marca</th><th>Ext</th><th>Centro</th><th>Interior</th><th>Observación</th><th>Alerta</th></tr></thead>
+        <tbody id="inspTableBody"><tr><td colspan="11" style="text-align:center;color:var(--text2)">Sin inspecciones registradas</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>

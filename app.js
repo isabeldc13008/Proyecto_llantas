@@ -8,6 +8,18 @@ const BRANDS = ['Bridgestone','Michelin','Goodyear','Continental','Pirelli','Dun
 const DIMENSIONS = ['11R22.5','12R22.5','295/80R22.5','275/80R22.5','315/80R22.5','225/70R19.5','245/70R19.5','385/65R22.5'];
 const OBSERVATIONS = ['Desgaste irregular','Corte lateral','Abultamiento','Desgaste normal','Separación de banda','Impacto','Agrietamiento','OK'];
 const POSITIONS = ['1-DI','1-DD','2-EI','2-ED','2-II','2-ID','3-EI','3-ED','3-II','3-ID','Repuesto'];
+const VIEW_RENDERERS = {};
+const VIEW_FILES = {
+  dashboard: './views/dashboard.html',
+  vehicles: './views/vehicles.html',
+  inventory: './views/inventory.html',
+  inspection: './views/inspection.html',
+  mounting: './views/mounting.html',
+  movements: './views/movements.html',
+  schedule: './views/schedule.html',
+  alerts: './views/alerts.html'
+};
+let loadedView = '';
 
 // ===== HELPERS =====
 function byType(t){ return allRecords.filter(r=>r.type===t); }
@@ -32,20 +44,39 @@ function getAlertForDepths(ext,cen,int){
 }
 
 // ===== NAVIGATION =====
-document.getElementById('sidebarNav').addEventListener('click',e=>{
+document.getElementById('sidebarNav').addEventListener('click', async e=>{
   const btn=e.target.closest('[data-view]');
   if(!btn)return;
   currentView=btn.dataset.view;
   document.querySelectorAll('.sidebar-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('.view-panel').forEach(v=>v.style.display='none');
-  document.getElementById('view-'+currentView).style.display='block';
-  refreshCurrentView();
+  await loadCurrentView();
 });
 
+async function loadCurrentView(){
+  const mainContent = document.getElementById('mainContent');
+  const viewPath = VIEW_FILES[currentView];
+  if(!mainContent || !viewPath) return;
+
+  try{
+    mainContent.innerHTML = '<p style="color:var(--text2)">Cargando módulo...</p>'; 
+    const response = await fetch(viewPath);
+    if(!response.ok) throw new Error('No se pudo cargar la vista');
+    mainContent.innerHTML = await response.text();
+    loadedView = currentView;
+    lucide.createIcons();
+    refreshCurrentView();
+  }catch(error){
+    mainContent.innerHTML = '<div class="card"><p style="color:var(--danger)">Error cargando el módulo seleccionado.</p></div>'; 
+    console.error(error);
+    showToast('No se pudo cargar la vista seleccionada', true);
+  }
+}
+
 function refreshCurrentView(){
-  renderDashboard();renderVehicles();renderInventory();renderInspections();
-  renderMounting();renderMovements();renderSchedule();renderAlerts();
+  if(loadedView !== currentView) return;
+  const renderView = VIEW_RENDERERS[currentView];
+  if (renderView) renderView();
 }
 
 // ===== DASHBOARD =====
@@ -1235,6 +1266,15 @@ function renderAlerts(){
   </div>`).join('');
 }
 
+VIEW_RENDERERS.dashboard = renderDashboard;
+VIEW_RENDERERS.vehicles = renderVehicles;
+VIEW_RENDERERS.inventory = renderInventory;
+VIEW_RENDERERS.inspection = renderInspections;
+VIEW_RENDERERS.mounting = renderMounting;
+VIEW_RENDERERS.movements = renderMovements;
+VIEW_RENDERERS.schedule = renderSchedule;
+VIEW_RENDERERS.alerts = renderAlerts;
+
 // ===== DATA SDK =====
 const dataHandler = {
   onDataChanged(data){
@@ -1289,4 +1329,5 @@ window.elementSdk.init({
   const r=await window.dataSdk.init(dataHandler);
   if(!r.isOk)console.error('Data SDK init failed');
   lucide.createIcons();
+  await loadCurrentView();
 })();

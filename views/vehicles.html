@@ -1,0 +1,19 @@
+<div id="view-vehicles" class="view-panel">
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+    <h1 style="font-size:22px;font-weight:700">Vehículos</h1>
+    <button class="btn btn-primary" onclick="openVehicleModal()"><i data-lucide="plus" style="width:14px;height:14px"></i>Nuevo Vehículo</button>
+  </div>
+  <div class="card">
+    <div class="search-box mb-4"><i data-lucide="search" style="width:16px;height:16px"></i><input type="text" id="vehicleSearch" placeholder="Buscar por placa..." oninput="renderVehicles()"></div>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr><th>Placa</th><th>Centro</th><th>Llantas Asignadas</th><th>Estado</th><th>Disponibilidad</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="vehicleTableBody">
+          <tr><td colspan="5" style="text-align:center;color:var(--text2)">Sin vehículos registrados</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
