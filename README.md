@@ -1,18 +1,55 @@
 # Proyecto_llantas
 
-Proyecto de gestión de llantas EDINSA.
+Migración del proyecto a arquitectura **Angular + ASP.NET Core**.
 
-## Estructura de vistas
+## Nueva estructura
 
-La UI principal ahora está dividida por módulos de menú en archivos HTML separados dentro de `views/`:
+- `frontend/`: aplicación Angular (SPA) con enrutamiento por módulos de menú.
+- `backend/`: API REST en ASP.NET Core (Minimal API) para registros de vehículos, llantas e inspecciones.
+- `index.html`, `app.js`, `views/`: versión anterior en HTML + JS (se conservan como referencia histórica).
 
-- `views/dashboard.html`
-- `views/vehicles.html`
-- `views/inventory.html`
-- `views/inspection.html`
-- `views/mounting.html`
-- `views/movements.html`
-- `views/schedule.html`
-- `views/alerts.html`
+## Backend (ASP.NET Core)
 
-`index.html` conserva el layout base (sidebar + contenedores globales), y `app.js` carga dinámicamente el módulo según la opción seleccionada en el menú.
+Requisitos:
+
+- .NET SDK 8.0+
+
+Ejecución:
+
+```bash
+cd backend
+dotnet run
+```
+
+API base:
+
+- `GET /api/records`
+- `GET /api/records?type=vehicle`
+- `POST /api/records`
+- `PUT /api/records/{id}`
+- `DELETE /api/records/{id}`
+
+Por defecto se habilitó CORS abierto para facilitar desarrollo con Angular en local.
+
+## Frontend (Angular)
+
+Requisitos:
+
+- Node.js 22+
+- npm 11+
+
+Instalación y ejecución:
+
+```bash
+cd frontend
+npm install
+npm run start
+```
+
+La aplicación Angular consume el backend en `http://localhost:5000/api/records`.
+
+## Estado de la migración
+
+- ✅ Base del sistema migrada a Angular (router + layout + páginas principales).
+- ✅ Base del API migrada a ASP.NET Core.
+- ⚠️ La lógica avanzada (modales, carga masiva, validaciones específicas del flujo anterior) quedó lista para implementarse sobre la nueva arquitectura.
