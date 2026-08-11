@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { CENTERS } from '../../core/data/centers';
 
 interface Inspection {id:string;vehicle:string;tire:string;position:string;outer:number;center:number;inner:number;pressure:number;result:string;date:string}
 interface Operation {id:string;type:string;vehicle:string;tire:string;position:string;destination:string;date:string}
@@ -11,6 +12,7 @@ interface InspectionRow {position:number;location:string;tire:string;outer:numbe
 export class OperationsLab{
  private fb=inject(FormBuilder); private route=inject(ActivatedRoute); readonly kind=this.route.snapshot.data['kind'] as string;
  readonly vehicles=['TJK-482 · Kenworth T680','WNP-193 · Chevrolet FVR','LST-809 · Mercedes-Benz O500'];
+ readonly centers=CENTERS;
  readonly tires=['LL-000327 · Goodyear KMAX','LL-000588 · Michelin X Multi','LL-000612 · Bridgestone R268'];
  readonly installed=['LL-000184 · Posición 1','LL-000229 · Posición 2','LL-000401 · Posición 4'];
  readonly depths=Array.from({length:41},(_,i)=>i/2); readonly pressures=Array.from({length:31},(_,i)=>80+i);
@@ -29,7 +31,7 @@ export class OperationsLab{
  selectedPosition=signal(3); mode=signal<'montaje'|'desmontaje'>('montaje'); message=signal(''); critical=signal(false);
  diagramOpen=signal(false);
  inspections=signal<Inspection[]>(this.read('glld_inspections',[])); operations=signal<Operation[]>(this.read('glld_operations',[]));
- inspectionForm=this.fb.group({site:['R2',Validators.required],vehicle:[this.vehicles[0],Validators.required],technician:['Laura Ruiz',Validators.required],mileage:[38420,[Validators.required,Validators.min(0)]],notes:['Inspección general del vehículo.']});
+ inspectionForm=this.fb.group({site:['R1',Validators.required],center:[CENTERS.find(c=>c.code==='8002')?.label??CENTERS[0].label,Validators.required],vehicle:[this.vehicles[0],Validators.required],technician:['Laura Ruiz',Validators.required],mileage:[38420,[Validators.required,Validators.min(0)]],notes:['Inspección general del vehículo.']});
  mountForm=this.fb.group({vehicle:[this.vehicles[0],Validators.required],tire:[this.tires[0],Validators.required],technician:['Carlos Mendoza',Validators.required],mileage:[38420,[Validators.required,Validators.min(0)]],destination:['Stock Bogotá'],reason:['Mantenimiento preventivo'],notes:['']});
  saveInspection(){if(this.inspectionForm.invalid){this.inspectionForm.markAllAsTouched();return}const v=this.inspectionForm.getRawValue();const date=new Date().toLocaleString('es-CO');let criticalCount=0,warningCount=0;const created=this.inspectionRows().map((row,index)=>{const min=Math.min(row.outer,row.center,row.inner),diff=Math.max(row.outer,row.center,row.inner)-min;const result=min<3?'Alerta crítica':diff>3?'Desgaste irregular':'Inspección aprobada';if(result==='Alerta crítica')criticalCount++;else if(result!=='Inspección aprobada')warningCount++;return{id:`INS-${String(843+this.inspections().length+index).padStart(5,'0')}`,vehicle:v.vehicle!,tire:row.tire,position:`Posición ${row.position}`,outer:row.outer,center:row.center,inner:row.inner,pressure:row.pressure,result,date};});const all=[...created,...this.inspections()];this.inspections.set(all);this.store('glld_inspections',all);const candidates=this.inspectionRows().filter(r=>r.decision!=='Continúa en servicio').map(r=>({id:r.tire.split(' · ')[0],brand:r.tire.split(' · ')[1]??'',reference:r.tire.split(' · ').slice(2).join(' · '),dot:'Pendiente',dimension:'Pendiente',retreadBand:'',outer:r.outer,center:r.center,inner:r.inner,cause:r.cause||r.condition,decision:r.decision,origin:v.site,destination:r.decision==='Disposición final'&&v.site!=='R1'?'R1':'',status:r.decision==='Disposición final'?(v.site==='R1'?'Lista para acta':'Pendiente envío a R1'):'Pendiente evaluación de carcasa',date}));this.store('glld_disposal_queue',[...candidates,...this.read('glld_disposal_queue',[])]);this.critical.set(criticalCount>0);this.message.set(`Inspección guardada. ${candidates.length} llantas fueron enviadas al flujo de reencauche o disposición final.`);}
  updateMeasure(position:number,field:'outer'|'center'|'inner'|'pressure'|'condition'|'decision'|'cause',value:string|number){this.inspectionRows.update(rows=>rows.map(row=>row.position===position?{...row,[field]:['condition','decision','cause'].includes(field)?String(value):Number(value)}:row));}
@@ -37,6 +39,7 @@ export class OperationsLab{
  choose(position:number){this.selectedPosition.set(position);this.message.set('');this.diagramOpen.set(false);setTimeout(()=>document.getElementById(`inspection-position-${position}`)?.scrollIntoView({behavior:'smooth',block:'center'}),50);}
  vehicleType(){const vehicle=this.inspectionForm.value.vehicle??this.mountForm.value.vehicle??'';return vehicle.includes('Kenworth')?'Tractocamión':vehicle.includes('Chevrolet')?'Camión rígido':'Bus';}
  setMode(mode:'montaje'|'desmontaje'){this.mode.set(mode);this.message.set('');}
+ chooseCenter(value:string){const center=this.centers.find(c=>c.label===value);if(center)this.inspectionForm.controls.site.setValue(center.relevance);}
  private read<T>(key:string,fallback:T):T{try{return JSON.parse(localStorage.getItem(key)??'') as T}catch{return fallback}}
  private store(key:string,value:unknown){localStorage.setItem(key,JSON.stringify(value));}
 }

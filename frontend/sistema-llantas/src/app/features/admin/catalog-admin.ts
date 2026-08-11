@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CatalogItem } from '../../core/models/api.models';
+import { CENTERS } from '../../core/data/centers';
 
 interface CatalogType {key:string;name:string;description:string}
 const base:Record<string,CatalogItem[]>={
@@ -9,7 +10,7 @@ const base:Record<string,CatalogItem[]>={
  dimensiones:[item('295','295','295/80 R22.5'),item('315','315','315/80 R22.5'),item('12r','12R','12 R22.5')],
  'tipos-llanta':[item('radial','RAD','Radial'),item('direccional','DIR','Direccional'),item('traccion','TRA','Tracción')],
  'estados-llanta':[item('disponible','DIS','Disponible'),item('montada','MON','Montada'),item('reparacion','REP','En reparación')],
- centros:[item('bogota','BOG','Bogotá'),item('medellin','MED','Medellín'),item('cali','CAL','Cali')],
+ centros:CENTERS.map(c=>item(`${c.relevance}-${c.code}`,c.code,`${c.name} · ${c.relevance}`)),
  talleres:[item('taller-bog','TB01','Taller principal Bogotá')],tecnicos:[item('laura','LR','Laura Ruiz'),item('carlos','CM','Carlos Mendoza')],
  motivos:[item('desgaste','DES','Desgaste crítico'),item('averia','AVE','Daño o avería')],
  tolerancias:[item('prof-critica','PC','Profundidad crítica: 3 mm'),item('dif-desgaste','DD','Diferencia máxima: 3 mm')]
