@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root { font-family:'DM Sans',sans-serif; color:#17364f; background:#f3f6f8; font-synthesis:none; --brand-blue:#063c70; --brand-green:#8bc53f; --brand-red:#e21d2f; }
+* { box-sizing:border-box; }
+body { margin:0; }
+button,input,select,textarea { font:inherit; }
+button { cursor:pointer; }
+.page { max-width:1400px; margin:auto; padding:clamp(1.25rem,4vw,3.5rem); }
+.eyebrow { color:#40749b; text-transform:uppercase; font-weight:800; letter-spacing:.12em; font-size:.72rem; }
+h1 { margin:.25rem 0; font-size:clamp(2rem,5vw,3.7rem); letter-spacing:-.06em; line-height:1; }
+.muted { color:#657977; }
+.panel { background:#fff; border:1px solid #dce6ed; border-radius:20px; box-shadow:0 12px 40px #063c700a; }
+.primary { border:0; border-radius:12px; background:var(--brand-green); color:#073459; padding:.8rem 1.1rem; font-weight:800; }
+.secondary { border:1px solid #cbd9e3; border-radius:12px; background:#fff; color:#164d76; padding:.75rem 1rem; font-weight:700; }
+.error { color:#a93030; }

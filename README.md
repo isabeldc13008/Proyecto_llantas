@@ -1,55 +1,19 @@
-# Proyecto_llantas
+# Sistema de Gestión de Llantas
 
-Migración del proyecto a arquitectura **Angular + ASP.NET Core**.
+Monolito modular empresarial para administrar el ciclo de vida de llantas. La primera entrega contiene arquitectura limpia, API protegida por JWT/permisos, catálogos relacionados, inventario maestro de llantas, auditoría, concurrencia y frontend Angular.
 
-## Nueva estructura
+## Requisitos
 
-- `frontend/`: aplicación Angular (SPA) con enrutamiento por módulos de menú.
-- `backend/`: API REST en ASP.NET Core (Minimal API) para registros de vehículos, llantas e inspecciones.
-- `index.html`, `app.js`, `views/`: versión anterior en HTML + JS (se conservan como referencia histórica).
+- .NET SDK 10.0.203 o compatible
+- Node.js compatible con Angular 20 y pnpm
+- SQL Server
 
-## Backend (ASP.NET Core)
+## Inicio rápido
 
-Requisitos:
+1. Ajuste `ConnectionStrings:SqlServer` mediante variables de entorno o secretos de usuario.
+2. Defina `Jwt__Key` con al menos 32 caracteres. No guarde claves reales en el repositorio.
+3. Ejecute `dotnet ef database update --project backend/src/SistemaLlantas.Infrastructure --startup-project backend/src/SistemaLlantas.Api`.
+4. Inicie la API con `dotnet run --project backend/src/SistemaLlantas.Api --urls http://localhost:5080`.
+5. En `frontend/sistema-llantas`, ejecute `pnpm start`.
 
-- .NET SDK 8.0+
-
-Ejecución:
-
-```bash
-cd backend
-dotnet run
-```
-
-API base:
-
-- `GET /api/records`
-- `GET /api/records?type=vehicle`
-- `POST /api/records`
-- `PUT /api/records/{id}`
-- `DELETE /api/records/{id}`
-
-Por defecto se habilitó CORS abierto para facilitar desarrollo con Angular en local.
-
-## Frontend (Angular)
-
-Requisitos:
-
-- Node.js 22+
-- npm 11+
-
-Instalación y ejecución:
-
-```bash
-cd frontend
-npm install
-npm run start
-```
-
-La aplicación Angular consume el backend en `http://localhost:5000/api/records`.
-
-## Estado de la migración
-
-- ✅ Base del sistema migrada a Angular (router + layout + páginas principales).
-- ✅ Base del API migrada a ASP.NET Core.
-- ⚠️ La lógica avanzada (modales, carga masiva, validaciones específicas del flujo anterior) quedó lista para implementarse sobre la nueva arquitectura.
+La API exige un JWT emitido por el proveedor de identidad, con claims `permiso` y opcionalmente `centro_id`. Consulte [docs/arquitectura.md](docs/arquitectura.md).

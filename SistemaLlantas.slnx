@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/src/">
+    <Project Path="backend/src/SistemaLlantas.Api/SistemaLlantas.Api.csproj" />
+    <Project Path="backend/src/SistemaLlantas.Application/SistemaLlantas.Application.csproj" />
+    <Project Path="backend/src/SistemaLlantas.Domain/SistemaLlantas.Domain.csproj" />
+    <Project Path="backend/src/SistemaLlantas.Infrastructure/SistemaLlantas.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/backend/tests/">
+    <Project Path="backend/tests/SistemaLlantas.Api.IntegrationTests/SistemaLlantas.Api.IntegrationTests.csproj" />
+    <Project Path="backend/tests/SistemaLlantas.Application.Tests/SistemaLlantas.Application.Tests.csproj" />
+    <Project Path="backend/tests/SistemaLlantas.Domain.Tests/SistemaLlantas.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,12 @@
+.backdrop { position: fixed; inset: 0; background: #061d31aa; z-index: 30; display: flex; justify-content: flex-end; }
+.drawer { width: min(620px, 100%); height: 100%; overflow: auto; background: #f7fafc; padding: 2rem; box-shadow: -20px 0 60px #001c3333; }
+.drawer header { display: flex; justify-content: space-between; }
+.drawer header h2 { font-size: 1.8rem; margin: .2rem 0; }
+.drawer header p { color: #718691; font-size: .75rem; }
+.drawer header > button { border: 0; background: none; font-size: 2rem; color: #527085; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+.form-grid label { font-size: .72rem; font-weight: 800; color: #506d81; }
+.form-grid input, .form-grid select, .form-grid textarea { display: block; width: 100%; margin-top: .4rem; padding: .75rem; border: 1px solid #cbdbe5; border-radius: 10px; background: #fff; }
+.form-grid .wide { grid-column: 1 / -1; }
+.drawer-actions { display: flex; justify-content: flex-end; gap: .7rem; margin-top: 1.5rem; }
+@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } .form-grid .wide { grid-column: auto; } }
