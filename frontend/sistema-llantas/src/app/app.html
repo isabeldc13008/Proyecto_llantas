@@ -1,0 +1,43 @@
+@if (!auth.isLoggedIn()) {
+  <router-outlet />
+} @else {
+<div class="shell">
+  <aside [class.open]="menuOpen">
+    <div class="aside-head"><a class="brand" routerLink="/"><strong>GLLD</strong><small>Gestión Logística de Llantas</small></a><button (click)="menuOpen=false">×</button></div>
+    <p class="nav-label">Operación</p>
+    <nav (click)="menuOpen=false">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">◫ <span>Resumen</span></a>
+      <a routerLink="/llantas" routerLinkActive="active">◉ <span>Llantas</span></a>
+      @if (auth.canSupervise()) {
+        <a routerLink="/vehiculos" routerLinkActive="active">▰ <span>Vehículos</span></a>
+        <a routerLink="/inventario" routerLinkActive="active">▦ <span>Inventario</span></a>
+      }
+      <a routerLink="/inspecciones" routerLinkActive="active">✓ <span>Inspecciones</span><b>7</b></a>
+      @if (auth.canSupervise()) {
+        <a routerLink="/alertas" routerLinkActive="active">△ <span>Alertas</span><b>12</b></a>
+        <a routerLink="/programacion" routerLinkActive="active">□ <span>Programación</span></a>
+      }
+      <a routerLink="/montajes" routerLinkActive="active">↕ <span>Montajes</span></a>
+      <a routerLink="/movimientos" routerLinkActive="active">⇄ <span>Movimientos</span></a>
+    </nav>
+    <p class="nav-label">Taller y control</p>
+    <nav (click)="menuOpen=false">
+      @if (auth.canSupervise()) {
+        <a routerLink="/reparaciones" routerLinkActive="active">◇ <span>Reparaciones</span></a><a routerLink="/reencauches" routerLinkActive="active">◎ <span>Reencauches</span></a>
+        <a routerLink="/disposicion-final" routerLinkActive="active">⊘ <span>Disposición final</span></a>
+      }
+      <a routerLink="/historial" routerLinkActive="active">◷ <span>Historial</span></a>
+      @if (auth.canSupervise()) {
+        <a routerLink="/analitica" routerLinkActive="active">▥ <span>Analítica</span></a>
+      }
+      @if (auth.isAdmin()) {
+        <a routerLink="/carga-masiva" routerLinkActive="active">⇧ <span>Carga masiva</span></a>
+        <a routerLink="/administracion" routerLinkActive="active">⚙ <span>Administración</span></a><a routerLink="/auditoria" routerLinkActive="active">☷ <span>Auditoría</span></a>
+      }
+    </nav>
+    <div class="company"><b>EDINSA</b><span>Operador de transporte</span><small>POSTOBÓN</small></div>
+    <div class="demo"><i></i><div><b>Modo demostración</b><small>Datos guardados en este navegador</small></div></div>
+  </aside>
+  <div class="content"><header class="topbar"><button class="menu" (click)="menuOpen=true">☰</button><div class="context"><span>Centro operativo</span><b>Bogotá ▾</b></div><div class="user"><div>{{auth.user()?.initials}}</div><span><b>{{auth.user()?.name}}</b><small>{{auth.user()?.role}}</small></span></div><button class="logout" (click)="logout()">Salir</button></header><main><router-outlet /></main></div>
+</div>
+}

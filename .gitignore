@@ -1,0 +1,15 @@
+.dotnet-home/
+.appdata/
+.tools/
+.nuget/
+**/bin/
+**/obj/
+node_modules/
+dist/
+.angular/
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+appsettings.Development.local.json
