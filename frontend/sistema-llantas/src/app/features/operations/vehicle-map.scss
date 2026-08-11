@@ -13,6 +13,8 @@
 .vehicle-drawing.bus .vehicle-body { height: 290px; border-radius: 6px 6px 18px 18px; }
 .vehicle-drawing.rigid .vehicle-body { height: 220px; }
 .axle { position: absolute; left: -26px; right: -26px; display: grid; grid-template-columns: 35px 1fr 35px; align-items: center; }
+.axle.dual { left: -34px; right: -34px; grid-template-columns: 30px 30px 1fr 30px 30px; gap: 2px; }
+.axle.dual button { width: 30px; min-height: 48px; }
 .axle-one { top: 32px; }.axle-two { top: 112px; }.axle-three { bottom: 23px; }
 .axle i { height: 7px; background: #536873; }
 .axle button { width: 35px; min-height: 48px; border: 3px solid #33484f; border-radius: 8px; background: #25383e; color: #fff; font-size: .72rem; font-weight: 900; padding: 2px; }

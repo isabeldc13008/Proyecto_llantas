@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 
 interface Inspection {id:string;vehicle:string;tire:string;position:string;outer:number;center:number;inner:number;pressure:number;result:string;date:string}
 interface Operation {id:string;type:string;vehicle:string;tire:string;position:string;destination:string;date:string}
-interface InspectionRow {position:number;tire:string;outer:number;center:number;inner:number;pressure:number;condition:string;decision:string;cause:string}
+interface InspectionRow {position:number;location:string;tire:string;outer:number;center:number;inner:number;pressure:number;condition:string;decision:string;cause:string}
 
 @Component({selector:'app-operations-lab',imports:[CommonModule,FormsModule,ReactiveFormsModule],templateUrl:'./operations-lab.html',styleUrls:['./operations-lab.scss','./inspection-batch.scss','./vehicle-map.scss']})
 export class OperationsLab{
@@ -15,12 +15,16 @@ export class OperationsLab{
  readonly installed=['LL-000184 · Posición 1','LL-000229 · Posición 2','LL-000401 · Posición 4'];
  readonly depths=Array.from({length:41},(_,i)=>i/2); readonly pressures=Array.from({length:31},(_,i)=>80+i);
  inspectionRows=signal<InspectionRow[]>([
-  {position:1,tire:'LL-000184 · Michelin X Multi D',outer:12.5,center:13,inner:12,pressure:105,condition:'Buena',decision:'Continúa en servicio',cause:''},
-  {position:2,tire:'LL-000229 · Michelin X Multi D',outer:11.5,center:12,inner:11.5,pressure:104,condition:'Buena',decision:'Continúa en servicio',cause:''},
-  {position:3,tire:'LL-000327 · Goodyear KMAX',outer:8,center:9,inner:8.5,pressure:106,condition:'Buena',decision:'Continúa en servicio',cause:''},
-  {position:4,tire:'LL-000401 · Bridgestone R268',outer:6,center:7.5,inner:6.5,pressure:102,condition:'Atención',decision:'Evaluar posible reencauche',cause:'Desgaste irregular'},
-  {position:5,tire:'LL-000588 · Michelin X Multi',outer:2.5,center:3,inner:2,pressure:98,condition:'Crítica',decision:'Disposición final',cause:'Profundidad mínima'},
-  {position:6,tire:'LL-000612 · Bridgestone R268',outer:10,center:10.5,inner:10,pressure:105,condition:'Buena',decision:'Continúa en servicio',cause:''}
+  {position:1,location:'Direccional izquierda',tire:'LL-000184 · Michelin X Multi D',outer:12.5,center:13,inner:12,pressure:105,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:2,location:'Direccional derecha',tire:'LL-000229 · Michelin X Multi D',outer:11.5,center:12,inner:11.5,pressure:104,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:3,location:'Tracción 1 · Izq. externa',tire:'LL-000327 · Goodyear KMAX',outer:8,center:9,inner:8.5,pressure:106,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:4,location:'Tracción 1 · Izq. interna',tire:'LL-000401 · Bridgestone R268',outer:6,center:7.5,inner:6.5,pressure:102,condition:'Atención',decision:'Evaluar posible reencauche',cause:'Desgaste irregular'},
+  {position:5,location:'Tracción 1 · Der. interna',tire:'LL-000588 · Michelin X Multi',outer:2.5,center:3,inner:2,pressure:98,condition:'Crítica',decision:'Disposición final',cause:'Profundidad mínima'},
+  {position:6,location:'Tracción 1 · Der. externa',tire:'LL-000612 · Bridgestone R268',outer:10,center:10.5,inner:10,pressure:105,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:7,location:'Tracción 2 · Izq. externa',tire:'LL-000733 · Goodyear KMAX',outer:9.5,center:10,inner:9.5,pressure:104,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:8,location:'Tracción 2 · Izq. interna',tire:'LL-000741 · Goodyear KMAX',outer:9,center:9.5,inner:9,pressure:103,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:9,location:'Tracción 2 · Der. interna',tire:'LL-000752 · Michelin X Multi',outer:8.5,center:9,inner:8.5,pressure:104,condition:'Buena',decision:'Continúa en servicio',cause:''},
+  {position:10,location:'Tracción 2 · Der. externa',tire:'LL-000768 · Michelin X Multi',outer:8,center:8.5,inner:8,pressure:105,condition:'Buena',decision:'Continúa en servicio',cause:''}
  ]);
  selectedPosition=signal(3); mode=signal<'montaje'|'desmontaje'>('montaje'); message=signal(''); critical=signal(false);
  diagramOpen=signal(false);
