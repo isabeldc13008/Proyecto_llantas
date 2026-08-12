@@ -9,7 +9,7 @@ const protectedRoutes:Routes=[
  {path:'llantas',loadChildren:()=>import('./features/llantas/llantas.routes').then(m=>m.LLANTAS_ROUTES)},
  {path:'vehiculos',data:demo('Vehículos y posiciones','Flota','Configuración visual de ejes, posiciones y llantas instaladas.','Nuevo vehículo','vehiculos'),loadComponent:page},
  {path:'inventario',data:demo('Inventario operativo','Existencias','Disponibilidad por centro, estado, marca, dimensión y ubicación.','Registrar traslado','inventario'),loadComponent:page},
- {path:'inspecciones',data:{kind:'inspecciones'},loadComponent:operations},
+ {path:'inspecciones',loadComponent:()=>import('./features/inspection/inspection-page').then(m=>m.InspectionPage)},
  {path:'alertas',data:demo('Alertas','Atención prioritaria','Hallazgos automáticos por desgaste, vencimiento y reglas del negocio.','Configurar reglas','alertas'),loadComponent:page},
  {path:'programacion',data:demo('Programación','Agenda operacional','Inspecciones, rotaciones y mantenimientos próximos o vencidos.','Programar actividad','programacion'),loadComponent:page},
  {path:'montajes',data:{kind:'montajes'},loadComponent:operations},
