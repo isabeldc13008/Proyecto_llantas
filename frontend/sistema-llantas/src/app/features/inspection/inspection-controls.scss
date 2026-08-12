@@ -1,0 +1,32 @@
+.context input,.context select {
+  margin: 0;
+  padding: .65rem;
+  border: 1px solid #cbdbe1;
+  border-radius: 9px;
+  background: #fff;
+  color: #153e55;
+  font-size: .9rem;
+  min-width: 0;
+}
+
+.vehicle-selector select { width: 100%; font-weight: 800; }
+
+.measures label { min-width: 0; }
+.measures select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: .35rem;
+  padding: .75rem .55rem;
+  border: 1px solid #cbdbe1;
+  border-radius: 9px;
+  background: #fff;
+  color: #123f5c;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+@media (max-width: 650px) {
+  .measures { grid-template-columns: 1fr; }
+  .context div,.context label { padding-left: .7rem; }
+}
