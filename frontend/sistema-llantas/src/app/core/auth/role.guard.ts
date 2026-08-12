@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
-const technicianModules = new Set(['', 'llantas', 'inspecciones', 'montajes', 'movimientos', 'historial']);
+const technicianModules = new Set(['', 'mis-actividades', 'llantas', 'inspecciones', 'montajes', 'movimientos', 'historial']);
 const supervisorBlocked = new Set(['carga-masiva', 'administracion', 'auditoria']);
 
 export const roleGuard: CanActivateFn = route => {

@@ -15,11 +15,28 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<EstadoLlanta> EstadosLlanta => Set<EstadoLlanta>();
     public DbSet<Centro> Centros => Set<Centro>();
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
+    public DbSet<Vehiculo> Vehiculos => Set<Vehiculo>();
+    public DbSet<EjeVehiculo> EjesVehiculo => Set<EjeVehiculo>();
+    public DbSet<PosicionVehiculo> PosicionesVehiculo => Set<PosicionVehiculo>();
+    public DbSet<Inspeccion> Inspecciones => Set<Inspeccion>();
+    public DbSet<InspeccionDetalle> InspeccionesDetalle => Set<InspeccionDetalle>();
+    public DbSet<CondicionLlanta> CondicionesLlanta => Set<CondicionLlanta>();
+    public DbSet<CausaLlanta> CausasLlanta => Set<CausaLlanta>();
+    public DbSet<RecomendacionInspeccion> RecomendacionesInspeccion => Set<RecomendacionInspeccion>();
+    public DbSet<InconsistenciaInspeccion> InconsistenciasInspeccion => Set<InconsistenciaInspeccion>();
+    public DbSet<LlantaTemporal> LlantasTemporales => Set<LlantaTemporal>();
+    public DbSet<MovimientoLlanta> MovimientosLlanta => Set<MovimientoLlanta>();
+    public DbSet<EvidenciaInspeccion> EvidenciasInspeccion => Set<EvidenciaInspeccion>();
+    public DbSet<ParametroReencauche> ParametrosReencauche => Set<ParametroReencauche>();
+    public DbSet<AsignacionLlantaPosicion> AsignacionesLlantaPosicion => Set<AsignacionLlantaPosicion>();
+    public DbSet<Movimiento> Movimientos => Set<Movimiento>();
+    public DbSet<MovimientoDetalle> MovimientosDetalle => Set<MovimientoDetalle>();
+    public DbSet<ActividadProgramada> ActividadesProgramadas => Set<ActividadProgramada>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LlantasDbContext).Assembly);
-        foreach (var type in new[] { typeof(Marca), typeof(Referencia), typeof(Dimension), typeof(TipoLlanta), typeof(EstadoLlanta), typeof(Centro), typeof(Llanta) })
+        foreach (var type in modelBuilder.Model.GetEntityTypes().Where(x => typeof(EntidadAuditable).IsAssignableFrom(x.ClrType)).Select(x => x.ClrType))
             modelBuilder.Entity(type).Property(nameof(EntidadAuditable.RowVersion)).IsRowVersion();
 
         modelBuilder.Entity<Llanta>().HasQueryFilter(x => x.Activo);

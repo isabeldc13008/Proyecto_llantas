@@ -5,6 +5,7 @@ import { roleGuard } from './core/auth/role.guard';
 const demo=(title:string,eyebrow:string,description:string,action:string,kind:string)=>({title,eyebrow,description,action,kind});
 const protectedRoutes:Routes=[
  {path:'',loadComponent:()=>import('./features/dashboard/dashboard').then(m=>m.Dashboard)},
+ {path:'mis-actividades',loadComponent:()=>import('./features/activities/activities-page').then(m=>m.ActivitiesPage)},
  {path:'llantas',loadChildren:()=>import('./features/llantas/llantas.routes').then(m=>m.LLANTAS_ROUTES)},
  {path:'vehiculos',data:demo('Vehículos y posiciones','Flota','Configuración visual de ejes, posiciones y llantas instaladas.','Nuevo vehículo','vehiculos'),loadComponent:page},
  {path:'inventario',data:demo('Inventario operativo','Existencias','Disponibilidad por centro, estado, marca, dimensión y ubicación.','Registrar traslado','inventario'),loadComponent:page},
@@ -12,7 +13,7 @@ const protectedRoutes:Routes=[
  {path:'alertas',data:demo('Alertas','Atención prioritaria','Hallazgos automáticos por desgaste, vencimiento y reglas del negocio.','Configurar reglas','alertas'),loadComponent:page},
  {path:'programacion',data:demo('Programación','Agenda operacional','Inspecciones, rotaciones y mantenimientos próximos o vencidos.','Programar actividad','programacion'),loadComponent:page},
  {path:'montajes',data:{kind:'montajes'},loadComponent:operations},
- {path:'movimientos',data:demo('Movimientos','Trazabilidad','Registro inmutable de cada cambio de estado, centro o posición.','Registrar movimiento','movimientos'),loadComponent:page},
+ {path:'movimientos',loadComponent:()=>import('./features/movements/movements-page').then(m=>m.MovementsPage)},
  {path:'reparaciones',data:demo('Reparaciones','Taller','Diagnósticos, proveedores, costos, evidencias y resultados.','Enviar a reparación','reparaciones'),loadComponent:page},
  {path:'reencauches',data:demo('Reencauches','Renovación','Envíos, bandas utilizadas, recepción y vida extendida de la llanta.','Nuevo reencauche','reencauches'),loadComponent:page},
  {path:'disposicion-final',loadComponent:()=>import('./features/disposition/disposition').then(m=>m.Disposition)},

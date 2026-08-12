@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SistemaLlantas.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SistemaLlantas.Infrastructure.Persistence;
 namespace SistemaLlantas.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LlantasDbContext))]
-    partial class LlantasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260812034221_AddInspectionWorkflow")]
+    partial class AddInspectionWorkflow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,149 +24,6 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.ActividadProgramada", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaFinReal")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaInicioReal")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("FechaProgramada")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Observaciones")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<Guid?>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Prioridad")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("TecnicoId")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("TipoActividad")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("UsuarioCreacion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("VehiculoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CentroId");
-
-                    b.HasIndex("VehiculoId");
-
-                    b.HasIndex("TecnicoId", "Estado", "FechaProgramada");
-
-                    b.ToTable("TBL_ActividadProgramada", (string)null);
-                });
-
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.AsignacionLlantaPosicion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("EsActiva")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaFin")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("FechaInicio")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MovimientoOrigenId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("UsuarioCreacion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LlantaId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Asignacion_LlantaActiva")
-                        .HasFilter("[EsActiva] = 1");
-
-                    b.HasIndex("PosicionVehiculoId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Asignacion_PosicionActiva")
-                        .HasFilter("[EsActiva] = 1");
-
-                    b.ToTable("TBL_AsignacionLlantaPosicion", (string)null);
-                });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Auditoria", b =>
                 {
@@ -991,129 +851,6 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.ToTable("TBL_Marca", (string)null);
                 });
 
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.Movimiento", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Motivo")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Numero")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("Tipo")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Usuario")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("UsuarioCreacion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CentroId");
-
-                    b.HasIndex("Numero")
-                        .IsUnique();
-
-                    b.ToTable("TBL_Movimiento", (string)null);
-                });
-
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.MovimientoDetalle", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid?>("CentroDestinoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DestinoDescripcion")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MovimientoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PosicionDestinoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PosicionOrigenId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<int>("TipoDestino")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UsuarioCreacion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LlantaId");
-
-                    b.HasIndex("MovimientoId");
-
-                    b.ToTable("TBL_MovimientoDetalle", (string)null);
-                });
-
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.MovimientoLlanta", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1500,43 +1237,6 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.ToTable("TBL_Vehiculo", (string)null);
                 });
 
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.ActividadProgramada", b =>
-                {
-                    b.HasOne("SistemaLlantas.Domain.Entities.Centro", "Centro")
-                        .WithMany()
-                        .HasForeignKey("CentroId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SistemaLlantas.Domain.Entities.Vehiculo", "Vehiculo")
-                        .WithMany()
-                        .HasForeignKey("VehiculoId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Centro");
-
-                    b.Navigation("Vehiculo");
-                });
-
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.AsignacionLlantaPosicion", b =>
-                {
-                    b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "Llanta")
-                        .WithMany()
-                        .HasForeignKey("LlantaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SistemaLlantas.Domain.Entities.PosicionVehiculo", "PosicionVehiculo")
-                        .WithMany()
-                        .HasForeignKey("PosicionVehiculoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Llanta");
-
-                    b.Navigation("PosicionVehiculo");
-                });
-
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.EjeVehiculo", b =>
                 {
                     b.HasOne("SistemaLlantas.Domain.Entities.Vehiculo", "Vehiculo")
@@ -1697,36 +1397,6 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Navigation("InconsistenciaInspeccion");
                 });
 
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.Movimiento", b =>
-                {
-                    b.HasOne("SistemaLlantas.Domain.Entities.Centro", "Centro")
-                        .WithMany()
-                        .HasForeignKey("CentroId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Centro");
-                });
-
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.MovimientoDetalle", b =>
-                {
-                    b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "Llanta")
-                        .WithMany()
-                        .HasForeignKey("LlantaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SistemaLlantas.Domain.Entities.Movimiento", "Movimiento")
-                        .WithMany("Detalles")
-                        .HasForeignKey("MovimientoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Llanta");
-
-                    b.Navigation("Movimiento");
-                });
-
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.PosicionVehiculo", b =>
                 {
                     b.HasOne("SistemaLlantas.Domain.Entities.EjeVehiculo", "EjeVehiculo")
@@ -1785,11 +1455,6 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Marca", b =>
                 {
                     b.Navigation("Referencias");
-                });
-
-            modelBuilder.Entity("SistemaLlantas.Domain.Entities.Movimiento", b =>
-                {
-                    b.Navigation("Detalles");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Vehiculo", b =>

@@ -19,3 +19,4 @@
 .inspection-end .primary { height: 42px; }
 @media (max-width: 1000px) { .inspection-head, .inspection-end { grid-template-columns: 1fr; } .three { grid-template-columns: 1fr 1fr; } .vehicle-summary { min-width: 0; } }
 @media (max-width: 600px) { .three { grid-template-columns: 1fr; } }
+.dynamic-diagram{display:block;min-width:300px;max-width:390px}.inspection-layout>.vehicle-map{display:none}@media(max-width:900px){.dynamic-diagram{max-width:none;min-width:0;width:100%}}

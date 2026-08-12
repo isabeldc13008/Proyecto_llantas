@@ -22,6 +22,12 @@ builder.Services.AddAuthorization(o =>
     o.AddPolicy("Llantas.Consultar", p => p.RequireClaim("permiso", "llantas.consultar", "llantas.administrar"));
     o.AddPolicy("Llantas.Administrar", p => p.RequireClaim("permiso", "llantas.administrar"));
     o.AddPolicy("Catalogos.Administrar", p => p.RequireClaim("permiso", "catalogos.administrar"));
+    o.AddPolicy("Inspecciones.Consultar", p => p.RequireClaim("permiso", "inspecciones.consultar", "inspecciones.crear", "inspecciones.autorizar_inconsistencia_llanta"));
+    o.AddPolicy("Inspecciones.Crear", p => p.RequireClaim("permiso", "inspecciones.crear"));
+    o.AddPolicy("Inspecciones.ReportarInconsistencia", p => p.RequireClaim("permiso", "inspecciones.reportar_inconsistencia", "inspecciones.crear"));
+    o.AddPolicy("Inspecciones.AutorizarInconsistencia", p => p.RequireClaim("permiso", "inspecciones.autorizar_inconsistencia_llanta"));
+    o.AddPolicy("Operaciones.Ejecutar", p => p.RequireClaim("permiso", "operaciones.ejecutar", "llantas.administrar"));
+    o.AddPolicy("Actividades.ConsultarPropias", p => p.RequireAuthenticatedUser());
 });
 builder.Services.AddCors(o => o.AddPolicy("Angular", p => p.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
 

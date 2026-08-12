@@ -7,6 +7,7 @@
     <p class="nav-label">Operación</p>
     <nav (click)="menuOpen=false">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">◫ <span>Resumen</span></a>
+      @if (auth.user()?.role === 'Técnico') {<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>Mis actividades</span><b>3</b></a>}
       <a routerLink="/llantas" routerLinkActive="active">◉ <span>Llantas</span></a>
       @if (auth.canSupervise()) {
         <a routerLink="/vehiculos" routerLinkActive="active">▰ <span>Vehículos</span></a>
