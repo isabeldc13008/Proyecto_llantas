@@ -1,4 +1,5 @@
 export default {
+  // Adaptador SPA: los archivos Angular se publican desde dist/client.
   async fetch(request, env) {
     const response = await env.ASSETS.fetch(request);
     if (response.status !== 404) return response;
