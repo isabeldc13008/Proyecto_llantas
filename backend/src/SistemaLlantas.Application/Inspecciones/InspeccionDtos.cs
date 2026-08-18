@@ -6,6 +6,9 @@ public sealed record LlantaPosicionDto(Guid Id, string Codigo, string Estado);
 public sealed record PosicionInspeccionDto(Guid Id, string Codigo, string Lado, int Orden, LlantaPosicionDto? Llanta);
 public sealed record EjeInspeccionDto(Guid Id, int Numero, string Nombre, IReadOnlyList<PosicionInspeccionDto> Posiciones);
 public sealed record ContextoInspeccionDto(Guid VehiculoId, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroNombre, string? Relevancia, IReadOnlyList<EjeInspeccionDto> Ejes);
+public sealed record VehiculoInspeccionDto(Guid Id, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroCodigo, string CentroNombre);
+public sealed record OpcionInspeccionDto(Guid Id, string Codigo, string Nombre);
+public sealed record OpcionesInspeccionDto(IReadOnlyList<OpcionInspeccionDto> Condiciones, IReadOnlyList<OpcionInspeccionDto> Causas, IReadOnlyList<OpcionInspeccionDto> Recomendaciones);
 public sealed record InspeccionDto(Guid Id, Guid VehiculoId, string Vehiculo, Guid CentroId, string Centro, decimal? Kilometraje, string Estado, string TecnicoId, IReadOnlyList<DetalleInspeccionDto> Detalles);
 public sealed record DetalleInspeccionDto(Guid Id, Guid PosicionId, string Posicion, Guid? LlantaId, string? Llanta, decimal? Exterior, decimal? Centro, decimal? Interior, Guid? CondicionId, Guid? CausaId, Guid? RecomendacionId, string? Observaciones);
 
@@ -39,6 +42,8 @@ public sealed class ResolverInconsistenciaDto { [Required, StringLength(1000)] p
 
 public interface IInspeccionService
 {
+    Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(Guid? centroUsuario, CancellationToken ct);
+    Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct);
     Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, Guid? centroUsuario, CancellationToken ct);
     Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, Guid? centroUsuario, CancellationToken ct);
     Task<InspeccionDto?> ObtenerAsync(Guid id, Guid? centroUsuario, CancellationToken ct);

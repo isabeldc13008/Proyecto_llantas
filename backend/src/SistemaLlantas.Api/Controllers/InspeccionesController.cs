@@ -8,6 +8,10 @@ namespace SistemaLlantas.Api.Controllers;
 [ApiController, Route("api/inspecciones"), Authorize(Policy = "Inspecciones.Consultar")]
 public sealed class InspeccionesController(IInspeccionService service) : ControllerBase
 {
+    [HttpGet("vehiculos")]
+    public Task<IReadOnlyList<VehiculoInspeccionDto>> Vehiculos(CancellationToken ct) => service.ObtenerVehiculosAsync(CentroId(), ct);
+    [HttpGet("opciones")]
+    public Task<OpcionesInspeccionDto> Opciones(CancellationToken ct) => service.ObtenerOpcionesAsync(ct);
     [HttpGet("contexto/{vehiculoId:guid}")]
     public async Task<ActionResult<ContextoInspeccionDto>> Contexto(Guid vehiculoId, CancellationToken ct) =>
         await service.ObtenerContextoAsync(vehiculoId, CentroId(), ct) is { } x ? Ok(x) : NotFound();

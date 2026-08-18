@@ -7,6 +7,15 @@ namespace SistemaLlantas.Infrastructure.Services;
 
 public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 {
+    public async Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(Guid? centroUsuario, CancellationToken ct) =>
+        await db.Vehiculos.AsNoTracking().Where(x => !centroUsuario.HasValue || x.CentroId == centroUsuario)
+            .OrderBy(x => x.NumeroInterno).Select(x => new VehiculoInspeccionDto(x.Id, x.NumeroInterno, x.Placa, x.Tipo, x.CentroId, x.Centro.Codigo, x.Centro.Nombre)).ToListAsync(ct);
+
+    public async Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct) => new(
+        await db.CondicionesLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct),
+        await db.CausasLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct),
+        await db.RecomendacionesInspeccion.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct));
+
     public async Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, Guid? centroUsuario, CancellationToken ct)
     {
         var v = await db.Vehiculos.AsNoTracking().Include(x => x.Centro)

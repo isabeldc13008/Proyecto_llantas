@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SistemaLlantas.Api;
 using SistemaLlantas.Api.Middleware;
 using SistemaLlantas.Infrastructure;
 
@@ -9,14 +10,19 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Configure Jwt:Key mediante secretos o variables de entorno.");
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new()
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddAuthentication(DevelopmentAuthenticationHandler.Scheme).AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, DevelopmentAuthenticationHandler>(DevelopmentAuthenticationHandler.Scheme, _ => { });
+else
 {
-    ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true,
-    ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "SistemaLlantas",
-    ValidAudience = builder.Configuration["Jwt:Audience"] ?? "SistemaLlantas.Web",
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.FromMinutes(1)
-});
+    var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Configure Jwt:Key mediante secretos o variables de entorno.");
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new()
+    {
+        ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "SistemaLlantas",
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "SistemaLlantas.Web",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.FromMinutes(1)
+    });
+}
 builder.Services.AddAuthorization(o =>
 {
     o.AddPolicy("Llantas.Consultar", p => p.RequireClaim("permiso", "llantas.consultar", "llantas.administrar"));
