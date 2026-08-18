@@ -16,4 +16,22 @@ Monolito modular empresarial para administrar el ciclo de vida de llantas. La pr
 4. Inicie la API con `dotnet run --project backend/src/SistemaLlantas.Api --urls http://localhost:5080`.
 5. En `frontend/sistema-llantas`, ejecute `pnpm start`.
 
+## Base de datos local con datos de prueba
+
+En Windows con SQL Server Express instalado, ejecute desde la carpeta `backend`:
+
+```powershell
+.\scripts\Initialize-LocalDatabase.ps1
+```
+
+El inicializador aplica las migraciones y carga de forma idempotente los 151 centros, catálogos operativos, parámetros de reencauche y tres vehículos de prueba con sus 22 posiciones y llantas instaladas. Puede ejecutarse nuevamente sin duplicar información.
+
+Para usar otra instancia o base de SQL Server:
+
+```powershell
+.\scripts\Initialize-LocalDatabase.ps1 -Server "SERVIDOR\INSTANCIA" -Database "SistemaLlantas"
+```
+
+La contraseña o credencial empresarial nunca debe incluirse en estos archivos.
+
 La API exige un JWT emitido por el proveedor de identidad, con claims `permiso` y opcionalmente `centro_id`. Consulte [docs/arquitectura.md](docs/arquitectura.md).
