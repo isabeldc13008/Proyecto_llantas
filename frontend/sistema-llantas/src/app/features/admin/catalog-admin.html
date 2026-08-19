@@ -1,10 +1,37 @@
 <section class="page">
- <header class="heading"><div><p class="eyebrow">Configuración maestra</p><h1>Administración</h1><p class="muted">Aquí defines los datos que alimentan los formularios de GLLD.</p></div><span class="demo-tag">● DATOS DEL NAVEGADOR</span></header>
- <div class="admin-layout"><aside class="panel catalog-menu"><h2>Parámetros</h2>@for(type of types;track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}</aside>
-  <main><div class="info"><div><p class="eyebrow">Catálogo seleccionado</p><h2>{{selected().name}}</h2><p>{{selected().description}}</p></div><button class="primary" (click)="open()">+ Agregar {{selected().name.toLowerCase()}}</button></div>
-   <div class="toolbar panel"><label>⌕ <input [(ngModel)]="search" placeholder="Buscar por código o nombre…"></label><span>{{records().length}} registros</span></div>
-   <div class="panel table"><table><thead><tr><th>Código</th><th>Nombre o configuración</th><th>Estado</th><th>Uso</th><th></th></tr></thead><tbody>@for(record of records();track record.id){<tr><td><b>{{record.codigo}}</b></td><td>{{record.nombre}}</td><td><span class="status" [class.off]="!record.activo">{{record.activo?'Activo':'Inactivo'}}</span></td><td><small>{{selected().key==='marcas'||selected().key==='referencias'||selected().key==='dimensiones'?'Formulario de llantas':'Procesos operativos'}}</small></td><td><button class="link" (click)="toggle(record)">{{record.activo?'Inactivar':'Activar'}}</button></td></tr>}</tbody></table></div>
-  </main></div>
+ <header class="heading"><div><p class="eyebrow">Configuración maestra</p><h1>Administración</h1><p class="muted">Parámetros almacenados en la base de datos local.</p></div><span class="demo-tag">● BASE DE DATOS LOCAL</span></header>
+ <div class="admin-layout">
+  <aside class="panel catalog-menu"><h2>Parámetros</h2>@for(type of types;track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}</aside>
+  <main>
+   <div class="info"><div><p class="eyebrow">Catálogo seleccionado</p><h2>{{selected().name}}</h2><p>{{selected().description}}</p></div><button class="primary" (click)="open()">+ Agregar {{selected().name.toLowerCase()}}</button></div>
+   @if(selected().key!=='usuarios'){<div class="toolbar panel"><label>⌕ <input [(ngModel)]="search" (keyup.enter)="load()" placeholder="Buscar por código o nombre…"></label><button class="link" (click)="load()">Buscar</button><span>{{records().length}} registros</span></div>}
+   @if(error()){<div class="hint" role="alert"><b>Error</b><span>{{error()}}</span></div>}
+   @if(loading()){<div class="panel empty">Cargando desde la base de datos…</div>}
+   @else if(selected().key==='usuarios'){
+    <div class="panel table"><table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Centros autorizados</th><th>Módulos efectivos</th><th>Estado</th><th></th></tr></thead><tbody>
+     @for(user of users();track user.id){<tr><td><b>{{user.username}}</b></td><td>{{user.nombre}}</td><td>{{user.rol}}</td><td><small>{{user.accesoGlobal?'Todos (permiso global)':(user.centros.join(' · ')||'Sin centros asignados')}}</small></td><td><small>{{modules(user.rolId)}}</small></td><td><span class="status" [class.off]="!user.activo">{{user.activo?'Activo':'Inactivo'}}</span></td><td><button class="link" (click)="editUser(user)">Editar</button></td></tr>}
+    </tbody></table></div>
+   } @else {
+    <div class="panel table"><table><thead><tr><th>Código</th><th>Nombre o configuración</th><th>Estado</th><th>Uso</th><th></th></tr></thead><tbody>
+     @for(record of records();track record.id){<tr><td><b>{{record.codigo}}</b></td><td>{{record.nombre}} @if(selected().key==='centros'){<small>Regional: {{record.padreNombre||'Sin regional asignada'}}</small>}</td><td><span class="status" [class.off]="!record.activo">{{record.activo?'Activo':'Inactivo'}}</span></td><td><small>{{selected().key==='marcas'||selected().key==='referencias'||selected().key==='dimensiones'?'Formulario de llantas':'Procesos operativos'}}</small></td><td><button class="link" (click)="edit(record)">Editar</button> <button class="link" (click)="toggle(record)">{{record.activo?'Inactivar':'Activar'}}</button></td></tr>} @empty {<tr><td colspan="5">No hay registros para este catálogo.</td></tr>}
+    </tbody></table></div>
+   }
+  </main>
+ </div>
 </section>
-@if(showForm){<div class="backdrop" (click)="showForm=false"><section class="drawer" (click)="$event.stopPropagation()"><header><div><p class="eyebrow">Nuevo parámetro</p><h2>Agregar a {{selected().name}}</h2></div><button (click)="showForm=false">×</button></header><label>Código<input [(ngModel)]="codigo" placeholder="Ej. CONT"></label><label>Nombre o valor<input [(ngModel)]="nombre" [placeholder]="selected().key==='tolerancias'?'Ej. Presión mínima: 90 PSI':'Nombre descriptivo'"></label><div class="hint"><b>¿Dónde aparecerá?</b><span>{{selected().key==='marcas'||selected().key==='referencias'||selected().key==='dimensiones'||selected().key==='tipos-llanta'||selected().key==='estados-llanta'||selected().key==='centros'?'Este parámetro aparecerá en las listas del formulario Nueva llanta.':'Este parámetro estará disponible para los procesos operativos relacionados.'}}</span></div><div class="actions"><button class="secondary" (click)="showForm=false">Cancelar</button><button class="primary" (click)="save()">Guardar parámetro</button></div></section></div>}
+@if(showForm){
+ <div class="backdrop" (click)="showForm=false"><section class="drawer" (click)="$event.stopPropagation()">
+  <header><div><p class="eyebrow">{{editingId?'Editar':'Nuevo'}} registro</p><h2>{{selected().name}}</h2></div><button (click)="showForm=false">×</button></header>
+  @if(selected().key==='usuarios'){
+   <label>Usuario<input [(ngModel)]="username" [disabled]="!!editingId"></label><label>Nombre<input [(ngModel)]="nombre"></label><label>{{editingId?'Nueva contraseña (opcional)':'Contraseña'}}<input type="password" [(ngModel)]="password"></label>
+   <label>Rol<select [(ngModel)]="roleId"><option value="">Selecciona un rol</option>@for(role of roles();track role.id){<option [value]="role.id">{{role.nombre}}</option>}</select></label>
+   <fieldset><legend>Centros autorizados</legend>@for(center of centers();track center.id){<label><input type="checkbox" [checked]="centerIds.includes(center.id)" (change)="toggleCenter(center.id,$any($event.target).checked)"> {{center.codigo}} · {{center.nombre}}</label>}<small>Sin centros asignados, el usuario inicia sesión pero no ve información operativa, salvo permiso global.</small></fieldset>
+   @if(editingId){<label><input type="checkbox" [(ngModel)]="active"> Cuenta activa</label>}<div class="hint"><b>Módulos efectivos</b><span>{{modules(roleId)||'Selecciona un rol para ver sus accesos.'}}</span></div>
+  } @else {
+   <label>Código<input [(ngModel)]="codigo" placeholder="Ej. CONT"></label><label>Nombre o valor<input [(ngModel)]="nombre" placeholder="Nombre descriptivo"></label>
+   @if(selected().key==='referencias'||selected().key==='centros'){<label>{{selected().key==='centros'?'Regional':'Marca relacionada'}}<select [(ngModel)]="parentId"><option value="">Selecciona {{selected().key==='centros'?'una regional':'una marca'}}</option>@for(brand of brands();track brand.id){<option [value]="brand.id">{{brand.codigo}} · {{brand.nombre}}</option>}</select></label>}
+  }
+  <div class="actions"><button class="secondary" (click)="showForm=false">Cancelar</button><button class="primary" (click)="selected().key==='usuarios'?saveUser():save()">Guardar</button></div>
+ </section></div>
+}
 @if(message){<div class="toast">✓ {{message}}</div>}

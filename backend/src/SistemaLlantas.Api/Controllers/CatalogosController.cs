@@ -18,6 +18,13 @@ public sealed class CatalogosController(ICatalogoService service) : ControllerBa
         var item = await service.CrearAsync(tipo, dto, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "sistema", ct); return Created(string.Empty, item);
     }
 
+    [HttpPut("{tipo}/{id:guid}"), Authorize(Policy = "Catalogos.Administrar")]
+    public async Task<ActionResult<CatalogoDto>> Actualizar(string tipo, Guid id, GuardarCatalogoDto dto, CancellationToken ct)
+    {
+        var item = await service.ActualizarAsync(tipo, id, dto, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "sistema", ct);
+        return item is null ? NotFound() : Ok(item);
+    }
+
     [HttpPatch("{tipo}/{id:guid}/estado"), Authorize(Policy = "Catalogos.Administrar")]
     public async Task<IActionResult> Estado(string tipo, Guid id, [FromBody] EstadoRequest request, CancellationToken ct) =>
         await service.CambiarEstadoAsync(tipo, id, request.Activo, User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "sistema", ct) ? NoContent() : NotFound();

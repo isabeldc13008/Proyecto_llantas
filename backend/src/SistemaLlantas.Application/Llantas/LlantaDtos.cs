@@ -5,7 +5,20 @@ namespace SistemaLlantas.Application.Llantas;
 public sealed record LlantaResumenDto(
     Guid Id, string Codigo, string Serial, string Marca, string Referencia,
     string Dimension, string Tipo, string Estado, string Centro, string UbicacionActual,
-    decimal ProfundidadInicial, bool Activo, string RowVersion);
+    decimal ProfundidadInicial, decimal KilometrajeAcumulado, int NumeroReencauches,
+    string? VehiculoActual, string? PosicionActual, DateTimeOffset? UltimaInspeccion,
+    bool Activo, string RowVersion);
+
+public sealed record EventoVidaLlantaDto(DateTimeOffset Fecha,string Tipo,string Descripcion,string Usuario,string? Centro,string? Vehiculo,string? Posicion,decimal? Kilometraje,decimal? Recorrido);
+public sealed record LlantaDetalleDto(LlantaResumenDto Llanta,IReadOnlyList<EventoVidaLlantaDto> Historial,bool RequiereConciliacion);
+public sealed record TrasladarLlantaDto(Guid CentroDestinoId,string Motivo,string? Observaciones);
+
+public interface ICicloVidaLlantaService
+{
+    Task<LlantaDetalleDto?> ObtenerDetalleAsync(Guid id,Common.AlcanceCentros alcance,CancellationToken ct);
+    Task TrasladarCentroAsync(Guid id,TrasladarLlantaDto dto,string usuario,Common.AlcanceCentros alcance,CancellationToken ct);
+    Task ConciliarMontajeAsync(Guid id,string usuario,Common.AlcanceCentros alcance,CancellationToken ct);
+}
 
 public sealed class GuardarLlantaDto
 {

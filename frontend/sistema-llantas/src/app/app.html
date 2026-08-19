@@ -6,39 +6,31 @@
     <div class="aside-head"><a class="brand" routerLink="/"><strong>GLLD</strong><small>Gestión Logística de Llantas</small></a><button (click)="menuOpen=false">×</button></div>
     <p class="nav-label">Operación</p>
     <nav (click)="menuOpen=false">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">◫ <span>Resumen</span></a>
-      @if (auth.user()?.role === 'Técnico') {<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>Mis actividades</span><b>3</b></a>}
-      <a routerLink="/llantas" routerLinkActive="active">◉ <span>Llantas</span></a>
-      @if (auth.canSupervise()) {
-        <a routerLink="/vehiculos" routerLinkActive="active">▰ <span>Vehículos</span></a>
-        <a routerLink="/inventario" routerLinkActive="active">▦ <span>Inventario</span></a>
-      }
-      <a routerLink="/inspecciones" routerLinkActive="active">✓ <span>Inspecciones</span><b>7</b></a>
-      @if (auth.canSupervise()) {
-        <a routerLink="/alertas" routerLinkActive="active">△ <span>Alertas</span><b>12</b></a>
-        <a routerLink="/programacion" routerLinkActive="active">□ <span>Programación</span></a>
-      }
-      <a routerLink="/montajes" routerLinkActive="active">↕ <span>Montajes</span></a>
-      <a routerLink="/movimientos" routerLinkActive="active">⇄ <span>Movimientos</span></a>
+      @if(auth.canModule('resumen')){<a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">◫ <span>Resumen</span></a>}
+      @if(auth.canModule('actividades')){<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>Mis actividades</span></a>}
+      @if(auth.canModule('llantas')){<a routerLink="/llantas" routerLinkActive="active">◉ <span>Llantas</span></a>}
+      @if(auth.canModule('vehiculos')){<a routerLink="/vehiculos" routerLinkActive="active">▰ <span>Vehículos</span></a>}
+      @if(auth.canModule('inventario')){<a routerLink="/inventario" routerLinkActive="active">▦ <span>Inventario</span></a>}
+      @if(auth.canModule('inspecciones')){<a routerLink="/inspecciones" routerLinkActive="active">✓ <span>Inspecciones</span></a>}
+      @if(auth.canModule('alertas')){<a routerLink="/alertas" routerLinkActive="active">△ <span>Alertas</span><b>12</b></a>}
+      @if(auth.canModule('programacion')){<a routerLink="/programacion" routerLinkActive="active">□ <span>Programación</span></a>}
+      @if(auth.canModule('montajes')){<a routerLink="/montajes" routerLinkActive="active">↕ <span>Montajes</span></a>}
+      @if(auth.canModule('movimientos')){<a routerLink="/movimientos" routerLinkActive="active">⇄ <span>Movimientos</span></a>}
     </nav>
     <p class="nav-label">Taller y control</p>
     <nav (click)="menuOpen=false">
-      @if (auth.canSupervise()) {
-        <a routerLink="/reparaciones" routerLinkActive="active">◇ <span>Reparaciones</span></a><a routerLink="/reencauches" routerLinkActive="active">◎ <span>Reencauches</span></a>
-        <a routerLink="/disposicion-final" routerLinkActive="active">⊘ <span>Disposición final</span></a>
-      }
-      <a routerLink="/historial" routerLinkActive="active">◷ <span>Historial</span></a>
-      @if (auth.canSupervise()) {
-        <a routerLink="/analitica" routerLinkActive="active">▥ <span>Analítica</span></a>
-      }
-      @if (auth.isAdmin()) {
-        <a routerLink="/carga-masiva" routerLinkActive="active">⇧ <span>Carga masiva</span></a>
-        <a routerLink="/administracion" routerLinkActive="active">⚙ <span>Administración</span></a><a routerLink="/auditoria" routerLinkActive="active">☷ <span>Auditoría</span></a>
-      }
+      @if(auth.canModule('reparaciones')){<a routerLink="/reparaciones" routerLinkActive="active">◇ <span>Reparaciones</span></a>}
+      @if(auth.canModule('reencauches')){<a routerLink="/reencauches" routerLinkActive="active">◎ <span>Reencauches</span></a>}
+      @if(auth.canModule('disposicion')){<a routerLink="/disposicion-final" routerLinkActive="active">⊘ <span>Disposición final</span></a>}
+      @if(auth.canModule('historial')){<a routerLink="/historial" routerLinkActive="active">◷ <span>Historial</span></a>}
+      @if(auth.canModule('analitica')){<a routerLink="/analitica" routerLinkActive="active">▥ <span>Analítica</span></a>}
+      @if(auth.canModule('carga_masiva')){<a routerLink="/carga-masiva" routerLinkActive="active">⇧ <span>Carga masiva</span></a>}
+      @if(auth.canModule('administracion')){<a routerLink="/administracion" routerLinkActive="active">⚙ <span>Administración</span></a>}
+      @if(auth.canModule('auditoria')){<a routerLink="/auditoria" routerLinkActive="active">☷ <span>Auditoría</span></a>}
     </nav>
     <div class="company"><b>EDINSA</b><span>Operador de transporte</span><small>POSTOBÓN</small></div>
-    <div class="demo"><i></i><div><b>Modo demostración</b><small>Datos guardados en este navegador</small></div></div>
+    @if (isDemoContext()) {<div class="demo"><i></i><div><b>Modo demostración</b><small>Este módulo aún usa datos de prueba</small></div></div>}
   </aside>
-  <div class="content"><header class="topbar"><button class="menu" (click)="menuOpen=true">☰</button><div class="context"><span>Centro operativo</span><b>Bogotá ▾</b></div><div class="user"><div>{{auth.user()?.initials}}</div><span><b>{{auth.user()?.name}}</b><small>{{auth.user()?.role}}</small></span></div><button class="logout" (click)="logout()">Salir</button></header><main><router-outlet /></main></div>
+  <div class="content"><header class="topbar"><button class="menu" (click)="menuOpen=true">☰</button><div class="context">@if(isDemoContext()){<span>Entorno actual</span><b>Datos de prueba</b>}@else{<span>Fuente de datos</span><b>Servidor operativo</b>}</div><div class="user"><div>{{auth.user()?.initials}}</div><span><b>{{auth.user()?.name}}</b><small>{{auth.user()?.roleName}}</small></span></div><button class="logout" (click)="logout()">Salir</button></header><main>@if(!auth.hasOperationalScope()){<div class="scope-warning" role="status"><b>Usuario sin centros asignados</b><span>Puedes iniciar sesión, pero no verás información operativa hasta que un administrador te asigne uno o varios centros.</span></div>}<router-outlet /></main></div>
 </div>
 }

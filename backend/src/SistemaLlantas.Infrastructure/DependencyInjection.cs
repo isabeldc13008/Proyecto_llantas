@@ -5,6 +5,8 @@ using SistemaLlantas.Application.Catalogos;
 using SistemaLlantas.Application.Llantas;
 using SistemaLlantas.Application.Inspecciones;
 using SistemaLlantas.Application.Operaciones;
+using SistemaLlantas.Application.Vehiculos;
+using SistemaLlantas.Application.Programacion;
 using SistemaLlantas.Infrastructure.Persistence;
 using SistemaLlantas.Infrastructure.Services;
 
@@ -17,8 +19,11 @@ public static class DependencyInjection
         var connection = configuration.GetConnectionString("SqlServer") ?? throw new InvalidOperationException("Falta ConnectionStrings:SqlServer.");
         services.AddDbContext<LlantasDbContext>(o => o.UseSqlServer(connection, sql => sql.EnableRetryOnFailure()));
         services.AddScoped<ILlantaService, LlantaService>(); services.AddScoped<ICatalogoService, CatalogoService>();
+        services.AddScoped<ICicloVidaLlantaService, CicloVidaLlantaService>();
         services.AddScoped<IInspeccionService, InspeccionService>();
         services.AddScoped<IOperacionService, OperacionService>();
+        services.AddScoped<IVehiculoService, VehiculoService>();
+        services.AddScoped<IProgramacionService, ProgramacionService>();
         return services;
     }
 }

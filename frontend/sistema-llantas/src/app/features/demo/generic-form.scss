@@ -10,3 +10,4 @@
 .form-grid .wide { grid-column: 1 / -1; }
 .drawer-actions { display: flex; justify-content: flex-end; gap: .7rem; margin-top: 1.5rem; }
 @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } .form-grid .wide { grid-column: auto; } }
+.position-preview-overlay{position:fixed;z-index:45;right:min(540px,42vw);top:6rem;width:min(420px,38vw);max-height:calc(100vh - 8rem);overflow:auto;background:#fff;padding:1rem;border:1px solid var(--edinsa-blue,#00c0fd);border-radius:18px;box-shadow:0 16px 48px #0002}.position-preview-overlay p{margin-top:0}.position-preview-overlay small{color:#607684}@media(max-width:1000px){.position-preview-overlay{display:none}}

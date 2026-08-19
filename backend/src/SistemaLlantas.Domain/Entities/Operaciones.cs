@@ -15,6 +15,9 @@ public sealed class AsignacionLlantaPosicion : EntidadAuditable
     public DateTimeOffset? FechaFin { get; set; }
     public bool EsActiva { get; set; } = true;
     public Guid MovimientoOrigenId { get; set; }
+    public decimal? KilometrajeMontaje { get; set; }
+    public decimal? KilometrajeDesmontaje { get; set; }
+    public decimal? KilometrajeRecorrido { get; set; }
 }
 
 public sealed class Movimiento : EntidadAuditable
@@ -26,6 +29,7 @@ public sealed class Movimiento : EntidadAuditable
     public Centro Centro { get; set; } = null!;
     public Guid? InspeccionId { get; set; }
     public string Usuario { get; set; } = string.Empty;
+    public string? Observaciones { get; set; }
     public ICollection<MovimientoDetalle> Detalles { get; set; } = [];
 }
 
@@ -46,6 +50,7 @@ public sealed class ActividadProgramada : EntidadAuditable
 {
     public string TipoActividad { get; set; } = string.Empty;
     public DateTimeOffset FechaProgramada { get; set; }
+    public DateTimeOffset? FechaFinProgramada { get; set; }
     public Guid CentroId { get; set; }
     public Centro Centro { get; set; } = null!;
     public Guid? VehiculoId { get; set; }
@@ -53,9 +58,14 @@ public sealed class ActividadProgramada : EntidadAuditable
     public Guid? PosicionVehiculoId { get; set; }
     public Guid? LlantaId { get; set; }
     public string TecnicoId { get; set; } = string.Empty;
+    public Guid? TecnicoUsuarioId { get; set; }
+    public UsuarioSistema? TecnicoUsuario { get; set; }
     public string Prioridad { get; set; } = "Media";
     public EstadoActividad Estado { get; set; } = EstadoActividad.Pendiente;
     public DateTimeOffset? FechaInicioReal { get; set; }
     public DateTimeOffset? FechaFinReal { get; set; }
     public string? Observaciones { get; set; }
+    public string? MotivoCancelacion { get; set; }
+    public Guid? GrupoProgramacionId { get; set; }
+    public string? ReasignadoPor { get; set; }
 }

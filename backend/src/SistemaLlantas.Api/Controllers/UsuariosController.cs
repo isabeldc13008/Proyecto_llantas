@@ -1,0 +1,19 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SistemaLlantas.Domain.Entities;
+using SistemaLlantas.Infrastructure.Persistence;
+
+namespace SistemaLlantas.Api.Controllers;
+[ApiController,Route("api/usuarios"),Authorize(Roles="ADMINISTRADOR")]
+public sealed class UsuariosController(LlantasDbContext db):ControllerBase
+{
+ [HttpGet]public async Task<object> Listar(CancellationToken ct)=>await db.UsuariosSistema.AsNoTracking().Include(x=>x.Rol).Include(x=>x.Centros).ThenInclude(x=>x.Centro).OrderBy(x=>x.Nombre).Select(x=>new{x.Id,x.Username,x.Nombre,x.Activo,RolId=x.RolId,Rol=x.Rol.Nombre,RolCodigo=x.Rol.Codigo,CentroIds=x.Centros.Where(c=>c.Activo).Select(c=>c.CentroId),Centros=x.Centros.Where(c=>c.Activo).OrderBy(c=>c.Centro.Nombre).Select(c=>c.Centro.Nombre),AccesoGlobal=x.Rol.Permisos.Any(p=>p.Permiso.Activo&&p.Permiso.Codigo=="centros.ver_todos")}).ToListAsync(ct);
+ [HttpGet("roles")]public async Task<object> Roles(CancellationToken ct)=>await db.RolesSistema.AsNoTracking().Where(x=>x.Activo).Include(x=>x.Permisos).ThenInclude(x=>x.Permiso).OrderBy(x=>x.Nombre).Select(x=>new{x.Id,x.Codigo,x.Nombre,Permisos=x.Permisos.Where(p=>p.Permiso.Activo).Select(p=>p.Permiso.Codigo)}).ToListAsync(ct);
+ [HttpPost]public async Task<IActionResult> Crear(GuardarUsuario dto,CancellationToken ct){var username=dto.Username.Trim().ToLowerInvariant();if(await db.UsuariosSistema.AnyAsync(x=>x.Username==username,ct))return Conflict(new{message="El usuario ya existe."});if(!await RolYCentrosValidos(dto.RolId,dto.CentroIds,ct))return BadRequest(new{message="Rol o centros no válidos."});var user=new UsuarioSistema{Username=username,Nombre=dto.Nombre.Trim(),RolId=dto.RolId,UsuarioCreacion=User.Identity?.Name??"sistema"};user.PasswordHash=new PasswordHasher<UsuarioSistema>().HashPassword(user,dto.Password);foreach(var centroId in dto.CentroIds.Distinct())user.Centros.Add(new(){CentroId=centroId,UsuarioCreacion=User.Identity?.Name??"sistema"});db.UsuariosSistema.Add(user);await db.SaveChangesAsync(ct);return Created(string.Empty,new{user.Id,user.Username,user.Nombre,user.Activo,user.RolId});}
+ [HttpPut("{id:guid}")]public async Task<IActionResult> Editar(Guid id,EditarUsuario dto,CancellationToken ct){var user=await db.UsuariosSistema.Include(x=>x.Centros).SingleOrDefaultAsync(x=>x.Id==id,ct);if(user is null)return NotFound();if(!await RolYCentrosValidos(dto.RolId,dto.CentroIds,ct))return BadRequest(new{message="Rol o centros no válidos."});user.Nombre=dto.Nombre.Trim();user.RolId=dto.RolId;user.Activo=dto.Activo;user.UsuarioModificacion=User.Identity?.Name;user.FechaModificacion=DateTimeOffset.UtcNow;if(!string.IsNullOrWhiteSpace(dto.Password))user.PasswordHash=new PasswordHasher<UsuarioSistema>().HashPassword(user,dto.Password);db.UsuariosCentros.RemoveRange(user.Centros);foreach(var centroId in dto.CentroIds.Distinct())user.Centros.Add(new(){CentroId=centroId,UsuarioCreacion=User.Identity?.Name??"sistema"});await db.SaveChangesAsync(ct);return NoContent();}
+ private async Task<bool> RolYCentrosValidos(Guid rolId,IReadOnlyCollection<Guid> centros,CancellationToken ct)=>await db.RolesSistema.AnyAsync(x=>x.Id==rolId&&x.Activo,ct)&&await db.Centros.CountAsync(x=>centros.Contains(x.Id)&&x.Activo,ct)==centros.Distinct().Count();
+ public sealed record GuardarUsuario(string Username,string Nombre,string Password,Guid RolId,Guid[] CentroIds);
+ public sealed record EditarUsuario(string Nombre,Guid RolId,bool Activo,string? Password,Guid[] CentroIds);
+}

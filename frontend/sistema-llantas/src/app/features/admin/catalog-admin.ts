@@ -1,30 +1,28 @@
-import { Component, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { CatalogItem } from '../../core/models/api.models';
-import { CENTERS } from '../../core/data/centers';
+import { CatalogsApi } from '../../core/services/catalogs-api';
 
 interface CatalogType {key:string;name:string;description:string}
-const base:Record<string,CatalogItem[]>={
- marcas:[item('michelin','MIC','Michelin'),item('goodyear','GDY','Goodyear'),item('bridgestone','BRG','Bridgestone')],
- referencias:[item('xmulti','XMU','X Multi D'),item('kmax','KMX','KMAX S'),item('r268','R268','R268 Ecopia')],
- dimensiones:[item('295','295','295/80 R22.5'),item('315','315','315/80 R22.5'),item('12r','12R','12 R22.5')],
- 'tipos-llanta':[item('radial','RAD','Radial'),item('direccional','DIR','Direccional'),item('traccion','TRA','Tracción')],
- 'estados-llanta':[item('disponible','DIS','Disponible'),item('montada','MON','Montada'),item('reparacion','REP','En reparación')],
- centros:CENTERS.map(c=>item(`${c.relevance}-${c.code}`,c.code,`${c.name} · ${c.relevance}`)),
- talleres:[item('taller-bog','TB01','Taller principal Bogotá')],tecnicos:[item('laura','LR','Laura Ruiz'),item('carlos','CM','Carlos Mendoza')],
- motivos:[item('desgaste','DES','Desgaste crítico'),item('averia','AVE','Daño o avería')],
- tolerancias:[item('prof-critica','PC','Profundidad crítica: 3 mm'),item('dif-desgaste','DD','Diferencia máxima: 3 mm')]
-};
-function item(id:string,codigo:string,nombre:string):CatalogItem{return{id,codigo,nombre,activo:true}}
-
+interface UserRow{id:string;username:string;nombre:string;activo:boolean;rolId:string;rol:string;rolCodigo:string;centroIds:string[];centros:string[];accesoGlobal:boolean}
+interface RoleRow{id:string;codigo:string;nombre:string;permisos:string[]}
 @Component({selector:'app-catalog-admin',imports:[FormsModule],templateUrl:'./catalog-admin.html',styleUrl:'./catalog-admin.scss'})
-export class CatalogAdmin{
- readonly types:CatalogType[]=[{key:'marcas',name:'Marcas',description:'Fabricantes de llantas'},{key:'referencias',name:'Referencias',description:'Líneas y modelos'},{key:'dimensiones',name:'Dimensiones',description:'Medidas homologadas'},{key:'tipos-llanta',name:'Tipos de llanta',description:'Clasificación operativa'},{key:'estados-llanta',name:'Estados',description:'Estados del ciclo de vida'},{key:'centros',name:'Centros',description:'Centros operativos'},{key:'talleres',name:'Talleres',description:'Talleres propios y aliados'},{key:'tecnicos',name:'Técnicos',description:'Personal autorizado'},{key:'motivos',name:'Motivos',description:'Motivos de movimientos'},{key:'tolerancias',name:'Tolerancias',description:'Reglas y límites'}];
- selected=signal(this.types[0]); custom=signal<Record<string,CatalogItem[]>>(this.read());showForm=false;codigo='';nombre='';search='';message='';
- records(){const key=this.selected().key;return[...(base[key]??[]),...(this.custom()[key]??[])].filter(x=>!this.search||x.codigo.toLowerCase().includes(this.search.toLowerCase())||x.nombre.toLowerCase().includes(this.search.toLowerCase()))}
- choose(type:CatalogType){this.selected.set(type);this.search='';this.showForm=false}
- open(){this.codigo='';this.nombre='';this.showForm=true}
- save(){if(!this.codigo.trim()||!this.nombre.trim())return;const key=this.selected().key;const created:CatalogItem={id:crypto.randomUUID(),codigo:this.codigo.trim().toUpperCase(),nombre:this.nombre.trim(),activo:true};this.custom.update(all=>({...all,[key]:[...(all[key]??[]),created]}));localStorage.setItem('glld_catalogs',JSON.stringify(this.custom()));this.showForm=false;this.message=`${created.nombre} fue agregado a ${this.selected().name}.`;setTimeout(()=>this.message='',2500)}
- toggle(record:CatalogItem){record.activo=!record.activo;this.custom.update(all=>({...all}));}
- private read(){try{return JSON.parse(localStorage.getItem('glld_catalogs')??'{}')}catch{return{}}}
+export class CatalogAdmin implements OnInit{
+ private readonly http=inject(HttpClient);
+ private readonly catalogsApi=inject(CatalogsApi);
+ readonly types:CatalogType[]=[{key:'usuarios',name:'Usuarios',description:'Cuentas, roles y accesos efectivos'},{key:'marcas',name:'Marcas',description:'Fabricantes de llantas'},{key:'referencias',name:'Referencias',description:'Líneas y modelos asociados a una marca'},{key:'dimensiones',name:'Dimensiones',description:'Medidas homologadas'},{key:'tipos-llanta',name:'Tipos de llanta',description:'Clasificación operativa'},{key:'estados-llanta',name:'Estados',description:'Estados del ciclo de vida'},{key:'regionales',name:'Regionales',description:'Agrupación territorial de centros'},{key:'centros',name:'Centros',description:'Centros operativos por regional'}];
+ selected=signal(this.types[0]);records=signal<CatalogItem[]>([]);brands=signal<CatalogItem[]>([]);centers=signal<CatalogItem[]>([]);users=signal<UserRow[]>([]);roles=signal<RoleRow[]>([]);loading=signal(true);error=signal('');showForm=false;codigo='';nombre='';parentId='';search='';message='';username='';password='';roleId='';editingId='';active=true;centerIds:string[]=[];
+ ngOnInit(){void this.load()}
+ async choose(type:CatalogType){this.selected.set(type);this.search='';this.showForm=false;await this.load()}
+ async load(){this.loading.set(true);this.error.set('');try{if(this.selected().key==='usuarios'){const [users,roles,centers]=await Promise.all([firstValueFrom(this.http.get<UserRow[]>('/api/usuarios')),firstValueFrom(this.http.get<RoleRow[]>('/api/usuarios/roles')),firstValueFrom(this.catalogsApi.all('centros',true))]);this.users.set(users);this.roles.set(roles);this.centers.set(centers);return}const all=await firstValueFrom(this.catalogsApi.all(this.selected().key));const term=this.search.trim().toLocaleLowerCase('es');this.records.set(term?all.filter(x=>`${x.codigo} ${x.nombre}`.toLocaleLowerCase('es').includes(term)):all);const parentType=this.selected().key==='referencias'?'marcas':this.selected().key==='centros'?'regionales':'';this.brands.set(parentType?await firstValueFrom(this.catalogsApi.all(parentType,true)):[])}catch(error:any){this.error.set(error?.userMessage??'No fue posible cargar los datos desde la base de datos.')}finally{this.loading.set(false)}}
+ open(){this.codigo='';this.nombre='';this.parentId='';this.username='';this.password='';this.roleId='';this.editingId='';this.active=true;this.centerIds=[];this.showForm=true}
+ edit(record:CatalogItem){this.editingId=record.id;this.codigo=record.codigo;this.nombre=record.nombre;this.parentId=record.padreId??'';this.showForm=true}
+ async save(){if(!this.codigo.trim()||!this.nombre.trim()||(['referencias','centros'].includes(this.selected().key)&&!this.parentId))return;this.error.set('');try{const body={codigo:this.codigo.trim(),nombre:this.nombre.trim(),padreId:this.parentId||null};const saved=await firstValueFrom(this.editingId?this.http.put<CatalogItem>(`/api/catalogos/${this.selected().key}/${this.editingId}`,body):this.http.post<CatalogItem>(`/api/catalogos/${this.selected().key}`,body));this.records.update(all=>this.editingId?all.map(item=>item.id===saved.id?saved:item):[saved,...all]);this.showForm=false;this.message=`${saved.nombre} fue guardado en la base de datos.`;setTimeout(()=>this.message='',2500)}catch(error:any){this.error.set(error?.userMessage??'No fue posible guardar el parámetro.')}}
+ async toggle(record:CatalogItem){const activo=!record.activo;this.error.set('');try{await firstValueFrom(this.http.patch(`/api/catalogos/${this.selected().key}/${record.id}/estado`,{activo}));this.records.update(all=>all.map(item=>item.id===record.id?{...item,activo}:item))}catch(error:any){this.error.set(error?.userMessage??'No fue posible cambiar el estado.')}}
+ editUser(user:UserRow){this.editingId=user.id;this.username=user.username;this.nombre=user.nombre;this.roleId=user.rolId;this.active=user.activo;this.password='';this.centerIds=[...user.centroIds];this.showForm=true}
+ async saveUser(){try{const body={nombre:this.nombre,rolId:this.roleId,activo:this.active,password:this.password||null,centroIds:this.centerIds};if(this.editingId)await firstValueFrom(this.http.put(`/api/usuarios/${this.editingId}`,body));else await firstValueFrom(this.http.post('/api/usuarios',{username:this.username,...body,password:this.password}));this.showForm=false;await this.load()}catch(error:any){this.error.set(error?.userMessage??'No fue posible guardar el usuario.')}}
+ toggleCenter(id:string,checked:boolean){this.centerIds=checked?[...new Set([...this.centerIds,id])]:this.centerIds.filter(x=>x!==id)}
+ modules(roleId:string){const role=this.roles().find(x=>x.id===roleId);if(!role)return'';if(role.codigo==='SUPERVISOR_ADMINISTRADOR')return'Todos salvo Administración, Montajes, Vehículos y Programación';return role.permisos.join(' · ')}
 }

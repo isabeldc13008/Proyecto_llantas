@@ -1,0 +1,11 @@
+import {HttpClient,HttpParams} from '@angular/common/http';
+import {Injectable,inject} from '@angular/core';
+import {Page} from '../../core/models/api.models';
+export interface VehicleSummary{id:string;numeroInterno:string;placa:string;tipo:string;centroId:string;centro:string;configuracion:string|null;estado:string;kilometraje:number|null;ejes:number;posiciones:number;rowVersion:string}
+export interface VehiclePosition{id:string;codigo:string;lado:string;ubicacion:string;orden:number;llantaId:string|null;llantaCodigo:string|null;llantaSerial:string|null}
+export interface VehicleAxle{id:string;numero:number;orden:number;nombre:string;tipoEje:string;posiciones:VehiclePosition[]}
+export interface VehicleDetail{ id:string;numeroInterno:string;placa:string;tipo:string;centroId:string;centro:string;configuracionVehiculoId:string|null;configuracion:string|null;estado:string;kilometraje:number|null;ejes:VehicleAxle[];historial:{id:string;llantaCodigo:string;posicion:string;fechaInicio:string;fechaFin:string|null;esActiva:boolean}[];rowVersion:string}
+export interface VehicleConfiguration{id:string;codigo:string;nombre:string;tipoVehiculo:string;activo:boolean;ejes:{orden:number;nombre:string;tipoEje:string;posiciones:{codigo:string;lado:string;ubicacion:string;orden:number}[]}[]}
+export type VehicleConfigurationInput=Omit<VehicleConfiguration,'id'|'activo'>;
+export interface VehicleInput{numeroInterno:string;placa:string;tipo:string;centroId:string;configuracionVehiculoId:string|null;kilometraje:number|null;estado:string;rowVersion?:string}
+@Injectable({providedIn:'root'}) export class VehiclesApi{private readonly http=inject(HttpClient);list(search=''){return this.http.get<Page<VehicleSummary>>('/api/vehiculos',{params:new HttpParams().set('pageSize',100).set('search',search)})}get(id:string){return this.http.get<VehicleDetail>(`/api/vehiculos/${id}`)}configurations(){return this.http.get<VehicleConfiguration[]>('/api/vehiculos/configuraciones')}createConfiguration(input:VehicleConfigurationInput){return this.http.post<VehicleConfiguration>('/api/vehiculos/configuraciones',input)}create(input:VehicleInput){return this.http.post<VehicleDetail>('/api/vehiculos',input)}update(id:string,input:VehicleInput){return this.http.put<VehicleDetail>(`/api/vehiculos/${id}`,input)}}

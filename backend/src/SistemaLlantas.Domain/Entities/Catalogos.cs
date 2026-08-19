@@ -13,4 +13,5 @@ public sealed class Referencia : CatalogoBase { public Guid MarcaId { get; set; 
 public sealed class Dimension : CatalogoBase { }
 public sealed class TipoLlanta : CatalogoBase { }
 public sealed class EstadoLlanta : CatalogoBase { public bool EsDisposicionFinal { get; set; } public bool PermiteMontaje { get; set; } }
-public sealed class Centro : CatalogoBase { public string? Relevancia { get; set; } }
+public sealed class Regional : CatalogoBase { public ICollection<Centro> Centros { get; set; } = []; }
+public sealed class Centro : CatalogoBase { public string? Relevancia { get; set; } public Guid? RegionalId { get; set; } public Regional? Regional { get; set; } }

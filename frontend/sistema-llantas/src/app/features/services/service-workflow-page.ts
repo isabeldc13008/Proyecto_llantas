@@ -1,0 +1,40 @@
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { jsPDF } from 'jspdf';
+import { TiresApi } from '../../core/services/tires-api';
+
+interface Order { id:string;tipo:string;estado:string;llantaId:string;llanta:string;centro:string;proveedorId:string|null;proveedor:string|null;costo:number|null;motivo:string;observaciones:string|null;elegible:boolean;criterio:string|null;fechaEnvio:string|null;fechaRecepcion:string|null;evidencias:number }
+interface Provider { id:string;codigo:string;nombre:string;tipo:string }
+
+@Component({selector:'app-service-workflow',imports:[FormsModule],template:`
+<main class="service-page disposition-page">
+ <header class="service-hero"><div class="hero-copy"><p>CICLO DE VIDA · {{title().toUpperCase()}}</p><h1>{{title()}}</h1><span>Envío, recepción, evidencias y cierre persistidos con trazabilidad.</span></div><button class="new-order" (click)="modal.set(true)"><span aria-hidden="true">＋</span> Nueva orden</button></header>
+ @if(message()){<p class="message">{{message()}}</p>}
+ <section class="summary" aria-label="Resumen del flujo"><article><i aria-hidden="true">⊘</i><div><b>{{orders().length}}</b><span>Órdenes registradas</span></div></article><article><i aria-hidden="true">↗</i><div><b>{{activeCount()}}</b><span>En proceso</span></div></article><article><i aria-hidden="true">✓</i><div><b>{{closedCount()}}</b><span>Cerradas</span></div></article></section>
+ <section class="workflow-panel"><div class="workflow-toolbar"><div><p>CONTROL OPERATIVO</p><h2>Órdenes de {{title().toLowerCase()}}</h2></div><span>{{orders().length}} resultados</span></div><div class="table"><table><thead><tr><th>Llanta</th><th>Centro</th><th>Proveedor</th><th>Elegibilidad</th><th>Estado</th><th>Evidencias</th><th>Acciones</th></tr></thead><tbody>
+ @for(x of orders();track x.id){<tr><td data-label="Llanta"><b>{{x.llanta}}</b><small>{{x.motivo}}</small></td><td data-label="Centro">{{x.centro}}</td><td data-label="Proveedor">{{x.proveedor??'Pendiente'}}</td><td data-label="Elegibilidad"><span [class.bad]="!x.elegible">{{x.elegible?'Elegible':x.criterio}}</span></td><td data-label="Estado">{{x.estado}}</td><td data-label="Evidencias"><label class="file">＋ {{x.evidencias}}<input type="file" accept="image/jpeg,image/png,application/pdf" (change)="upload(x,$event)"></label></td><td data-label="Acciones" class="row-actions">
+  @if(x.estado==='PENDIENTE_APROBACION'){<button (click)="approve(x)">Aprobar</button>}
+  @if(x.estado==='APROBADA'){<button (click)="send(x)">Enviar</button>}
+  @if(x.fechaEnvio&&!x.fechaRecepcion){<button (click)="receive(x)">Recibir</button>}
+  @if(x.fechaRecepcion){<button (click)="close(x,true)">Aceptar/cerrar</button><button (click)="close(x,false)">Rechazar</button>}
+  @if(x.estado==='DISPOSICION_FINAL'){<button (click)="act(x)">Acta PDF</button>}</td></tr>
+ }@empty{<tr class="empty-row"><td colspan="7"><span aria-hidden="true">◇</span><b>No hay órdenes reales en este flujo</b><small>Cuando registres una orden, aparecerá aquí con su trazabilidad.</small></td></tr>}</tbody></table></div></section>
+ @if(modal()){<div class="overlay"><form (ngSubmit)="create()"><header><h2>Nueva orden de {{title()}}</h2><button type="button" (click)="modal.set(false)">×</button></header><label>Llanta<select name="tire" [(ngModel)]="form.llantaId" required>@for(t of tires();track t.id){<option [value]="t.id">{{t.codigo}} · {{t.centro}} · {{t.estado}}</option>}</select></label><label>Proveedor<select name="provider" [(ngModel)]="form.proveedorId"><option value="">Pendiente</option>@for(p of providers();track p.id){<option [value]="p.id">{{p.nombre}}</option>}</select></label><label>Costo<input name="cost" type="number" min="0" [(ngModel)]="form.costo"></label><label>Motivo<textarea name="reason" [(ngModel)]="form.motivo" required></textarea></label><label>Observaciones<textarea name="notes" [(ngModel)]="form.observaciones"></textarea></label><footer><button type="button" (click)="modal.set(false)">Cancelar</button><button class="primary">Guardar</button></footer></form></div>}
+</main>`,styleUrls:['./service-workflow-page.scss']})
+export class ServiceWorkflowPage implements OnInit{
+ private http=inject(HttpClient);private route=inject(ActivatedRoute);private tiresApi=inject(TiresApi);
+ orders=signal<Order[]>([]);providers=signal<Provider[]>([]);tires=signal<any[]>([]);modal=signal(false);message=signal('');type=this.route.snapshot.data['serviceType'] as string;title=signal(this.type==='Reparacion'?'Reparaciones':this.type==='Reencauche'?'Reencauche':'Disposición final');form={llantaId:'',proveedorId:'',costo:null as number|null,motivo:'',observaciones:''};
+ activeCount(){return this.orders().filter(x=>!['CERRADA','RECHAZADA','NO_REPARABLE','DISPOSICION_FINAL'].includes(x.estado)).length}closedCount(){return this.orders().length-this.activeCount()}
+ async ngOnInit(){try{const [orders,providers,tires]=await Promise.all([firstValueFrom(this.http.get<Order[]>('/api/servicios-llanta',{params:{tipo:this.type}})),firstValueFrom(this.http.get<Provider[]>('/api/servicios-llanta/proveedores')),firstValueFrom(this.tiresApi.list(1,'','codigo'))]);this.orders.set(orders);this.providers.set(providers.filter(x=>!x.tipo||x.tipo===this.type));this.tires.set(tires.items);this.form.llantaId=tires.items[0]?.id??''}catch{this.message.set('No fue posible cargar el flujo desde SQL Server.')}}
+ async refresh(){this.orders.set(await firstValueFrom(this.http.get<Order[]>('/api/servicios-llanta',{params:{tipo:this.type}})))}
+ async create(){try{await firstValueFrom(this.http.post('/api/servicios-llanta',{tipo:this.type,...this.form,proveedorId:this.form.proveedorId||null,observaciones:this.form.observaciones||null}));this.modal.set(false);this.message.set('Orden creada con trazabilidad.');await this.refresh()}catch(e:any){this.message.set(e?.userMessage??'No fue posible crear la orden.')}}
+ async approve(x:Order){try{await firstValueFrom(this.http.post(`/api/servicios-llanta/${x.id}/aprobar`,{}));await this.refresh()}catch(e:any){this.message.set(e?.userMessage??'No fue posible aprobar la orden.')}}
+ async send(x:Order){try{await firstValueFrom(this.http.post(`/api/servicios-llanta/${x.id}/enviar`,{}));await this.refresh()}catch(e:any){this.message.set(e?.userMessage??'No fue posible enviar la llanta.')}}
+ async receive(x:Order){try{await firstValueFrom(this.http.post(`/api/servicios-llanta/${x.id}/recibir`,{}));await this.refresh()}catch(e:any){this.message.set(e?.userMessage??'No fue posible registrar la recepción.')}}
+ async close(x:Order,accepted:boolean){const observaciones=prompt(accepted?'Observación de cierre:':'Motivo del rechazo:')??'';try{await firstValueFrom(this.http.post(`/api/servicios-llanta/${x.id}/cerrar`,{aceptada:accepted,observaciones}));await this.refresh()}catch(e:any){this.message.set(e?.userMessage??'No fue posible cerrar la orden.')}}
+ async upload(x:Order,event:Event){const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;const body=new FormData();body.append('archivo',file,file.name);try{await firstValueFrom(this.http.post(`/api/servicios-llanta/${x.id}/evidencias`,body));await this.refresh()}catch(e:any){this.message.set(e?.userMessage??'No fue posible adjuntar la evidencia.')}input.value=''}
+ act(x:Order){const doc=new jsPDF();doc.setFont('helvetica','bold');doc.text('ACTA DE DISPOSICIÓN FINAL DE LLANTA',20,20);doc.setFont('helvetica','normal');doc.text(`Llanta: ${x.llanta}`,20,38);doc.text(`Centro de origen: ${x.centro}`,20,48);doc.text(`Empresa receptora: ${x.proveedor??'—'}`,20,58);doc.text(`Motivo: ${x.motivo}`,20,68);doc.text(`Fecha: ${new Date().toLocaleDateString('es-CO')}`,20,78);doc.text('Responsable entrega: __________________________',20,105);doc.text('Responsable recibe: __________________________',20,120);doc.save(`acta-disposicion-${x.llanta}.pdf`)}
+}
