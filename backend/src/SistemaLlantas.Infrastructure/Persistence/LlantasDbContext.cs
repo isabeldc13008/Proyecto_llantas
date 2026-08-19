@@ -14,10 +14,14 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<TipoLlanta> TiposLlanta => Set<TipoLlanta>();
     public DbSet<EstadoLlanta> EstadosLlanta => Set<EstadoLlanta>();
     public DbSet<Centro> Centros => Set<Centro>();
+    public DbSet<Regional> Regionales => Set<Regional>();
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
     public DbSet<Vehiculo> Vehiculos => Set<Vehiculo>();
     public DbSet<EjeVehiculo> EjesVehiculo => Set<EjeVehiculo>();
     public DbSet<PosicionVehiculo> PosicionesVehiculo => Set<PosicionVehiculo>();
+    public DbSet<ConfiguracionVehiculo> ConfiguracionesVehiculo => Set<ConfiguracionVehiculo>();
+    public DbSet<ConfiguracionEje> ConfiguracionesEje => Set<ConfiguracionEje>();
+    public DbSet<ConfiguracionPosicion> ConfiguracionesPosicion => Set<ConfiguracionPosicion>();
     public DbSet<Inspeccion> Inspecciones => Set<Inspeccion>();
     public DbSet<InspeccionDetalle> InspeccionesDetalle => Set<InspeccionDetalle>();
     public DbSet<CondicionLlanta> CondicionesLlanta => Set<CondicionLlanta>();
@@ -27,11 +31,24 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<LlantaTemporal> LlantasTemporales => Set<LlantaTemporal>();
     public DbSet<MovimientoLlanta> MovimientosLlanta => Set<MovimientoLlanta>();
     public DbSet<EvidenciaInspeccion> EvidenciasInspeccion => Set<EvidenciaInspeccion>();
+    public DbSet<ParametroAlerta> ParametrosAlerta => Set<ParametroAlerta>();
+    public DbSet<AlertaInspeccion> AlertasInspeccion => Set<AlertaInspeccion>();
+    public DbSet<AlertaHistorial> AlertasHistorial => Set<AlertaHistorial>();
     public DbSet<ParametroReencauche> ParametrosReencauche => Set<ParametroReencauche>();
     public DbSet<AsignacionLlantaPosicion> AsignacionesLlantaPosicion => Set<AsignacionLlantaPosicion>();
     public DbSet<Movimiento> Movimientos => Set<Movimiento>();
     public DbSet<MovimientoDetalle> MovimientosDetalle => Set<MovimientoDetalle>();
     public DbSet<ActividadProgramada> ActividadesProgramadas => Set<ActividadProgramada>();
+    public DbSet<UsuarioSistema> UsuariosSistema => Set<UsuarioSistema>();
+    public DbSet<RolSistema> RolesSistema => Set<RolSistema>();
+    public DbSet<PermisoSistema> PermisosSistema => Set<PermisoSistema>();
+    public DbSet<RolPermiso> RolesPermisos => Set<RolPermiso>();
+    public DbSet<UsuarioCentro> UsuariosCentros => Set<UsuarioCentro>();
+    public DbSet<SolicitudOperacion> SolicitudesOperacion => Set<SolicitudOperacion>();
+    public DbSet<ProveedorServicio> ProveedoresServicio => Set<ProveedorServicio>();
+    public DbSet<OrdenServicioLlanta> OrdenesServicioLlanta => Set<OrdenServicioLlanta>();
+    public DbSet<EvidenciaFlujo> EvidenciasFlujo => Set<EvidenciaFlujo>();
+    public DbSet<CargaMasiva> CargasMasivas => Set<CargaMasiva>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

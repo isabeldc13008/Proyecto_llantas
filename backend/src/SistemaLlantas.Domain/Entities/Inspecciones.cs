@@ -12,7 +12,40 @@ public sealed class Vehiculo : EntidadAuditable
     public string Tipo { get; set; } = string.Empty;
     public Guid CentroId { get; set; }
     public Centro Centro { get; set; } = null!;
+    public Guid? ConfiguracionVehiculoId { get; set; }
+    public ConfiguracionVehiculo? ConfiguracionVehiculo { get; set; }
+    public decimal? Kilometraje { get; set; }
+    public string Estado { get; set; } = "Activo";
     public ICollection<EjeVehiculo> Ejes { get; set; } = [];
+}
+
+public sealed class ConfiguracionVehiculo : EntidadAuditable
+{
+    public string Codigo { get; set; } = string.Empty;
+    public string Nombre { get; set; } = string.Empty;
+    public string TipoVehiculo { get; set; } = string.Empty;
+    public ICollection<ConfiguracionEje> Ejes { get; set; } = [];
+    public ICollection<Vehiculo> Vehiculos { get; set; } = [];
+}
+
+public sealed class ConfiguracionEje : EntidadAuditable
+{
+    public Guid ConfiguracionVehiculoId { get; set; }
+    public ConfiguracionVehiculo ConfiguracionVehiculo { get; set; } = null!;
+    public int Orden { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string TipoEje { get; set; } = string.Empty;
+    public ICollection<ConfiguracionPosicion> Posiciones { get; set; } = [];
+}
+
+public sealed class ConfiguracionPosicion : EntidadAuditable
+{
+    public Guid ConfiguracionEjeId { get; set; }
+    public ConfiguracionEje ConfiguracionEje { get; set; } = null!;
+    public string Codigo { get; set; } = string.Empty;
+    public string Lado { get; set; } = string.Empty;
+    public string Ubicacion { get; set; } = string.Empty;
+    public int Orden { get; set; }
 }
 
 public sealed class EjeVehiculo : EntidadAuditable
@@ -21,6 +54,8 @@ public sealed class EjeVehiculo : EntidadAuditable
     public Vehiculo Vehiculo { get; set; } = null!;
     public int Numero { get; set; }
     public string Nombre { get; set; } = string.Empty;
+    public string TipoEje { get; set; } = string.Empty;
+    public int Orden { get; set; }
     public ICollection<PosicionVehiculo> Posiciones { get; set; } = [];
 }
 
@@ -30,6 +65,7 @@ public sealed class PosicionVehiculo : EntidadAuditable
     public EjeVehiculo EjeVehiculo { get; set; } = null!;
     public string Codigo { get; set; } = string.Empty;
     public string Lado { get; set; } = string.Empty;
+    public string Ubicacion { get; set; } = string.Empty;
     public int Orden { get; set; }
     public Guid? LlantaActualId { get; set; }
     public Llanta? LlantaActual { get; set; }
@@ -122,7 +158,18 @@ public sealed class EvidenciaInspeccion : EntidadAuditable
     public string NombreArchivo { get; set; } = string.Empty;
     public string Ubicacion { get; set; } = string.Empty;
     public string Hash { get; set; } = string.Empty;
+    public string MimeType { get; set; } = string.Empty;
+    public long TamanoBytes { get; set; }
+    public DateTimeOffset? RetenerHasta { get; set; }
 }
+
+public enum EstadoAlerta { ABIERTA, EN_PROCESO, GESTIONADA, DESCARTADA }
+public sealed class ParametroAlerta : EntidadAuditable { public string Codigo {get;set;}=string.Empty; public decimal Valor {get;set;} public string Unidad {get;set;}=string.Empty; }
+public sealed class AlertaInspeccion : EntidadAuditable
+{
+ public string Tipo {get;set;}=string.Empty;public string Descripcion {get;set;}=string.Empty;public EstadoAlerta Estado {get;set;}=EstadoAlerta.ABIERTA;public Guid InspeccionId {get;set;}public Inspeccion Inspeccion {get;set;}=null!;public Guid InspeccionDetalleId {get;set;}public InspeccionDetalle InspeccionDetalle {get;set;}=null!;public Guid VehiculoId {get;set;}public Guid CentroId {get;set;}public Guid PosicionVehiculoId {get;set;}public Guid? LlantaId {get;set;}public ICollection<AlertaHistorial> Historial {get;set;}=[];
+}
+public sealed class AlertaHistorial:EntidadAuditable {public Guid AlertaInspeccionId {get;set;}public AlertaInspeccion Alerta {get;set;}=null!;public EstadoAlerta EstadoAnterior {get;set;}public EstadoAlerta EstadoNuevo {get;set;}public string? Observacion {get;set;}}
 
 public sealed class ParametroReencauche : EntidadAuditable
 {

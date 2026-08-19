@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace SistemaLlantas.Application.Inspecciones;
+using SistemaLlantas.Application.Common;
 
 public sealed record LlantaPosicionDto(Guid Id, string Codigo, string Estado);
 public sealed record PosicionInspeccionDto(Guid Id, string Codigo, string Lado, int Orden, LlantaPosicionDto? Llanta);
@@ -39,16 +40,22 @@ public sealed class ReportarInconsistenciaDto
 
 public sealed record InconsistenciaDto(Guid Id, Guid InspeccionId, string Centro, string Vehiculo, string Posicion, string? LlantaEsperada, string LlantaEncontrada, string Tecnico, DateTimeOffset Fecha, string Estado, string? Autorizador, string? ObservacionAutorizacion);
 public sealed class ResolverInconsistenciaDto { [Required, StringLength(1000)] public string Observacion { get; init; } = string.Empty; public Guid? LlantaInventarioId { get; init; } }
+public sealed record AlertaDto(Guid Id,string Tipo,string Descripcion,string Estado,DateTimeOffset Fecha,Guid InspeccionId,string Vehiculo,string Centro,string Posicion,string? Llanta,IReadOnlyList<AlertaEventoDto> Historial);
+public sealed record AlertaEventoDto(DateTimeOffset Fecha,string EstadoAnterior,string EstadoNuevo,string Usuario,string? Observacion);
+public sealed record CambiarAlertaDto(string Estado,string? Observacion);
+public sealed record EvidenciaDto(Guid Id,string NombreArchivo,string MimeType,long TamanoBytes,string Hash,DateTimeOffset Fecha,bool Activo);
 
 public interface IInspeccionService
 {
-    Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(Guid? centroUsuario, CancellationToken ct);
+    Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados, string? buscar, AlcanceCentros alcance, CancellationToken ct);
     Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct);
-    Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, Guid? centroUsuario, CancellationToken ct);
-    Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, Guid? centroUsuario, CancellationToken ct);
-    Task<InspeccionDto?> ObtenerAsync(Guid id, Guid? centroUsuario, CancellationToken ct);
+    Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, AlcanceCentros alcance, CancellationToken ct);
+    Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct);
+    Task<InspeccionDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken ct);
     Task<InspeccionDto?> GuardarDetalleAsync(Guid id, Guid posicionId, GuardarDetalleInspeccionDto dto, string usuario, CancellationToken ct);
     Task<InconsistenciaDto> ReportarAsync(Guid inspeccionId, ReportarInconsistenciaDto dto, string usuario, CancellationToken ct);
-    Task<IReadOnlyList<InconsistenciaDto>> PendientesAsync(Guid? centroUsuario, CancellationToken ct);
+    Task<IReadOnlyList<InconsistenciaDto>> PendientesAsync(AlcanceCentros alcance, CancellationToken ct);
     Task<InconsistenciaDto> ResolverAsync(Guid id, ResolverInconsistenciaDto dto, bool autorizar, string usuario, bool puedeAutorizarPropia, CancellationToken ct);
+    Task<IReadOnlyList<AlertaDto>> AlertasAsync(AlcanceCentros alcance,CancellationToken ct);
+    Task<AlertaDto> CambiarAlertaAsync(Guid id,CambiarAlertaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
 }

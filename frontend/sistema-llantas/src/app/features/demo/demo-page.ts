@@ -1,11 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { CatalogItem, Page, Tire } from '../../core/models/api.models';
+import { CatalogsApi } from '../../core/services/catalogs-api';
+import { DiagramAxle, VehicleAxleDiagram } from '../../shared/vehicle-axle-diagram';
 
 type Row={primary:string;secondary:string;third:string;status:string;meta:string};
 const rows:Record<string,Row[]>={
- vehiculos:[r('TJK-482','Tractocamión · Kenworth T680','Bogotá','Operativo','10 posiciones · 8 ocupadas'),r('WNP-193','Camión · Chevrolet FVR','Medellín','En taller','6 posiciones · 6 ocupadas'),r('LST-809','Bus · Mercedes-Benz O500','Cali','Operativo','8 posiciones · 8 ocupadas')],
- inventario:[r('Bogotá','1.248 llantas','Disponible','Saludable','72% disponibilidad'),r('Medellín','846 llantas','Disponible','Atención','18 en reparación'),r('Cali','621 llantas','Disponible','Saludable','9 en reencauche')],
+ vehiculos:[],
+ inventario:[],
  inspecciones:[r('INS-00842','TJK-482 · LL-000184','Hoy, 08:30','Completada','Exterior 12.4 · Centro 13.0 · Interior 12.1'),r('INS-00841','WNP-193 · LL-000327','Hoy, 07:15','Con alerta','Diferencia de desgaste: 3.2 mm'),r('INS-00840','LST-809 · LL-000401','Ayer, 16:40','Completada','Sin novedades')],
  alertas:[r('Desgaste crítico','LL-000327 · WNP-193','Profundidad: 2.1 mm','Crítica','Asignada a Carlos M.'),r('Inspección vencida','LL-000588 · TJK-482','Vencida hace 4 días','Alta','Sin responsable'),r('Rotación recomendada','LL-000184 · TJK-482','Diferencia: 2.8 mm','Media','Vence mañana')],
  programacion:[r('Inspección mensual','TJK-482','12 ago · 08:00','Programada','Técnico: Laura Ruiz'),r('Rotación preventiva','WNP-193','12 ago · 10:30','Pendiente','Prioridad alta'),r('Cambio de llanta','LST-809','13 ago · 07:00','Programada','Posición 5')],
@@ -23,8 +28,8 @@ const rows:Record<string,Row[]>={
 function r(primary:string,secondary:string,third:string,status:string,meta:string):Row{return{primary,secondary,third,status,meta};}
 type Field={key:string;label:string;type?:'text'|'number'|'date'|'textarea'|'select';options?:string[]};
 const fields:Record<string,Field[]>={
- vehiculos:[f('placa','Placa'),f('tipo','Tipo','select',['Tractocamión','Camión','Bus','Remolque']),f('marca','Marca'),f('modelo','Modelo'),f('centro','Centro','select',['Bogotá','Medellín','Cali']),f('posiciones','Número de posiciones','number')],
- inventario:[f('origen','Centro de origen','select',['Bogotá','Medellín','Cali']),f('destino','Centro de destino','select',['Bogotá','Medellín','Cali']),f('llanta','Código de llanta'),f('fecha','Fecha de traslado','date'),f('motivo','Motivo','textarea')],
+ vehiculos:[f('placa','Placa'),f('tipo','Tipo','select',['Tractocamión','Camión','Bus','Remolque']),f('marca','Marca'),f('modelo','Modelo'),f('centro','Centro','select'),f('posiciones','Número de posiciones','number')],
+ inventario:[f('origen','Centro de origen','select'),f('destino','Centro de destino','select'),f('llanta','Código de llanta'),f('fecha','Fecha de traslado','date'),f('motivo','Motivo','textarea')],
  alertas:[f('tipo','Tipo de regla','select',['Desgaste crítico','Inspección vencida','Rotación','Presión fuera de rango']),f('limite','Valor límite','number'),f('prioridad','Prioridad','select',['Crítica','Alta','Media','Baja']),f('responsable','Responsable')],
  programacion:[f('actividad','Actividad','select',['Inspección','Rotación','Cambio','Mantenimiento']),f('vehiculo','Vehículo'),f('fecha','Fecha programada','date'),f('tecnico','Técnico'),f('prioridad','Prioridad','select',['Alta','Media','Baja'])],
  movimientos:[f('tipo','Tipo','select',['Traslado','Rotación','Ajuste autorizado','Salida de inventario']),f('llanta','Llanta'),f('origen','Origen'),f('destino','Destino'),f('motivo','Motivo','textarea')],
@@ -32,18 +37,28 @@ const fields:Record<string,Field[]>={
  reencauches:[f('llanta','Llanta'),f('numero','Número de reencauche','number'),f('banda','Banda'),f('proveedor','Proveedor'),f('fecha','Fecha de envío','date')],
  disposicion:[f('llanta','Llanta'),f('motivo','Motivo','select',['Fin de vida útil','Daño estructural','Accidente','No reparable']),f('responsable','Responsable'),f('fecha','Fecha','date'),f('observaciones','Observaciones','textarea')],
  historial:[f('llanta','Código o serial de llanta'),f('desde','Desde','date'),f('hasta','Hasta','date')],
- carga:[f('archivo','Nombre del archivo Excel'),f('tipo','Tipo de carga','select',['Inventario inicial','Actualización','Llantas nuevas']),f('centro','Centro','select',['Todos','Bogotá','Medellín','Cali'])],
+ carga:[f('archivo','Nombre del archivo Excel'),f('tipo','Tipo de carga','select',['Inventario inicial','Actualización','Llantas nuevas']),f('centro','Centro','select')],
  administracion:[f('tipo','Tipo de registro','select',['Usuario','Rol','Centro','Taller','Marca','Referencia','Dimensión']),f('codigo','Código'),f('nombre','Nombre'),f('descripcion','Descripción','textarea')],
  auditoria:[f('usuario','Usuario'),f('entidad','Entidad'),f('desde','Desde','date'),f('hasta','Hasta','date')]
 };
 function f(key:string,label:string,type:Field['type']='text',options?:string[]):Field{return{key,label,type,options};}
 
-@Component({selector:'app-demo-page',imports:[FormsModule],templateUrl:'./demo-page.html',styleUrls:['./demo-page.scss','./generic-form.scss']})
-export class DemoPage{
+@Component({selector:'app-demo-page',imports:[FormsModule,VehicleAxleDiagram],templateUrl:'./demo-page.html',styleUrls:['./demo-page.scss','./generic-form.scss']})
+export class DemoPage implements OnInit{
  private readonly route=inject(ActivatedRoute);
- readonly data=this.route.snapshot.data as {title:string;eyebrow:string;description:string;action:string;kind:string}; readonly items=rows[this.data.kind]??[]; readonly formFields=fields[this.data.kind]??[f('detalle','Detalle'),f('observaciones','Observaciones','textarea')]; toast=''; showForm=false;formData:Record<string,string|number>={};custom=signal<Row[]>(this.read());
- allItems(){return[...this.custom(),...this.items]}
+ private readonly http=inject(HttpClient); private readonly catalogsApi=inject(CatalogsApi);
+ readonly data=this.route.snapshot.data as {title:string;eyebrow:string;description:string;action:string;kind:string}; readonly items=signal<Row[]>(rows[this.data.kind]??[]); readonly formFields=fields[this.data.kind]??[f('detalle','Detalle'),f('observaciones','Observaciones','textarea')]; centers=signal<CatalogItem[]>([]);selectedCenter='';toast=''; showForm=false;formData:Record<string,string|number>={};custom=signal<Row[]>(this.read());
+ async ngOnInit(){
+  try{const centers=await firstValueFrom(this.catalogsApi.all('centros',true));this.centers.set(centers);const labels=centers.map(x=>this.centerLabel(x));for(const field of this.formFields.filter(x=>['centro','origen','destino'].includes(x.key)))field.options=labels;
+   if(this.data.kind==='vehiculos'){const vehicles=await firstValueFrom(this.http.get<Array<{numeroInterno:string;placa:string;tipo:string;centroCodigo:string;centroNombre:string}>>('/api/inspecciones/vehiculos'));this.items.set(vehicles.map(v=>r(v.numeroInterno,`${v.tipo} · ${v.placa}`,`${v.centroCodigo} · ${v.centroNombre}`,'Registrado','Vehículo de SQL Server')))}
+   if(this.data.kind==='inventario')this.items.set((await this.loadAllTires()).map(t=>r(t.codigo,`${t.marca} · ${t.referencia}`,t.centro,t.estado,`${t.dimension} · ${t.ubicacionActual}`)));
+  }catch{this.toast='No fue posible cargar los centros desde SQL Server.'}
+ }
+ allItems(){const all=[...this.custom(),...this.items()];return this.selectedCenter?all.filter(x=>[x.primary,x.secondary,x.third,x.meta].some(v=>v.includes(this.selectedCenter))):all}
+ centerLabel(center:CatalogItem){return `${center.codigo} · ${center.nombre}${center.padreNombre?` · ${center.padreNombre}`:''}`}
+ previewAxles():DiagramAxle[]{const count=Math.max(0,Math.min(20,Number(this.formData['posiciones'])||0));const result:DiagramAxle[]=[];for(let start=0,axle=1;start<count;start+=2,axle++)result.push({id:`preview-${axle}`,name:`Eje ${axle}`,type:axle===1?'Direccional':'Configuración preliminar',positions:Array.from({length:Math.min(2,count-start)},(_,offset)=>({id:`preview-${start+offset+1}`,code:`P${start+offset+1}`,side:offset===0?'Izquierda':'Derecha',state:'empty'}))});return result}
  act(message?:string){if(message){this.toast=message;setTimeout(()=>this.toast='',2800);return}if(this.data.kind==='analitica'){this.toast='Reporte de demostración generado correctamente.';setTimeout(()=>this.toast='',2800);return}this.formData={};this.showForm=true;}
- save(){const values=Object.values(this.formData).filter(Boolean).map(String);const row:Row={primary:values[0]||`REG-${Date.now().toString().slice(-5)}`,secondary:values[1]||this.data.action,third:values[2]||'GLLD',status:'Registrado',meta:`Creado ahora · Modo demostración`};const all=[row,...this.custom()];this.custom.set(all);localStorage.setItem(`glld_${this.data.kind}`,JSON.stringify(all));this.showForm=false;this.toast='Registro guardado en la demostración.';setTimeout(()=>this.toast='',2800);}
- private read():Row[]{try{return JSON.parse(localStorage.getItem(`glld_${this.data.kind}`)??'[]')}catch{return[]}}
+ save(){if(['vehiculos','inventario'].includes(this.data.kind)){this.showForm=false;this.toast='Este registro requiere un endpoint operativo específico; no se guardó localmente.';setTimeout(()=>this.toast='',3500);return}const values=Object.values(this.formData).filter(Boolean).map(String);const row:Row={primary:values[0]||`REG-${Date.now().toString().slice(-5)}`,secondary:values[1]||this.data.action,third:values[2]||'GLLD',status:'Registrado',meta:`Creado ahora · Modo demostración`};const all=[row,...this.custom()];this.custom.set(all);localStorage.setItem(`glld_${this.data.kind}`,JSON.stringify(all));this.showForm=false;this.toast='Registro guardado en la demostración.';setTimeout(()=>this.toast='',2800);}
+ private read():Row[]{if(['vehiculos','inventario'].includes(this.data.kind))return[];try{return JSON.parse(localStorage.getItem(`glld_${this.data.kind}`)??'[]')}catch{return[]}}
+ private async loadAllTires(){const params=new HttpParams().set('pageNumber',1).set('pageSize',100);const first=await firstValueFrom(this.http.get<Page<Tire>>('/api/llantas',{params}));const all=[...first.items];for(let page=2;page<=first.totalPages;page++){const next=await firstValueFrom(this.http.get<Page<Tire>>('/api/llantas',{params:params.set('pageNumber',page)}));all.push(...next.items)}return all}
 }

@@ -1,0 +1,5 @@
+import {provideHttpClient} from '@angular/common/http';
+import {HttpTestingController,provideHttpClientTesting} from '@angular/common/http/testing';
+import {TestBed} from '@angular/core/testing';
+import {TiresApi} from './tires-api';
+describe('TiresApi lifecycle',()=>{let api:TiresApi;let http:HttpTestingController;beforeEach(()=>{TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});api=TestBed.inject(TiresApi);http=TestBed.inject(HttpTestingController)});afterEach(()=>http.verify());it('consulta la línea de vida real',()=>{api.history('t1').subscribe();const r=http.expectOne('/api/llantas/t1/historial');expect(r.request.method).toBe('GET');r.flush({llanta:{},historial:[],requiereConciliacion:false})});it('traslada mediante comando y no mediante actualización ordinaria',()=>{api.transfer('t1','c2','Traslado autorizado','nota').subscribe();const r=http.expectOne('/api/llantas/t1/traslados');expect(r.request.method).toBe('POST');expect(r.request.body).toEqual({centroDestinoId:'c2',motivo:'Traslado autorizado',observaciones:'nota'});r.flush(null)})});

@@ -7,6 +7,6 @@ import { AuthService } from '../../core/auth/auth.service';
 export class Login{
  private fb=inject(FormBuilder);private auth=inject(AuthService);private router=inject(Router);error='';showPassword=false;
  form=this.fb.group({username:['administrador',Validators.required],password:['admin123',Validators.required]});
- submit(){const v=this.form.getRawValue();if(this.auth.login(v.username!,v.password!))this.router.navigateByUrl('/');else this.error='Usuario o contraseña incorrectos.';}
+ async submit(){const v=this.form.getRawValue();if(await this.auth.login(v.username!,v.password!))await this.router.navigateByUrl('/');else this.error=this.auth.loginError();}
  use(username:string,password:string){this.form.setValue({username,password});this.error='';}
 }

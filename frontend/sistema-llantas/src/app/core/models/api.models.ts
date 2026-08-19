@@ -1,4 +1,6 @@
 export interface Page<T> { items:T[]; pageNumber:number; pageSize:number; totalItems:number; totalPages:number; }
-export interface CatalogItem { id:string; codigo:string; nombre:string; activo:boolean; }
-export interface Tire { id:string; codigo:string; serial:string; marca:string; referencia:string; dimension:string; tipo:string; estado:string; centro:string; ubicacionActual:string; profundidadInicial:number; activo:boolean; rowVersion:string; }
+export interface CatalogItem { id:string; codigo:string; nombre:string; activo:boolean; padreId?:string|null; padreNombre?:string|null; }
+export interface Tire { id:string; codigo:string; serial:string; marca:string; referencia:string; dimension:string; tipo:string; estado:string; centro:string; ubicacionActual:string; profundidadInicial:number; kilometrajeAcumulado:number; numeroReencauches:number; vehiculoActual:string|null; posicionActual:string|null; ultimaInspeccion:string|null; activo:boolean; rowVersion:string; }
+export interface TireLifeEvent {fecha:string;tipo:string;descripcion:string;usuario:string;centro:string|null;vehiculo:string|null;posicion:string|null;kilometraje:number|null;recorrido:number|null}
+export interface TireDetail {llanta:Tire;historial:TireLifeEvent[];requiereConciliacion:boolean}
 export interface TireInput { codigo:string; serial:string; marcaId:string; referenciaId:string; dimensionId:string; tipoLlantaId:string; estadoLlantaId:string; centroId:string; ubicacionActual:string; fechaCompra:string|null; costo:number|null; profundidadInicial:number; fechaIngreso:string|null; observaciones:string|null; rowVersion?:string; }
