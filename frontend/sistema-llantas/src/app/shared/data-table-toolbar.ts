@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MultiSelectFilter } from './multi-select-filter';
 export interface TableFilter{key:string;label:string;type:'multi'|'range'|'select';options?:{value:string;label:string}[]}
 export interface TableColumn{key:string;label:string;required?:boolean}
-@Component({selector:'app-data-table-toolbar',imports:[FormsModule],templateUrl:'./data-table-toolbar.html',styleUrl:'./data-table-toolbar.scss'})
+@Component({selector:'app-data-table-toolbar',imports:[FormsModule,MultiSelectFilter],templateUrl:'./data-table-toolbar.html',styleUrl:'./data-table-toolbar.scss'})
 export class DataTableToolbar implements OnInit{
  @Input() search='';@Output() searchChange=new EventEmitter<string>();@Input() sortBy='codigo';@Output() sortByChange=new EventEmitter<string>();@Input() placeholder='Buscar…';@Input() sortOptions:{value:string;label:string}[]=[];
  @Input() filters:TableFilter[]=[];@Input() columns:TableColumn[]=[];@Input() persistenceKey='';@Input() values:Record<string,unknown>={};@Output() valuesChange=new EventEmitter<Record<string,unknown>>();@Input() visibleColumns:string[]=[];@Output() visibleColumnsChange=new EventEmitter<string[]>();
