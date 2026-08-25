@@ -13,6 +13,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         var q = Filtrar(c, alcance);
         var total = await q.CountAsync(ct);
         var items = await Ordenar(q,c).Skip((c.Pagina - 1) * c.Tamano).Take(c.Tamano).Select(Map()).ToListAsync(ct);
+        items=await ConKilometrajeActivo(items,ct);
         return new(items, c.Pagina, c.Tamano, total);
     }
     public async Task<LlantaMetricasDto> MetricasAsync(ConsultaPaginada c,AlcanceCentros alcance,CancellationToken ct)
@@ -26,10 +27,13 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
     }
 
     public async Task<IReadOnlyList<LlantaResumenDto>> ExportarAsync(ConsultaPaginada c, AlcanceCentros alcance, CancellationToken ct) =>
-        await Ordenar(Filtrar(c,alcance),c).Take(50_000).Select(Map()).ToListAsync(ct);
+        await ConKilometrajeActivo(await Ordenar(Filtrar(c,alcance),c).Take(50_000).Select(Map()).ToListAsync(ct),ct);
 
-    public Task<LlantaResumenDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken ct) =>
-        db.Llantas.AsNoTracking().Where(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId))).Select(Map()).SingleOrDefaultAsync(ct);
+    public async Task<LlantaResumenDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken ct)
+    {
+        var item=await db.Llantas.AsNoTracking().Where(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId))).Select(Map()).SingleOrDefaultAsync(ct);
+        return item is null?null:(await ConKilometrajeActivo([item],ct))[0];
+    }
 
     public async Task<LlantaResumenDto> CrearAsync(GuardarLlantaDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct)
     {
@@ -110,4 +114,14 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         db.OrdenesServicioLlanta.Count(o=>o.LlantaId==x.Id&&o.Activo&&o.Tipo==TipoServicioLlanta.Reparacion),db.AsignacionesLlantaPosicion.Count(a=>a.LlantaId==x.Id&&a.Activo),
         db.AlertasInspeccion.Where(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO)).OrderByDescending(a=>a.Tipo.Contains("PROFUNDIDAD")).Select(a=>a.Tipo).FirstOrDefault()??db.OrdenesServicioLlanta.Where(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL").Select(o=>o.Tipo==TipoServicioLlanta.Reparacion?"Pendiente reparación":o.Tipo==TipoServicioLlanta.Reencauche?"Pendiente reencauche":"Atención requerida").FirstOrDefault()??"Normal",
         x.Activo, Convert.ToBase64String(x.RowVersion));
+
+    private async Task<List<LlantaResumenDto>> ConKilometrajeActivo(IReadOnlyList<LlantaResumenDto> items,CancellationToken ct)
+    {
+        if(items.Count==0)return [];
+        var ids=items.Select(x=>x.Id).ToArray();
+        var active=await db.AsignacionesLlantaPosicion.AsNoTracking().Where(x=>ids.Contains(x.LlantaId)&&x.EsActiva&&x.KilometrajeMontaje.HasValue&&x.PosicionVehiculo.EjeVehiculo.Vehiculo.Kilometraje.HasValue)
+            .Select(x=>new{x.LlantaId,Inicio=x.KilometrajeMontaje!.Value,Fin=x.PosicionVehiculo.EjeVehiculo.Vehiculo.Kilometraje!.Value}).ToListAsync(ct);
+        var deltas=active.Where(x=>x.Fin>=x.Inicio).ToDictionary(x=>x.LlantaId,x=>x.Fin-x.Inicio);
+        return items.Select(x=>deltas.TryGetValue(x.Id,out var delta)?x with{KilometrajeAcumulado=x.KilometrajeAcumulado+delta}:x).ToList();
+    }
 }

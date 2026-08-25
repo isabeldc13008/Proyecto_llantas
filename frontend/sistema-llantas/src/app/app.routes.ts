@@ -8,7 +8,7 @@ const protectedRoutes:Routes=[
  {path:'mis-actividades',loadComponent:()=>import('./features/activities/activities-page').then(m=>m.ActivitiesPage)},
  {path:'llantas',loadChildren:()=>import('./features/llantas/llantas.routes').then(m=>m.LLANTAS_ROUTES)},
  {path:'vehiculos',loadComponent:()=>import('./features/vehicles/vehicles-page').then(m=>m.VehiclesPage)},
- {path:'inventario',data:demo('Inventario operativo','Existencias','Disponibilidad por centro, estado, marca, dimensión y ubicación.','Registrar traslado','inventario'),loadComponent:page},
+ {path:'inventario',loadComponent:()=>import('./features/inventory/inventory-page').then(m=>m.InventoryPage)},
  {path:'inspecciones',loadComponent:()=>import('./features/inspection/inspection-page').then(m=>m.InspectionPage)},
  {path:'alertas',loadComponent:()=>import('./features/alerts/alerts-page').then(m=>m.AlertsPage)},
  {path:'programacion',loadComponent:()=>import('./features/scheduling/scheduling-page').then(m=>m.SchedulingPage)},

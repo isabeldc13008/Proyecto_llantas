@@ -10,7 +10,7 @@ public sealed record LlantaResumenDto(
     bool Activo, string RowVersion);
 
 public sealed record EventoVidaLlantaDto(DateTimeOffset Fecha,string Tipo,string Descripcion,string Usuario,string? Centro,string? Vehiculo,string? Posicion,decimal? Kilometraje,decimal? Recorrido);
-public sealed record MontajeVidaDto(DateTimeOffset FechaInicio,DateTimeOffset? FechaFin,string Vehiculo,string Placa,string Posicion,decimal? KilometrajeMontaje,decimal? KilometrajeDesmontaje,decimal? Recorrido,bool Actual);
+public sealed record MontajeVidaDto(DateTimeOffset FechaInicio,DateTimeOffset? FechaFin,string Vehiculo,string Placa,string Centro,string Posicion,decimal? KilometrajeInicio,decimal? KilometrajeFin,decimal? Recorrido,bool Actual,bool InconsistenciaKilometraje);
 public sealed record InspeccionVidaDto(Guid Id,DateTimeOffset Fecha,string Vehiculo,string Placa,string Posicion,string Centro,decimal? Exterior,decimal? CentroProfundidad,decimal? Interior,decimal? Minima,string Estado);
 public sealed record ServicioVidaDto(Guid Id,string Tipo,string Estado,DateTimeOffset Fecha,string? Proveedor,string Motivo,DateTimeOffset? FechaEnvio,DateTimeOffset? FechaRetorno);
 public sealed record MovimientoVidaDto(Guid Id,DateTimeOffset Fecha,string Tipo,string Motivo,string Centro,string Usuario,string? PosicionOrigen,string? PosicionDestino);
