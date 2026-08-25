@@ -117,6 +117,8 @@ public sealed class InspectionAlertsTests : IClassFixture<WebApplicationFactory<
         Assert.All(allowed, x => Assert.Equal(vehicle.CentroId, x.CentroId));
         var denied = await service.ObtenerVehiculosAsync("qa", false, vehicle.Placa, new(false, [Guid.NewGuid()]), CancellationToken.None);
         Assert.Empty(denied);
+        var contextual = await service.ObtenerVehiculosAsync("tecnico", true, vehicle.Placa, new(false, [Guid.NewGuid()]), CancellationToken.None, true);
+        Assert.Contains(contextual, x => x.Id == vehicle.Id);
     }
 
     private sealed class TestEnvironment(string contentRoot) : IWebHostEnvironment

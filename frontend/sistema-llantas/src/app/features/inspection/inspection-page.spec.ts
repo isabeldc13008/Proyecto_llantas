@@ -26,6 +26,8 @@ describe('InspectionPage vehicle search', () => {
       { id: '2', numeroInterno: 'CAM-202', placa: 'XYZ987', tipo: 'Camión', centroCodigo: 'MED', centroNombre: 'Medellín' },
     ]);
     http.expectOne('/api/inspecciones/opciones').flush({ condiciones: [], causas: [], recomendaciones: [] });
+    http.expectOne('/api/inspecciones/resumen').flush({ pendientesHoy: 0, realizadasHoy: 0, conNovedad: 0, conAlerta: 0 });
+    http.expectOne('/api/inspecciones/historial').flush([]);
     await fixture.whenStable();
     http.expectOne('/api/inspecciones/contexto/1').flush({ vehiculoId: '1', numeroInterno: 'BUS-101', placa: 'ABC123', tipo: 'Bus', centroNombre: 'Bogotá Norte', ejes: [] });
     await fixture.whenStable();
@@ -44,6 +46,8 @@ describe('InspectionPage vehicle search', () => {
       { id: '1', numeroInterno: 'BUS-101', placa: 'ABC123', tipo: 'Bus', centroCodigo: 'BOG', centroNombre: 'Bogotá' },
     ]);
     http.expectOne('/api/inspecciones/opciones').flush({ condiciones: [], causas: [], recomendaciones: [] });
+    http.expectOne('/api/inspecciones/resumen').flush({ pendientesHoy: 0, realizadasHoy: 0, conNovedad: 0, conAlerta: 0 });
+    http.expectOne('/api/inspecciones/historial').flush([]);
     await fixture.whenStable();
     http.expectOne('/api/inspecciones/contexto/1').flush({ vehiculoId: '1', numeroInterno: 'BUS-101', placa: 'ABC123', tipo: 'Bus', centroNombre: 'Bogotá', ejes: [] });
     await fixture.whenStable();

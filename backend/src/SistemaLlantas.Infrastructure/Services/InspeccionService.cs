@@ -8,13 +8,13 @@ namespace SistemaLlantas.Infrastructure.Services;
 
 public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 {
-    public async Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados,string? buscar, AlcanceCentros alcance, CancellationToken ct)
+    public async Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados,string? buscar, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculosGlobales = false)
     {
-        var q = db.Vehiculos.AsNoTracking().Where(x => alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId));
-        if (soloAsignados)
+        var q = db.Vehiculos.AsNoTracking().Where(x => x.Activo && (permitirVehiculosGlobales || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)));
+        if (soloAsignados && !permitirVehiculosGlobales)
             q = q.Where(x => db.ActividadesProgramadas.Any(a => (a.TecnicoId == usuario || a.TecnicoId == usuario + ".local") && a.VehiculoId == x.Id && a.Estado != EstadoActividad.Cancelada && a.Estado != EstadoActividad.Cumplida));
         if(!string.IsNullOrWhiteSpace(buscar)){var s=buscar.Trim();q=q.Where(x=>x.NumeroInterno.Contains(s)||x.Placa.Contains(s)||x.Tipo.Contains(s)||x.Centro.Nombre.Contains(s));}
-        return await q.OrderBy(x => x.NumeroInterno).Select(x => new VehiculoInspeccionDto(x.Id, x.NumeroInterno, x.Placa, x.Tipo, x.CentroId, x.Centro.Codigo, x.Centro.Nombre)).ToListAsync(ct);
+        return await q.OrderBy(x => x.NumeroInterno).Select(x => new VehiculoInspeccionDto(x.Id, x.NumeroInterno, x.Placa, x.Tipo, x.CentroId, x.Centro.Codigo, x.Centro.Nombre,x.Centro.Regional!=null?x.Centro.Regional.Nombre:null)).ToListAsync(ct);
     }
 
     public async Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct) => new(
@@ -22,20 +22,20 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
         await db.CausasLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct),
         await db.RecomendacionesInspeccion.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct));
 
-    public async Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, AlcanceCentros alcance, CancellationToken ct)
+    public async Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculoGlobal = false)
     {
-        var v = await db.Vehiculos.AsNoTracking().Include(x => x.Centro)
-            .Include(x => x.Ejes).ThenInclude(x => x.Posiciones).ThenInclude(x => x.LlantaActual).ThenInclude(x => x!.EstadoLlanta)
-            .SingleOrDefaultAsync(x => x.Id == vehiculoId && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct);
-        if(v is null)return null;var positionIds=v.Ejes.SelectMany(x=>x.Posiciones).Select(x=>x.Id).ToArray();var active=await db.AsignacionesLlantaPosicion.AsNoTracking().Where(x=>positionIds.Contains(x.PosicionVehiculoId)&&x.EsActiva).Include(x=>x.Llanta).ThenInclude(x=>x.EstadoLlanta).ToDictionaryAsync(x=>x.PosicionVehiculoId,ct);return new(v.Id, v.NumeroInterno, v.Placa, v.Tipo, v.CentroId, v.Centro.Nombre, v.Centro.Relevancia,
+        var v = await db.Vehiculos.AsNoTracking().Include(x => x.Centro).ThenInclude(x=>x.Regional)
+            .Include(x => x.Ejes).ThenInclude(x => x.Posiciones)
+            .SingleOrDefaultAsync(x => x.Id == vehiculoId && (permitirVehiculoGlobal || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct);
+        if(v is null)return null;var positionIds=v.Ejes.SelectMany(x=>x.Posiciones).Select(x=>x.Id).ToArray();var active=await db.AsignacionesLlantaPosicion.AsNoTracking().Where(x=>positionIds.Contains(x.PosicionVehiculoId)&&x.EsActiva).Include(x=>x.Llanta).ThenInclude(x=>x.EstadoLlanta).Include(x=>x.Llanta).ThenInclude(x=>x.Marca).Include(x=>x.Llanta).ThenInclude(x=>x.Referencia).Include(x=>x.Llanta).ThenInclude(x=>x.Dimension).ToDictionaryAsync(x=>x.PosicionVehiculoId,ct);var last=await db.Inspecciones.AsNoTracking().Where(x=>x.VehiculoId==v.Id&&x.Estado==EstadoInspeccion.Finalizada).MaxAsync(x=>(DateTimeOffset?)x.FechaCreacion,ct);return new(v.Id, v.NumeroInterno, v.Placa, v.Tipo, v.CentroId, v.Centro.Nombre, v.Centro.Relevancia,v.Centro.Regional!=null?v.Centro.Regional.Nombre:null,v.Kilometraje,last,
             v.Ejes.OrderBy(e => e.Numero).Select(e => new EjeInspeccionDto(e.Id, e.Numero, e.Nombre,
-                e.Posiciones.OrderBy(p => p.Orden).Select(p => new PosicionInspeccionDto(p.Id, p.Codigo, p.Lado, p.Orden,active.TryGetValue(p.Id,out var a)?new(a.Llanta.Id,a.Llanta.Codigo,a.Llanta.EstadoLlanta.Nombre):null)).ToList())).ToList());
+                e.Posiciones.OrderBy(p => p.Orden).Select(p => new PosicionInspeccionDto(p.Id, p.Codigo, p.Lado, p.Orden,active.TryGetValue(p.Id,out var a)?new(a.Llanta.Id,a.Llanta.Codigo,a.Llanta.EstadoLlanta.Nombre,a.Llanta.Marca.Nombre,a.Llanta.Referencia.Nombre,a.Llanta.Dimension.Nombre):null)).ToList())).ToList());
     }
 
-    public async Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct)
+    public async Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculoGlobal = false)
     {
         var vehiculo = await db.Vehiculos.Include(x => x.Ejes).ThenInclude(x => x.Posiciones)
-            .SingleOrDefaultAsync(x => x.Id == dto.VehiculoId && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct)
+            .SingleOrDefaultAsync(x => x.Id == dto.VehiculoId && x.Activo && (permitirVehiculoGlobal || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct)
             ?? throw new KeyNotFoundException("Vehículo no encontrado o fuera del centro autorizado.");
         var inspeccion = new Inspeccion { VehiculoId = vehiculo.Id, CentroId = vehiculo.CentroId, Kilometraje = dto.Kilometraje,
             TecnicoId = usuario, Observaciones = dto.Observaciones, UsuarioCreacion = usuario };
@@ -52,7 +52,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 
     public async Task<InspeccionDto?> GuardarDetalleAsync(Guid id, Guid posicionId, GuardarDetalleInspeccionDto dto, string usuario, CancellationToken ct)
     {
-        var detalle = await db.InspeccionesDetalle.Include(x => x.Inspeccion).SingleOrDefaultAsync(x => x.InspeccionId == id && x.PosicionVehiculoId == posicionId, ct);
+        var detalle = await db.InspeccionesDetalle.Include(x => x.Inspeccion).SingleOrDefaultAsync(x => x.InspeccionId == id && x.PosicionVehiculoId == posicionId && x.Inspeccion.TecnicoId == usuario, ct);
         if (detalle is null) return null;
         if (detalle.Inspeccion.Estado != EstadoInspeccion.Borrador) throw new InvalidOperationException("Solo se puede modificar una inspección en borrador.");
         detalle.ProfundidadExterior = dto.ProfundidadExterior; detalle.ProfundidadCentro = dto.ProfundidadCentro; detalle.ProfundidadInterior = dto.ProfundidadInterior;
@@ -64,7 +64,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 
     public async Task<InconsistenciaDto> ReportarAsync(Guid inspeccionId, ReportarInconsistenciaDto dto, string usuario, CancellationToken ct)
     {
-        var inspeccion = await db.Inspecciones.Include(x => x.Vehiculo).ThenInclude(x => x.Centro).SingleOrDefaultAsync(x => x.Id == inspeccionId, ct)
+        var inspeccion = await db.Inspecciones.Include(x => x.Vehiculo).ThenInclude(x => x.Centro).SingleOrDefaultAsync(x => x.Id == inspeccionId && x.TecnicoId == usuario, ct)
             ?? throw new KeyNotFoundException("Inspección no encontrada.");
         var posicion = await db.PosicionesVehiculo.Include(x => x.LlantaActual).SingleOrDefaultAsync(x => x.Id == dto.PosicionId, ct)
             ?? throw new KeyNotFoundException("Posición no encontrada.");
@@ -119,4 +119,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
     public async Task<IReadOnlyList<AlertaDto>> AlertasAsync(AlcanceCentros alcance,CancellationToken ct){var ids=await db.AlertasInspeccion.AsNoTracking().Where(x=>alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)).OrderByDescending(x=>x.FechaCreacion).Select(x=>x.Id).ToListAsync(ct);var result=new List<AlertaDto>();foreach(var id in ids)result.Add(await MapAlerta(id,ct));return result;}
     public async Task<AlertaDto> CambiarAlertaAsync(Guid id,CambiarAlertaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct){if(!Enum.TryParse<EstadoAlerta>(dto.Estado,true,out var state))throw new ValidacionException("Estado de alerta no válido.");var item=await db.AlertasInspeccion.SingleOrDefaultAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Alerta no encontrada.");var previous=item.Estado;item.Estado=state;item.UsuarioModificacion=usuario;item.FechaModificacion=DateTimeOffset.UtcNow;db.AlertasHistorial.Add(new(){AlertaInspeccionId=id,EstadoAnterior=previous,EstadoNuevo=state,Observacion=dto.Observacion,UsuarioCreacion=usuario});await db.SaveChangesAsync(ct);return await MapAlerta(id,ct);}
     private Task<AlertaDto> MapAlerta(Guid id,CancellationToken ct)=>db.AlertasInspeccion.AsNoTracking().Where(x=>x.Id==id).Select(x=>new AlertaDto(x.Id,x.Tipo,x.Descripcion,x.Estado.ToString(),x.FechaCreacion,x.InspeccionId,x.Inspeccion.Vehiculo.NumeroInterno+" · "+x.Inspeccion.Vehiculo.Placa,x.Inspeccion.Centro.Nombre,x.InspeccionDetalle.PosicionVehiculo.Codigo,x.InspeccionDetalle.Llanta!=null?x.InspeccionDetalle.Llanta.Codigo:null,x.Historial.OrderBy(h=>h.FechaCreacion).Select(h=>new AlertaEventoDto(h.FechaCreacion,h.EstadoAnterior.ToString(),h.EstadoNuevo.ToString(),h.UsuarioCreacion,h.Observacion)).ToList())).SingleAsync(ct);
+    public async Task<ResumenInspeccionesDto> ResumenAsync(string usuario,bool soloPropias,AlcanceCentros alcance,CancellationToken ct){var today=DateTimeOffset.UtcNow.Date;var tomorrow=today.AddDays(1);var q=db.Inspecciones.AsNoTracking().Where(x=>soloPropias?x.TecnicoId==usuario:(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)));return new(await q.CountAsync(x=>x.Estado==EstadoInspeccion.Borrador&&x.FechaCreacion>=today&&x.FechaCreacion<tomorrow,ct),await q.CountAsync(x=>x.Estado==EstadoInspeccion.Finalizada&&x.FechaModificacion>=today&&x.FechaModificacion<tomorrow,ct),await q.CountAsync(x=>x.FechaCreacion>=today&&x.FechaCreacion<tomorrow&&x.Detalles.Any(d=>d.CausaLlantaId!=null||d.Observaciones!=null),ct),await db.AlertasInspeccion.AsNoTracking().CountAsync(x=>x.FechaCreacion>=today&&x.FechaCreacion<tomorrow&&(soloPropias?x.Inspeccion.TecnicoId==usuario:(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId))),ct));}
+    public async Task<IReadOnlyList<HistorialInspeccionDto>> HistorialAsync(string usuario,bool soloPropias,AlcanceCentros alcance,CancellationToken ct){var q=db.Inspecciones.AsNoTracking().Where(x=>soloPropias?x.TecnicoId==usuario:(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)));return await q.OrderByDescending(x=>x.FechaCreacion).Take(200).Select(x=>new HistorialInspeccionDto(x.Id,x.FechaCreacion,x.Vehiculo.Placa,x.Vehiculo.NumeroInterno,x.Centro.Nombre,x.TecnicoId,x.Kilometraje,x.Detalles.Count(d=>d.LlantaId!=null&&d.CondicionLlantaId!=null),x.Detalles.Count(d=>d.CausaLlantaId!=null||d.Observaciones!=null),db.AlertasInspeccion.Count(a=>a.InspeccionId==x.Id),x.Estado.ToString())).ToListAsync(ct);}
+    public async Task<InspeccionDto> FinalizarAsync(Guid id,string usuario,CancellationToken ct){var item=await db.Inspecciones.Include(x=>x.Detalles).SingleOrDefaultAsync(x=>x.Id==id&&x.TecnicoId==usuario,ct)??throw new KeyNotFoundException("Inspección no encontrada.");if(item.Detalles.Any(x=>x.LlantaId!=null&&(!x.CondicionLlantaId.HasValue||!x.RecomendacionId.HasValue)))throw new ValidacionException("Hay posiciones con llanta pendientes por inspeccionar.");item.Estado=EstadoInspeccion.Finalizada;item.UsuarioModificacion=usuario;item.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return (await ObtenerAsync(id,new(true,[]),ct))!;}
 }

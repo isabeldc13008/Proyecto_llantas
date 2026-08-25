@@ -14,16 +14,22 @@ namespace SistemaLlantas.Api.Controllers;
 public sealed class InspeccionesController(IInspeccionService service, LlantasDbContext db, IWebHostEnvironment environment) : ControllerBase
 {
     [HttpGet("vehiculos")]
-    public Task<IReadOnlyList<VehiculoInspeccionDto>> Vehiculos([FromQuery]string? buscar,CancellationToken ct) => service.ObtenerVehiculosAsync(Usuario(), User.IsInRole("TECNICO"),buscar, User.AlcanceCentros(), ct);
+    public Task<IReadOnlyList<VehiculoInspeccionDto>> Vehiculos([FromQuery]string? buscar,CancellationToken ct) => service.ObtenerVehiculosAsync(Usuario(), User.IsInRole("TECNICO"),buscar, User.AlcanceCentros(), ct, User.IsInRole("TECNICO"));
     [HttpGet("opciones")]
     public Task<OpcionesInspeccionDto> Opciones(CancellationToken ct) => service.ObtenerOpcionesAsync(ct);
     [HttpGet("contexto/{vehiculoId:guid}")]
     public async Task<ActionResult<ContextoInspeccionDto>> Contexto(Guid vehiculoId, CancellationToken ct) =>
-        await service.ObtenerContextoAsync(vehiculoId, User.AlcanceCentros(), ct) is { } x ? Ok(x) : NotFound();
+        await service.ObtenerContextoAsync(vehiculoId, User.AlcanceCentros(), ct, User.IsInRole("TECNICO")) is { } x ? Ok(x) : NotFound();
+    [HttpGet("resumen")]
+    public Task<ResumenInspeccionesDto> Resumen(CancellationToken ct)=>service.ResumenAsync(Usuario(),User.IsInRole("TECNICO"),User.AlcanceCentros(),ct);
+    [HttpGet("historial")]
+    public Task<IReadOnlyList<HistorialInspeccionDto>> Historial(CancellationToken ct)=>service.HistorialAsync(Usuario(),User.IsInRole("TECNICO"),User.AlcanceCentros(),ct);
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<InspeccionDto>> Obtener(Guid id, CancellationToken ct) => await service.ObtenerAsync(id, User.AlcanceCentros(), ct) is { } x ? Ok(x) : NotFound();
     [HttpPost, Authorize(Policy = "Inspecciones.Crear")]
-    public async Task<ActionResult<InspeccionDto>> Crear(CrearInspeccionDto dto, CancellationToken ct) { var x=await service.CrearAsync(dto,Usuario(),User.AlcanceCentros(),ct); return CreatedAtAction(nameof(Obtener),new{id=x.Id},x); }
+    public async Task<ActionResult<InspeccionDto>> Crear(CrearInspeccionDto dto, CancellationToken ct) { var x=await service.CrearAsync(dto,Usuario(),User.AlcanceCentros(),ct,User.IsInRole("TECNICO")); return CreatedAtAction(nameof(Obtener),new{id=x.Id},x); }
+    [HttpPost("{id:guid}/finalizar"),Authorize(Policy="Inspecciones.Crear")]
+    public Task<InspeccionDto> Finalizar(Guid id,CancellationToken ct)=>service.FinalizarAsync(id,Usuario(),ct);
     [HttpPut("{id:guid}/posiciones/{posicionId:guid}"), Authorize(Policy = "Inspecciones.Crear")]
     public async Task<ActionResult<InspeccionDto>> Detalle(Guid id,Guid posicionId,GuardarDetalleInspeccionDto dto,CancellationToken ct) => await service.GuardarDetalleAsync(id,posicionId,dto,Usuario(),ct) is { } x ? Ok(x) : NotFound();
     [HttpPost("{id:guid}/inconsistencias"), Authorize(Policy = "Inspecciones.ReportarInconsistencia")]
@@ -43,7 +49,7 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
         if (extension is not ".jpg" and not ".jpeg" and not ".png" and not ".pdf" || archivo.ContentType is not "image/jpeg" and not "image/png" and not "application/pdf")
             return BadRequest(new { message = "Formato no permitido. Adjunta JPG, PNG o PDF." });
         var alcance = User.AlcanceCentros();
-        if (!await db.Inspecciones.AsNoTracking().AnyAsync(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct)) return NotFound(new { message = "La inspección no existe o no pertenece a tus centros autorizados." });
+        if (!await db.Inspecciones.AsNoTracking().AnyAsync(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId) || (User.IsInRole("TECNICO") && x.TecnicoId == Usuario())), ct)) return NotFound(new { message = "La inspección no existe o no está autorizada." });
         await using var input = archivo.OpenReadStream();
         var signature = new byte[8]; var read = await input.ReadAsync(signature, ct); input.Position = 0;
         var jpeg = read >= 3 && signature[0] == 0xff && signature[1] == 0xd8 && signature[2] == 0xff;
@@ -60,9 +66,9 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
         return Created(string.Empty, new { evidence.Id, evidence.NombreArchivo, archivo.Length, evidence.Hash });
     }
     [HttpGet("{id:guid}/evidencias")]
-    public async Task<ActionResult<IReadOnlyList<EvidenciaDto>>> Evidencias(Guid id,CancellationToken ct){var alcance=User.AlcanceCentros();if(!await db.Inspecciones.AnyAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct))return NotFound();return await db.EvidenciasInspeccion.AsNoTracking().IgnoreQueryFilters().Where(x=>x.InspeccionId==id).OrderByDescending(x=>x.FechaCreacion).Select(x=>new EvidenciaDto(x.Id,x.NombreArchivo,x.MimeType,x.TamanoBytes,x.Hash,x.FechaCreacion,x.Activo)).ToListAsync(ct);}
+    public async Task<ActionResult<IReadOnlyList<EvidenciaDto>>> Evidencias(Guid id,CancellationToken ct){var alcance=User.AlcanceCentros();if(!await db.Inspecciones.AnyAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)||(User.IsInRole("TECNICO")&&x.TecnicoId==Usuario())),ct))return NotFound();return await db.EvidenciasInspeccion.AsNoTracking().IgnoreQueryFilters().Where(x=>x.InspeccionId==id).OrderByDescending(x=>x.FechaCreacion).Select(x=>new EvidenciaDto(x.Id,x.NombreArchivo,x.MimeType,x.TamanoBytes,x.Hash,x.FechaCreacion,x.Activo)).ToListAsync(ct);}
     [HttpGet("evidencias/{evidenciaId:guid}/archivo")]
-    public async Task<IActionResult> Descargar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var e=await db.EvidenciasInspeccion.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.Activo&&x.InspeccionId!=null&&db.Inspecciones.Any(i=>i.Id==x.InspeccionId&&(alcance.VerTodos||alcance.CentroIds.Contains(i.CentroId))),ct);if(e is null)return NotFound();var root=Path.GetFullPath(Path.Combine(environment.ContentRootPath,"App_Data","evidencias"));var path=Path.GetFullPath(Path.Combine(environment.ContentRootPath,e.Ubicacion));if(!path.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)||!System.IO.File.Exists(path))return NotFound();return PhysicalFile(path,e.MimeType,e.NombreArchivo);}
+    public async Task<IActionResult> Descargar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var usuario=Usuario();var tecnico=User.IsInRole("TECNICO");var e=await db.EvidenciasInspeccion.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.Activo&&x.InspeccionId!=null&&db.Inspecciones.Any(i=>i.Id==x.InspeccionId&&(alcance.VerTodos||alcance.CentroIds.Contains(i.CentroId)||(tecnico&&i.TecnicoId==usuario))),ct);if(e is null)return NotFound();var root=Path.GetFullPath(Path.Combine(environment.ContentRootPath,"App_Data","evidencias"));var path=Path.GetFullPath(Path.Combine(environment.ContentRootPath,e.Ubicacion));if(!path.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)||!System.IO.File.Exists(path))return NotFound();return PhysicalFile(path,e.MimeType,e.NombreArchivo);}
     [HttpDelete("evidencias/{evidenciaId:guid}"),Authorize(Policy="Evidencias.Eliminar")]
     public async Task<IActionResult> Eliminar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var e=await db.EvidenciasInspeccion.SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.InspeccionId!=null&&db.Inspecciones.Any(i=>i.Id==x.InspeccionId&&(alcance.VerTodos||alcance.CentroIds.Contains(i.CentroId))),ct);if(e is null)return NotFound();e.Activo=false;e.UsuarioModificacion=Usuario();e.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return NoContent();}
     [HttpPost("inconsistencias/{id:guid}/autorizar"), Authorize(Policy = "Inspecciones.AutorizarInconsistencia")]

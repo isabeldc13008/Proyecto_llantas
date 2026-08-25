@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations;
 namespace SistemaLlantas.Application.Inspecciones;
 using SistemaLlantas.Application.Common;
 
-public sealed record LlantaPosicionDto(Guid Id, string Codigo, string Estado);
+public sealed record LlantaPosicionDto(Guid Id, string Codigo, string Estado, string Marca, string Referencia, string Dimension);
 public sealed record PosicionInspeccionDto(Guid Id, string Codigo, string Lado, int Orden, LlantaPosicionDto? Llanta);
 public sealed record EjeInspeccionDto(Guid Id, int Numero, string Nombre, IReadOnlyList<PosicionInspeccionDto> Posiciones);
-public sealed record ContextoInspeccionDto(Guid VehiculoId, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroNombre, string? Relevancia, IReadOnlyList<EjeInspeccionDto> Ejes);
-public sealed record VehiculoInspeccionDto(Guid Id, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroCodigo, string CentroNombre);
+public sealed record ContextoInspeccionDto(Guid VehiculoId, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroNombre, string? Relevancia, string? Regional, decimal? Kilometraje, DateTimeOffset? UltimaInspeccion, IReadOnlyList<EjeInspeccionDto> Ejes);
+public sealed record VehiculoInspeccionDto(Guid Id, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroCodigo, string CentroNombre, string? Regional);
 public sealed record OpcionInspeccionDto(Guid Id, string Codigo, string Nombre);
 public sealed record OpcionesInspeccionDto(IReadOnlyList<OpcionInspeccionDto> Condiciones, IReadOnlyList<OpcionInspeccionDto> Causas, IReadOnlyList<OpcionInspeccionDto> Recomendaciones);
 public sealed record InspeccionDto(Guid Id, Guid VehiculoId, string Vehiculo, Guid CentroId, string Centro, decimal? Kilometraje, string Estado, string TecnicoId, IReadOnlyList<DetalleInspeccionDto> Detalles);
@@ -44,13 +44,15 @@ public sealed record AlertaDto(Guid Id,string Tipo,string Descripcion,string Est
 public sealed record AlertaEventoDto(DateTimeOffset Fecha,string EstadoAnterior,string EstadoNuevo,string Usuario,string? Observacion);
 public sealed record CambiarAlertaDto(string Estado,string? Observacion);
 public sealed record EvidenciaDto(Guid Id,string NombreArchivo,string MimeType,long TamanoBytes,string Hash,DateTimeOffset Fecha,bool Activo);
+public sealed record ResumenInspeccionesDto(int PendientesHoy,int RealizadasHoy,int ConNovedad,int ConAlerta);
+public sealed record HistorialInspeccionDto(Guid Id,DateTimeOffset Fecha,string Placa,string NumeroInterno,string Centro,string Tecnico,decimal? Kilometraje,int Inspeccionadas,int Novedades,int Alertas,string Estado);
 
 public interface IInspeccionService
 {
-    Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados, string? buscar, AlcanceCentros alcance, CancellationToken ct);
+    Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados, string? buscar, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculosGlobales = false);
     Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct);
-    Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, AlcanceCentros alcance, CancellationToken ct);
-    Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct);
+    Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculoGlobal = false);
+    Task<InspeccionDto> CrearAsync(CrearInspeccionDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculoGlobal = false);
     Task<InspeccionDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken ct);
     Task<InspeccionDto?> GuardarDetalleAsync(Guid id, Guid posicionId, GuardarDetalleInspeccionDto dto, string usuario, CancellationToken ct);
     Task<InconsistenciaDto> ReportarAsync(Guid inspeccionId, ReportarInconsistenciaDto dto, string usuario, CancellationToken ct);
@@ -58,4 +60,7 @@ public interface IInspeccionService
     Task<InconsistenciaDto> ResolverAsync(Guid id, ResolverInconsistenciaDto dto, bool autorizar, string usuario, bool puedeAutorizarPropia, CancellationToken ct);
     Task<IReadOnlyList<AlertaDto>> AlertasAsync(AlcanceCentros alcance,CancellationToken ct);
     Task<AlertaDto> CambiarAlertaAsync(Guid id,CambiarAlertaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
+    Task<ResumenInspeccionesDto> ResumenAsync(string usuario,bool soloPropias,AlcanceCentros alcance,CancellationToken ct);
+    Task<IReadOnlyList<HistorialInspeccionDto>> HistorialAsync(string usuario,bool soloPropias,AlcanceCentros alcance,CancellationToken ct);
+    Task<InspeccionDto> FinalizarAsync(Guid id,string usuario,CancellationToken ct);
 }
