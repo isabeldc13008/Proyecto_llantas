@@ -24,8 +24,10 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
     public Task<ResumenInspeccionesDto> Resumen(CancellationToken ct)=>service.ResumenAsync(Usuario(),User.IsInRole("TECNICO"),User.AlcanceCentros(),ct);
     [HttpGet("historial")]
     public Task<IReadOnlyList<HistorialInspeccionDto>> Historial(CancellationToken ct)=>service.HistorialAsync(Usuario(),User.IsInRole("TECNICO"),User.AlcanceCentros(),ct);
+    [HttpGet("llantas/buscar")]
+    public Task<IReadOnlyList<LlantaBusquedaInspeccionDto>> BuscarLlanta([FromQuery]string termino,CancellationToken ct)=>service.BuscarLlantaExactaAsync(termino,ct);
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<InspeccionDto>> Obtener(Guid id, CancellationToken ct) => await service.ObtenerAsync(id, User.AlcanceCentros(), ct) is { } x ? Ok(x) : NotFound();
+    public async Task<ActionResult<InspeccionDto>> Obtener(Guid id, CancellationToken ct) => await service.ObtenerAsync(id, User.AlcanceCentros(), ct,Usuario(),User.IsInRole("TECNICO")) is { } x ? Ok(x) : NotFound();
     [HttpPost, Authorize(Policy = "Inspecciones.Crear")]
     public async Task<ActionResult<InspeccionDto>> Crear(CrearInspeccionDto dto, CancellationToken ct) { var x=await service.CrearAsync(dto,Usuario(),User.AlcanceCentros(),ct,User.IsInRole("TECNICO")); return CreatedAtAction(nameof(Obtener),new{id=x.Id},x); }
     [HttpPost("{id:guid}/finalizar"),Authorize(Policy="Inspecciones.Crear")]
@@ -41,7 +43,7 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
     [HttpPut("alertas/{id:guid}/estado"),Authorize(Policy="Alertas.Gestionar")]
     public Task<AlertaDto> EstadoAlerta(Guid id,CambiarAlertaDto dto,CancellationToken ct){if(string.Equals(dto.Estado,"DESCARTADA",StringComparison.OrdinalIgnoreCase)&&!User.HasClaim("permiso","alertas.descartar"))throw new UnauthorizedAccessException("No tiene permiso para descartar alertas.");return service.CambiarAlertaAsync(id,dto,Usuario(),User.AlcanceCentros(),ct);}
     [HttpPost("{id:guid}/evidencias"), Authorize(Policy = "Inspecciones.Crear"), RequestSizeLimit(10_485_760)]
-    public async Task<ActionResult<object>> AdjuntarEvidencia(Guid id, [FromForm] IFormFile archivo, CancellationToken ct)
+    public async Task<ActionResult<object>> AdjuntarEvidencia(Guid id, [FromForm] IFormFile archivo, CancellationToken ct, [FromQuery]Guid? inconsistenciaId=null)
     {
         if (archivo is null || archivo.Length == 0) return BadRequest(new { message = "Selecciona un archivo JPG, PNG o PDF." });
         if (archivo.Length > 10_000_000) return BadRequest(new { message = "La evidencia supera el límite de 10 MB." });
@@ -55,7 +57,8 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
         var jpeg = read >= 3 && signature[0] == 0xff && signature[1] == 0xd8 && signature[2] == 0xff;
         var png = read >= 8 && signature.SequenceEqual(new byte[] { 137,80,78,71,13,10,26,10 });
         var pdf=read>=5&&signature.Take(5).SequenceEqual("%PDF-"u8.ToArray());if (!jpeg && !png&&!pdf) return BadRequest(new { message = "El contenido no corresponde a JPG, PNG o PDF válido." });
-        var evidence = new EvidenciaInspeccion { InspeccionId = id, NombreArchivo = Path.GetFileName(archivo.FileName), UsuarioCreacion = Usuario() };
+        if(inconsistenciaId.HasValue&&!await db.InconsistenciasInspeccion.AnyAsync(x=>x.Id==inconsistenciaId&&x.InspeccionId==id,ct))return BadRequest(new{message="La inconsistencia no pertenece a la inspección."});
+        var evidence = new EvidenciaInspeccion { InspeccionId = id, InconsistenciaInspeccionId=inconsistenciaId, NombreArchivo = Path.GetFileName(archivo.FileName), UsuarioCreacion = Usuario() };
         var storedName = evidence.Id + (png ? ".png" : pdf?".pdf":".jpg");
         var root = Path.Combine(environment.ContentRootPath, "App_Data", "evidencias"); Directory.CreateDirectory(root);
         var path = Path.Combine(root, storedName);
@@ -72,8 +75,8 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
     [HttpDelete("evidencias/{evidenciaId:guid}"),Authorize(Policy="Evidencias.Eliminar")]
     public async Task<IActionResult> Eliminar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var e=await db.EvidenciasInspeccion.SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.InspeccionId!=null&&db.Inspecciones.Any(i=>i.Id==x.InspeccionId&&(alcance.VerTodos||alcance.CentroIds.Contains(i.CentroId))),ct);if(e is null)return NotFound();e.Activo=false;e.UsuarioModificacion=Usuario();e.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return NoContent();}
     [HttpPost("inconsistencias/{id:guid}/autorizar"), Authorize(Policy = "Inspecciones.AutorizarInconsistencia")]
-    public Task<InconsistenciaDto> Autorizar(Guid id,ResolverInconsistenciaDto dto,CancellationToken ct) => service.ResolverAsync(id,dto,true,Usuario(),User.HasClaim("permiso","inspecciones.autorizar_propia_inconsistencia"),ct);
+    public Task<InconsistenciaDto> Autorizar(Guid id,ResolverInconsistenciaDto dto,CancellationToken ct) => service.ResolverAsync(id,dto,true,Usuario(),User.HasClaim("permiso","inspecciones.autorizar_propia_inconsistencia"),ct,User.AlcanceCentros());
     [HttpPost("inconsistencias/{id:guid}/rechazar"), Authorize(Policy = "Inspecciones.AutorizarInconsistencia")]
-    public Task<InconsistenciaDto> Rechazar(Guid id,ResolverInconsistenciaDto dto,CancellationToken ct) => service.ResolverAsync(id,dto,false,Usuario(),User.HasClaim("permiso","inspecciones.autorizar_propia_inconsistencia"),ct);
+    public Task<InconsistenciaDto> Rechazar(Guid id,ResolverInconsistenciaDto dto,CancellationToken ct) => service.ResolverAsync(id,dto,false,Usuario(),User.HasClaim("permiso","inspecciones.autorizar_propia_inconsistencia"),ct,User.AlcanceCentros());
     private string Usuario()=>User.Username();
 }
