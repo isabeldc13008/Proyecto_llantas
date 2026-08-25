@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-export interface TableFilter{key:string;label:string;type:'multi'|'range';options?:{value:string;label:string}[]}
+export interface TableFilter{key:string;label:string;type:'multi'|'range'|'select';options?:{value:string;label:string}[]}
 export interface TableColumn{key:string;label:string;required?:boolean}
 @Component({selector:'app-data-table-toolbar',imports:[FormsModule],templateUrl:'./data-table-toolbar.html',styleUrl:'./data-table-toolbar.scss'})
 export class DataTableToolbar implements OnInit{
