@@ -5,7 +5,7 @@
  </section>
  <section class="table-section">
   <div class="section-title"><div><p class="eyebrow">Datos operativos</p><h2>Inventario de llantas</h2></div><span>{{total() | number}} resultados</span></div>
-  <app-data-table-toolbar [search]="search.value" (searchChange)="search.setValue($event)" [(sortBy)]="sortBy" [sortOptions]="sortOptions" [filters]="tableFilters()" [(values)]="filterValues" [columns]="columns" [(visibleColumns)]="visibleColumns" persistenceKey="llantas" placeholder="Código, serial, marca o referencia…" (apply)="load(1)" (clear)="clearFilters()" (exportCsv)="export('csv')" (exportExcel)="export('xlsx')" />
+  <app-data-table-toolbar [collapsibleFilters]="true" [search]="search.value" (searchChange)="search.setValue($event)" [(sortBy)]="sortBy" [sortOptions]="sortOptions" [filters]="tableFilters()" [(values)]="filterValues" [columns]="columns" [(visibleColumns)]="visibleColumns" persistenceKey="llantas" placeholder="Código, serial, marca o referencia…" (apply)="load(1)" (clear)="clearFilters()" (exportCsv)="export('csv')" (exportExcel)="export('xlsx')" />
   @if(error()){<p class="notice error" role="alert">{{error()}}</p>}
   <div class="panel table-wrap" [class.busy]="loading()">
    @if(loading()){<div class="loader"><i></i><b>Consultando inventario</b><span>Estamos preparando los datos autorizados.</span></div>}

@@ -81,7 +81,9 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         if(c.ProfundidadMin.HasValue)q=q.Where(x=>x.ProfundidadInicial>=c.ProfundidadMin);
         if(c.ProfundidadMax.HasValue)q=q.Where(x=>x.ProfundidadInicial<=c.ProfundidadMax);
         if(c.MarcaId.HasValue)q=q.Where(x=>x.MarcaId==c.MarcaId);if(c.ReferenciaId.HasValue)q=q.Where(x=>x.ReferenciaId==c.ReferenciaId);if(c.DimensionId.HasValue)q=q.Where(x=>x.DimensionId==c.DimensionId);if(c.TipoLlantaId.HasValue)q=q.Where(x=>x.TipoLlantaId==c.TipoLlantaId);
+        var marcas=Ids(c.MarcaIds);if(marcas.Length>0)q=q.Where(x=>marcas.Contains(x.MarcaId));var referencias=Ids(c.ReferenciaIds);if(referencias.Length>0)q=q.Where(x=>referencias.Contains(x.ReferenciaId));var dimensiones=Ids(c.DimensionIds);if(dimensiones.Length>0)q=q.Where(x=>dimensiones.Contains(x.DimensionId));var tipos=Ids(c.TipoLlantaIds);if(tipos.Length>0)q=q.Where(x=>tipos.Contains(x.TipoLlantaId));
         if(c.TieneReencauches.HasValue)q=q.Where(x=>(x.NumeroReencauches>0)==c.TieneReencauches);if(c.ReencauchesMin.HasValue)q=q.Where(x=>x.NumeroReencauches>=c.ReencauchesMin);
+        if(!string.IsNullOrWhiteSpace(c.Reencauches)){var counts=c.Reencauches.Split(',').Select(v=>int.TryParse(v,out var n)?n:-1).Where(v=>v>=0).ToArray();if(counts.Length>0)q=q.Where(x=>counts.Contains(x.NumeroReencauches)||counts.Contains(3)&&x.NumeroReencauches>=3);}
         if(c.TieneReparaciones.HasValue)q=q.Where(x=>db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Tipo==TipoServicioLlanta.Reparacion)==c.TieneReparaciones);
         if(!string.IsNullOrWhiteSpace(c.Vehiculo)){var vehicle=c.Vehiculo.Trim();q=q.Where(x=>db.AsignacionesLlantaPosicion.Any(a=>a.LlantaId==x.Id&&a.EsActiva&&(a.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(vehicle)||a.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(vehicle))));}
         if(c.KilometrajeMin.HasValue)q=q.Where(x=>x.KilometrajeAcumulado>=c.KilometrajeMin);if(c.KilometrajeMax.HasValue)q=q.Where(x=>x.KilometrajeAcumulado<=c.KilometrajeMax);
@@ -90,6 +92,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         if(!string.IsNullOrWhiteSpace(c.Search)){var s=c.Search.Trim();q=q.Where(x=>x.Codigo.Contains(s)||x.Serial.Contains(s)||x.Marca.Nombre.Contains(s)||x.Referencia.Nombre.Contains(s));}
         return q;
     }
+    private static Guid[] Ids(string? value)=>value?.Split(',',StringSplitOptions.RemoveEmptyEntries).Select(x=>Guid.TryParse(x,out var id)?id:Guid.Empty).Where(x=>x!=Guid.Empty).Distinct().ToArray()??[];
 
     private static IQueryable<Llanta> Ordenar(IQueryable<Llanta> q,ConsultaPaginada c)
     {
