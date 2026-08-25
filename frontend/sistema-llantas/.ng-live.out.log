@@ -1,0 +1,150 @@
+> Building...
+√ Building...
+Initial chunk files | Names                 |  Raw size
+main.js             | main                  |  42.70 kB | 
+styles.css          | styles                |   4.15 kB | 
+chunk-CT2465PJ.js   | -                     |   2.80 kB | 
+chunk-Y5RQAIA6.js   | -                     |   1.50 kB | 
+polyfills.js        | polyfills             |  95 bytes | 
+
+                    | Initial total         |  51.24 kB
+
+Lazy chunk files    | Names                 |  Raw size
+chunk-FBG7I6E2.js   | tires-page            | 118.20 kB | 
+chunk-IGT24VC3.js   | inspection-page       |  74.21 kB | 
+chunk-OM4BLWV2.js   | vehicles-page         |  65.77 kB | 
+chunk-JZ5MYX57.js   | service-workflow-page |  63.20 kB | 
+chunk-54WQNXC7.js   | scheduling-page       |  61.21 kB | 
+chunk-RKJWXQUQ.js   | demo-page             |  53.43 kB | 
+chunk-4VKB4XAY.js   | catalog-admin         |  53.18 kB | 
+chunk-M2XNRMS5.js   | movements-page        |  37.56 kB | 
+chunk-2JICS4SV.js   | dashboard             |  23.15 kB | 
+chunk-5CPTVYRB.js   | bulk-import-page      |  18.86 kB | 
+chunk-42OEESYW.js   | login                 |  16.92 kB | 
+chunk-EQM77UBR.js   | activities-page       |  16.87 kB | 
+chunk-KPW7SK5N.js   | alerts-page           |  15.69 kB | 
+chunk-QBSHT5ZE.js   | -                     |  13.91 kB | 
+chunk-432D5E36.js   | -                     |   2.82 kB | 
+...and 4 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [6.942 seconds] - 2026-08-19T03:31:35.816Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+10:31:36 p. m. [vite] (client) Re-optimizing dependencies because vite config has changed
+  ➜  Local:   http://localhost:4200/
+  ➜  press h + enter to show help
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                 | Raw size
+main.js             | main                  | 42.70 kB | 
+
+Lazy chunk files    | Names                 | Raw size
+chunk-TTJXNTPS.js   | service-workflow-page | 63.20 kB | 
+
+Application bundle generation complete. [2.764 seconds] - 2026-08-19T03:32:27.059Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                 | Raw size
+main.js             | main                  | 42.70 kB | 
+
+Lazy chunk files    | Names                 | Raw size
+chunk-FWNI6HNW.js   | service-workflow-page | 63.20 kB | 
+
+Application bundle generation complete. [0.643 seconds] - 2026-08-19T03:33:00.172Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names           | Raw size
+main.js             | main            | 42.70 kB | 
+
+Lazy chunk files    | Names           | Raw size
+chunk-NGVX3VT7.js   | scheduling-page | 61.60 kB | 
+
+Application bundle generation complete. [0.666 seconds] - 2026-08-19T03:34:51.198Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+styles.css          | styles |  6.23 kB | 
+
+Application bundle generation complete. [0.043 seconds] - 2026-08-19T03:41:15.871Z
+
+Stylesheet update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names         | Raw size
+main.js             | main          | 42.70 kB | 
+
+Lazy chunk files    | Names         | Raw size
+chunk-BFXLXMAS.js   | vehicles-page | 65.96 kB | 
+
+Application bundle generation complete. [0.609 seconds] - 2026-08-19T03:42:03.430Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names         | Raw size
+main.js             | main          | 42.70 kB | 
+
+Lazy chunk files    | Names         | Raw size
+chunk-SYUYMKDI.js   | vehicles-page | 65.83 kB | 
+
+Application bundle generation complete. [0.640 seconds] - 2026-08-19T03:42:33.284Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                 | Raw size
+main.js             | main                  | 42.70 kB | 
+
+Lazy chunk files    | Names                 | Raw size
+chunk-7QPXB7NC.js   | service-workflow-page | 63.10 kB | 
+
+Application bundle generation complete. [1.579 seconds] - 2026-08-19T03:42:51.808Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+styles.css          | styles | 12.16 kB | 
+
+Application bundle generation complete. [0.045 seconds] - 2026-08-19T03:43:24.410Z
+
+Stylesheet update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+styles.css          | styles | 12.14 kB | 
+
+Application bundle generation complete. [0.060 seconds] - 2026-08-19T03:44:03.543Z
+
+Stylesheet update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+styles.css          | styles | 12.43 kB | 
+
+Application bundle generation complete. [0.187 seconds] - 2026-08-19T03:45:11.929Z
+
+Stylesheet update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+styles.css          | styles | 12.62 kB | 
+
+Application bundle generation complete. [0.064 seconds] - 2026-08-19T03:46:05.276Z
+
+Stylesheet update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+styles.css          | styles | 12.70 kB | 
+
+Application bundle generation complete. [0.065 seconds] - 2026-08-19T03:46:12.828Z
+
+Stylesheet update sent to client(s).

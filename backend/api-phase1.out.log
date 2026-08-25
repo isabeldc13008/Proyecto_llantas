@@ -1,0 +1,2408 @@
+Usando la configuración de inicio de backend\src\SistemaLlantas.Api\Properties\launchSettings.json...
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Llanta' has a global query filter defined and is the required end of a relationship with the entity 'AsignacionLlantaPosicion'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Llanta' has a global query filter defined and is the required end of a relationship with the entity 'MovimientoDetalle'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (108ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Migrations[20411]
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (140ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+      SELECT @result
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+      BEGIN
+          CREATE TABLE [__EFMigrationsHistory] (
+              [MigrationId] nvarchar(150) NOT NULL,
+              [ProductVersion] nvarchar(32) NOT NULL,
+              CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+          );
+      END;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [MigrationId], [ProductVersion]
+      FROM [__EFMigrationsHistory]
+      ORDER BY [MigrationId];
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+      SELECT @result
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (68ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (202ms) [Parameters=[@p0='?' (Size = 30), @p1='?' (Size = 4000), @p2='?' (Size = 150), @p3='?' (DbType = DateTimeOffset), @p4='?' (Size = 100), @p5='?' (Size = 4000), @p6='?' (Size = 150), @p7='?' (Size = 4000), @p8='?' (Size = 4000), @p9='?' (Size = 30), @p10='?' (Size = 4000), @p11='?' (Size = 150), @p12='?' (DbType = DateTimeOffset), @p13='?' (Size = 100), @p14='?' (Size = 4000), @p15='?' (Size = 150), @p16='?' (Size = 4000), @p17='?' (Size = 4000), @p18='?' (Size = 30), @p19='?' (Size = 4000), @p20='?' (Size = 150), @p21='?' (DbType = DateTimeOffset), @p22='?' (Size = 100), @p23='?' (Size = 4000), @p24='?' (Size = 150), @p25='?' (Size = 4000), @p26='?' (Size = 4000), @p27='?' (Size = 30), @p28='?' (Size = 4000), @p29='?' (Size = 150), @p30='?' (DbType = DateTimeOffset), @p31='?' (Size = 100), @p32='?' (Size = 4000), @p33='?' (Size = 150), @p34='?' (Size = 4000), @p35='?' (Size = 4000), @p36='?' (Size = 30), @p37='?' (Size = 4000), @p38='?' (Size = 150), @p39='?' (DbType = DateTimeOffset), @p40='?' (Size = 100), @p41='?' (Size = 4000), @p42='?' (Size = 150), @p43='?' (Size = 4000), @p44='?' (Size = 4000), @p45='?' (Size = 30), @p46='?' (Size = 4000), @p47='?' (Size = 150), @p48='?' (DbType = DateTimeOffset), @p49='?' (Size = 100), @p50='?' (Size = 4000), @p51='?' (Size = 150), @p52='?' (Size = 4000), @p53='?' (Size = 4000), @p54='?' (Size = 30), @p55='?' (Size = 4000), @p56='?' (Size = 150), @p57='?' (DbType = DateTimeOffset), @p58='?' (Size = 100), @p59='?' (Size = 4000), @p60='?' (Size = 150), @p61='?' (Size = 4000), @p62='?' (Size = 4000), @p63='?' (Size = 30), @p64='?' (Size = 4000), @p65='?' (Size = 150), @p66='?' (DbType = DateTimeOffset), @p67='?' (Size = 100), @p68='?' (Size = 4000), @p69='?' (Size = 150), @p70='?' (Size = 4000), @p71='?' (Size = 4000), @p72='?' (Size = 30), @p73='?' (Size = 4000), @p74='?' (Size = 150), @p75='?' (DbType = DateTimeOffset), @p76='?' (Size = 100), @p77='?' (Size = 4000), @p78='?' (Size = 150), @p79='?' (Size = 4000), @p80='?' (Size = 4000), @p81='?' (Size = 30), @p82='?' (Size = 4000), @p83='?' (Size = 150), @p84='?' (DbType = DateTimeOffset), @p85='?' (Size = 100), @p86='?' (Size = 4000), @p87='?' (Size = 150), @p88='?' (Size = 4000), @p89='?' (Size = 4000), @p90='?' (Size = 30), @p91='?' (Size = 4000), @p92='?' (Size = 150), @p93='?' (DbType = DateTimeOffset), @p94='?' (Size = 100), @p95='?' (Size = 4000), @p96='?' (Size = 150), @p97='?' (Size = 4000), @p98='?' (Size = 4000), @p99='?' (Size = 30), @p100='?' (Size = 4000), @p101='?' (Size = 150), @p102='?' (DbType = DateTimeOffset), @p103='?' (Size = 100), @p104='?' (Size = 4000), @p105='?' (Size = 150), @p106='?' (Size = 4000), @p107='?' (Size = 4000), @p108='?' (Size = 30), @p109='?' (Size = 4000), @p110='?' (Size = 150), @p111='?' (DbType = DateTimeOffset), @p112='?' (Size = 100), @p113='?' (Size = 4000), @p114='?' (Size = 150), @p115='?' (Size = 4000), @p116='?' (Size = 4000), @p117='?' (Size = 30), @p118='?' (Size = 4000), @p119='?' (Size = 150), @p120='?' (DbType = DateTimeOffset), @p121='?' (Size = 100), @p122='?' (Size = 4000), @p123='?' (Size = 150), @p124='?' (Size = 4000), @p125='?' (Size = 4000), @p126='?' (Size = 30), @p127='?' (Size = 4000), @p128='?' (Size = 150), @p129='?' (DbType = DateTimeOffset), @p130='?' (Size = 100), @p131='?' (Size = 4000), @p132='?' (Size = 150), @p133='?' (Size = 4000), @p134='?' (Size = 4000), @p135='?' (Size = 30), @p136='?' (Size = 4000), @p137='?' (Size = 150), @p138='?' (DbType = DateTimeOffset), @p139='?' (Size = 100), @p140='?' (Size = 4000), @p141='?' (Size = 150), @p142='?' (Size = 4000), @p143='?' (Size = 4000), @p144='?' (Size = 30), @p145='?' (Size = 4000), @p146='?' (Size = 150), @p147='?' (DbType = DateTimeOffset), @p148='?' (Size = 100), @p149='?' (Size = 4000), @p150='?' (Size = 150), @p151='?' (Size = 4000), @p152='?' (Size = 4000), @p153='?' (Size = 30), @p154='?' (Size = 4000), @p155='?' (Size = 150), @p156='?' (DbType = DateTimeOffset), @p157='?' (Size = 100), @p158='?' (Size = 4000), @p159='?' (Size = 150), @p160='?' (Size = 4000), @p161='?' (Size = 4000), @p162='?' (DbType = Guid), @p163='?' (DbType = Boolean), @p164='?' (Size = 120), @p165='?' (DbType = DateTimeOffset), @p166='?' (DbType = DateTimeOffset), @p167='?' (Size = 160), @p168='?' (Size = 4000), @p169='?' (Size = 4000), @p170='?' (DbType = Guid), @p171='?' (DbType = Boolean), @p172='?' (Size = 120), @p173='?' (DbType = DateTimeOffset), @p174='?' (DbType = DateTimeOffset), @p175='?' (Size = 160), @p176='?' (Size = 4000), @p177='?' (Size = 4000), @p178='?' (DbType = Guid), @p179='?' (DbType = Boolean), @p180='?' (Size = 120), @p181='?' (DbType = DateTimeOffset), @p182='?' (DbType = DateTimeOffset), @p183='?' (Size = 160), @p184='?' (Size = 4000), @p185='?' (Size = 4000), @p186='?' (DbType = Guid), @p187='?' (DbType = Boolean), @p188='?' (Size = 120), @p189='?' (DbType = DateTimeOffset), @p190='?' (DbType = DateTimeOffset), @p191='?' (Size = 160), @p192='?' (Size = 4000), @p193='?' (Size = 4000), @p194='?' (DbType = Guid), @p195='?' (DbType = Boolean), @p196='?' (Size = 120), @p197='?' (DbType = DateTimeOffset), @p198='?' (DbType = DateTimeOffset), @p199='?' (Size = 160), @p200='?' (Size = 4000), @p201='?' (Size = 4000), @p202='?' (DbType = Guid), @p203='?' (DbType = Boolean), @p204='?' (Size = 120), @p205='?' (DbType = DateTimeOffset), @p206='?' (DbType = DateTimeOffset), @p207='?' (Size = 160), @p208='?' (Size = 4000), @p209='?' (Size = 4000), @p210='?' (DbType = Guid), @p211='?' (DbType = Boolean), @p212='?' (Size = 120), @p213='?' (DbType = DateTimeOffset), @p214='?' (DbType = DateTimeOffset), @p215='?' (Size = 160), @p216='?' (Size = 4000), @p217='?' (Size = 4000), @p218='?' (DbType = Guid), @p219='?' (DbType = Boolean), @p220='?' (Size = 120), @p221='?' (DbType = DateTimeOffset), @p222='?' (DbType = DateTimeOffset), @p223='?' (Size = 160), @p224='?' (Size = 4000), @p225='?' (Size = 4000), @p226='?' (DbType = Guid), @p227='?' (DbType = Boolean), @p228='?' (Size = 120), @p229='?' (DbType = DateTimeOffset), @p230='?' (DbType = DateTimeOffset), @p231='?' (Size = 160), @p232='?' (Size = 4000), @p233='?' (Size = 4000), @p234='?' (DbType = Guid), @p235='?' (DbType = Boolean), @p236='?' (Size = 120), @p237='?' (DbType = DateTimeOffset), @p238='?' (DbType = DateTimeOffset), @p239='?' (Size = 160), @p240='?' (Size = 4000), @p241='?' (Size = 4000), @p242='?' (DbType = Guid), @p243='?' (DbType = Boolean), @p244='?' (Size = 120), @p245='?' (DbType = DateTimeOffset), @p246='?' (DbType = DateTimeOffset), @p247='?' (Size = 160), @p248='?' (Size = 4000), @p249='?' (Size = 4000), @p250='?' (DbType = Guid), @p251='?' (DbType = Boolean), @p252='?' (Size = 120), @p253='?' (DbType = DateTimeOffset), @p254='?' (DbType = DateTimeOffset), @p255='?' (Size = 160), @p256='?' (Size = 4000), @p257='?' (Size = 4000), @p258='?' (DbType = Guid), @p259='?' (DbType = Boolean), @p260='?' (Size = 120), @p261='?' (DbType = DateTimeOffset), @p262='?' (DbType = DateTimeOffset), @p263='?' (Size = 160), @p264='?' (Size = 4000), @p265='?' (Size = 4000), @p266='?' (DbType = Guid), @p267='?' (DbType = Boolean), @p268='?' (Size = 120), @p269='?' (DbType = DateTimeOffset), @p270='?' (DbType = DateTimeOffset), @p271='?' (Size = 160), @p272='?' (Size = 4000), @p273='?' (Size = 4000), @p274='?' (DbType = Guid), @p275='?' (DbType = Boolean), @p276='?' (Size = 120), @p277='?' (DbType = DateTimeOffset), @p278='?' (DbType = DateTimeOffset), @p279='?' (Size = 160), @p280='?' (Size = 4000), @p281='?' (Size = 4000), @p282='?' (DbType = Guid), @p283='?' (DbType = Boolean), @p284='?' (Size = 120), @p285='?' (DbType = DateTimeOffset), @p286='?' (DbType = DateTimeOffset), @p287='?' (Size = 160), @p288='?' (Size = 4000), @p289='?' (Size = 4000), @p290='?' (DbType = Guid), @p291='?' (DbType = Boolean), @p292='?' (Size = 120), @p293='?' (DbType = DateTimeOffset), @p294='?' (DbType = DateTimeOffset), @p295='?' (Size = 160), @p296='?' (Size = 4000), @p297='?' (Size = 4000), @p298='?' (DbType = Guid), @p299='?' (DbType = Boolean), @p300='?' (Size = 120), @p301='?' (DbType = DateTimeOffset), @p302='?' (DbType = DateTimeOffset), @p303='?' (Size = 160), @p304='?' (Size = 4000), @p305='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SET NOCOUNT ON;
+      MERGE [TBL_Auditoria] USING (
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, 0),
+      (@p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, 1),
+      (@p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25, @p26, 2),
+      (@p27, @p28, @p29, @p30, @p31, @p32, @p33, @p34, @p35, 3),
+      (@p36, @p37, @p38, @p39, @p40, @p41, @p42, @p43, @p44, 4),
+      (@p45, @p46, @p47, @p48, @p49, @p50, @p51, @p52, @p53, 5),
+      (@p54, @p55, @p56, @p57, @p58, @p59, @p60, @p61, @p62, 6),
+      (@p63, @p64, @p65, @p66, @p67, @p68, @p69, @p70, @p71, 7),
+      (@p72, @p73, @p74, @p75, @p76, @p77, @p78, @p79, @p80, 8),
+      (@p81, @p82, @p83, @p84, @p85, @p86, @p87, @p88, @p89, 9),
+      (@p90, @p91, @p92, @p93, @p94, @p95, @p96, @p97, @p98, 10),
+      (@p99, @p100, @p101, @p102, @p103, @p104, @p105, @p106, @p107, 11),
+      (@p108, @p109, @p110, @p111, @p112, @p113, @p114, @p115, @p116, 12),
+      (@p117, @p118, @p119, @p120, @p121, @p122, @p123, @p124, @p125, 13),
+      (@p126, @p127, @p128, @p129, @p130, @p131, @p132, @p133, @p134, 14),
+      (@p135, @p136, @p137, @p138, @p139, @p140, @p141, @p142, @p143, 15),
+      (@p144, @p145, @p146, @p147, @p148, @p149, @p150, @p151, @p152, 16),
+      (@p153, @p154, @p155, @p156, @p157, @p158, @p159, @p160, @p161, 17)) AS i ([Accion], [DireccionIp], [Entidad], [Fecha], [Identificador], [Origen], [Usuario], [ValoresAnteriores], [ValoresNuevos], _Position) ON 1=0
+      WHEN NOT MATCHED THEN
+      INSERT ([Accion], [DireccionIp], [Entidad], [Fecha], [Identificador], [Origen], [Usuario], [ValoresAnteriores], [ValoresNuevos])
+      VALUES (i.[Accion], i.[DireccionIp], i.[Entidad], i.[Fecha], i.[Identificador], i.[Origen], i.[Usuario], i.[ValoresAnteriores], i.[ValoresNuevos])
+      OUTPUT INSERTED.[Id], i._Position;
+      MERGE [TBL_Permiso] USING (
+      VALUES (@p162, @p163, @p164, @p165, @p166, @p167, @p168, @p169, 0),
+      (@p170, @p171, @p172, @p173, @p174, @p175, @p176, @p177, 1),
+      (@p178, @p179, @p180, @p181, @p182, @p183, @p184, @p185, 2),
+      (@p186, @p187, @p188, @p189, @p190, @p191, @p192, @p193, 3),
+      (@p194, @p195, @p196, @p197, @p198, @p199, @p200, @p201, 4),
+      (@p202, @p203, @p204, @p205, @p206, @p207, @p208, @p209, 5),
+      (@p210, @p211, @p212, @p213, @p214, @p215, @p216, @p217, 6),
+      (@p218, @p219, @p220, @p221, @p222, @p223, @p224, @p225, 7),
+      (@p226, @p227, @p228, @p229, @p230, @p231, @p232, @p233, 8),
+      (@p234, @p235, @p236, @p237, @p238, @p239, @p240, @p241, 9),
+      (@p242, @p243, @p244, @p245, @p246, @p247, @p248, @p249, 10),
+      (@p250, @p251, @p252, @p253, @p254, @p255, @p256, @p257, 11),
+      (@p258, @p259, @p260, @p261, @p262, @p263, @p264, @p265, 12),
+      (@p266, @p267, @p268, @p269, @p270, @p271, @p272, @p273, 13),
+      (@p274, @p275, @p276, @p277, @p278, @p279, @p280, @p281, 14),
+      (@p282, @p283, @p284, @p285, @p286, @p287, @p288, @p289, 15),
+      (@p290, @p291, @p292, @p293, @p294, @p295, @p296, @p297, 16),
+      (@p298, @p299, @p300, @p301, @p302, @p303, @p304, @p305, 17)) AS i ([Id], [Activo], [Codigo], [FechaCreacion], [FechaModificacion], [Nombre], [UsuarioCreacion], [UsuarioModificacion], _Position) ON 1=0
+      WHEN NOT MATCHED THEN
+      INSERT ([Id], [Activo], [Codigo], [FechaCreacion], [FechaModificacion], [Nombre], [UsuarioCreacion], [UsuarioModificacion])
+      VALUES (i.[Id], i.[Activo], i.[Codigo], i.[FechaCreacion], i.[FechaModificacion], i.[Nombre], i.[UsuarioCreacion], i.[UsuarioModificacion])
+      OUTPUT INSERTED.[RowVersion], i._Position;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (28ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120), @pair_Value21='?' (Size = 120), @pair_Value22='?' (Size = 120), @pair_Value23='?' (Size = 120), @pair_Value24='?' (Size = 120), @pair_Value25='?' (Size = 120), @pair_Value26='?' (Size = 120), @pair_Value27='?' (Size = 120), @pair_Value28='?' (Size = 120), @pair_Value29='?' (Size = 120), @pair_Value30='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20, @pair_Value21, @pair_Value22, @pair_Value23, @pair_Value24, @pair_Value25, @pair_Value26, @pair_Value27, @pair_Value28, @pair_Value29, @pair_Value30)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120), @pair_Value21='?' (Size = 120), @pair_Value22='?' (Size = 120), @pair_Value23='?' (Size = 120), @pair_Value24='?' (Size = 120), @pair_Value25='?' (Size = 120), @pair_Value26='?' (Size = 120), @pair_Value27='?' (Size = 120), @pair_Value28='?' (Size = 120), @pair_Value29='?' (Size = 120), @pair_Value30='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20, @pair_Value21, @pair_Value22, @pair_Value23, @pair_Value24, @pair_Value25, @pair_Value26, @pair_Value27, @pair_Value28, @pair_Value29, @pair_Value30)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (28ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?' (DbType = Guid), @p3='?' (DbType = Guid), @p4='?' (DbType = Guid), @p5='?' (DbType = Guid), @p6='?' (DbType = Guid), @p7='?' (DbType = Guid), @p8='?' (DbType = Guid), @p9='?' (DbType = Guid), @p10='?' (DbType = Guid), @p11='?' (DbType = Guid), @p12='?' (DbType = Guid), @p13='?' (DbType = Guid), @p14='?' (DbType = Guid), @p15='?' (DbType = Guid), @p16='?' (DbType = Guid), @p17='?' (DbType = Guid), @p18='?' (DbType = Guid), @p19='?' (DbType = Guid), @p20='?' (DbType = Guid), @p21='?' (DbType = Guid), @p22='?' (DbType = Guid), @p23='?' (DbType = Guid), @p24='?' (DbType = Guid), @p25='?' (DbType = Guid), @p26='?' (DbType = Guid), @p27='?' (DbType = Guid), @p28='?' (DbType = Guid), @p29='?' (DbType = Guid), @p30='?' (DbType = Guid), @p31='?' (DbType = Guid), @p32='?' (DbType = Guid), @p33='?' (DbType = Guid), @p34='?' (DbType = Guid), @p35='?' (DbType = Guid), @p36='?' (DbType = Guid), @p37='?' (DbType = Guid), @p38='?' (DbType = Guid), @p39='?' (DbType = Guid), @p40='?' (DbType = Guid), @p41='?' (DbType = Guid), @p42='?' (DbType = Guid), @p43='?' (DbType = Guid), @p44='?' (DbType = Guid), @p45='?' (DbType = Guid), @p46='?' (DbType = Guid), @p47='?' (DbType = Guid), @p48='?' (DbType = Guid), @p49='?' (DbType = Guid), @p50='?' (DbType = Guid), @p51='?' (DbType = Guid), @p52='?' (DbType = Guid), @p53='?' (DbType = Guid), @p54='?' (DbType = Guid), @p55='?' (DbType = Guid), @p56='?' (DbType = Guid), @p57='?' (DbType = Guid), @p58='?' (DbType = Guid), @p59='?' (DbType = Guid), @p60='?' (DbType = Guid), @p61='?' (DbType = Guid), @p62='?' (DbType = Guid), @p63='?' (DbType = Guid), @p64='?' (DbType = Guid), @p65='?' (DbType = Guid), @p66='?' (DbType = Guid), @p67='?' (DbType = Guid), @p68='?' (DbType = Guid), @p69='?' (DbType = Guid), @p70='?' (DbType = Guid), @p71='?' (DbType = Guid), @p72='?' (DbType = Guid), @p73='?' (DbType = Guid), @p74='?' (DbType = Guid), @p75='?' (DbType = Guid), @p76='?' (DbType = Guid), @p77='?' (DbType = Guid), @p78='?' (DbType = Guid), @p79='?' (DbType = Guid), @p80='?' (DbType = Guid), @p81='?' (DbType = Guid), @p82='?' (DbType = Guid), @p83='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [TBL_RolPermiso] ([PermisoId], [RolId])
+      VALUES (@p0, @p1),
+      (@p2, @p3),
+      (@p4, @p5),
+      (@p6, @p7),
+      (@p8, @p9),
+      (@p10, @p11),
+      (@p12, @p13),
+      (@p14, @p15),
+      (@p16, @p17),
+      (@p18, @p19),
+      (@p20, @p21),
+      (@p22, @p23),
+      (@p24, @p25),
+      (@p26, @p27),
+      (@p28, @p29),
+      (@p30, @p31),
+      (@p32, @p33),
+      (@p34, @p35),
+      (@p36, @p37),
+      (@p38, @p39),
+      (@p40, @p41),
+      (@p42, @p43),
+      (@p44, @p45),
+      (@p46, @p47),
+      (@p48, @p49),
+      (@p50, @p51),
+      (@p52, @p53),
+      (@p54, @p55),
+      (@p56, @p57),
+      (@p58, @p59),
+      (@p60, @p61),
+      (@p62, @p63),
+      (@p64, @p65),
+      (@p66, @p67),
+      (@p68, @p69),
+      (@p70, @p71),
+      (@p72, @p73),
+      (@p74, @p75),
+      (@p76, @p77),
+      (@p78, @p79),
+      (@p80, @p81),
+      (@p82, @p83);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?' (DbType = Guid), @p3='?' (DbType = Guid), @p4='?' (DbType = Guid), @p5='?' (DbType = Guid), @p6='?' (DbType = Guid), @p7='?' (DbType = Guid), @p8='?' (DbType = Guid), @p9='?' (DbType = Guid), @p10='?' (DbType = Guid), @p11='?' (DbType = Guid), @p12='?' (DbType = Guid), @p13='?' (DbType = Guid), @p14='?' (DbType = Guid), @p15='?' (DbType = Guid), @p16='?' (DbType = Guid), @p17='?' (DbType = Guid), @p18='?' (DbType = Guid), @p19='?' (DbType = Guid), @p20='?' (DbType = Guid), @p21='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [TBL_RolPermiso] ([PermisoId], [RolId])
+      VALUES (@p0, @p1),
+      (@p2, @p3),
+      (@p4, @p5),
+      (@p6, @p7),
+      (@p8, @p9),
+      (@p10, @p11),
+      (@p12, @p13),
+      (@p14, @p15),
+      (@p16, @p17),
+      (@p18, @p19),
+      (@p20, @p21);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5262
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\isabe\Documents\ChatGPT\Llantas\backend\src\SistemaLlantas.Api
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (63ms) [Parameters=[@username='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[PasswordHash], [s].[RolId], [s].[RowVersion], [s].[Username], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [t1].[Id], [t1].[Activo], [t1].[CentroId], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioId], [t1].[UsuarioModificacion], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre0], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s0].[RolId], [s0].[PermisoId], [s0].[Id], [s0].[Activo], [s0].[Codigo], [s0].[FechaCreacion], [s0].[FechaModificacion], [s0].[Nombre], [s0].[RowVersion], [s0].[UsuarioCreacion], [s0].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[PasswordHash], [t].[RolId], [t].[RowVersion], [t].[Username], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre] AS [Nombre0], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Usuario] AS [t]
+          INNER JOIN [TBL_Rol] AS [t0] ON [t].[RolId] = [t0].[Id]
+          WHERE [t].[Username] = @username AND [t].[Activo] = CAST(1 AS bit) AND [t0].[Activo] = CAST(1 AS bit)
+      ) AS [s]
+      LEFT JOIN [TBL_UsuarioCentro] AS [t1] ON [s].[Id] = [t1].[UsuarioId]
+      LEFT JOIN (
+          SELECT [t2].[RolId], [t2].[PermisoId], [t3].[Id], [t3].[Activo], [t3].[Codigo], [t3].[FechaCreacion], [t3].[FechaModificacion], [t3].[Nombre], [t3].[RowVersion], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t2]
+          INNER JOIN [TBL_Permiso] AS [t3] ON [t2].[PermisoId] = [t3].[Id]
+      ) AS [s0] ON [s].[Id0] = [s0].[RolId]
+      ORDER BY [s].[Id], [s].[Id0], [t1].[Id], [s0].[RolId], [s0].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (85ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Codigo], [s].[Serial], [t1].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [s].[Nombre], [s].[UbicacionActual], [s].[ProfundidadInicial], [s].[Activo], [s].[RowVersion]
+      FROM (
+          SELECT TOP(@p) [t].[Id], [t].[Activo], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual], [t0].[Nombre]
+          FROM [TBL_Llanta] AS [t]
+          INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t0].[Nombre]
+      ) AS [s]
+      INNER JOIN [TBL_Marca] AS [t1] ON [s].[MarcaId] = [t1].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [s].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [s].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [s].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [s].[EstadoLlantaId] = [t5].[Id]
+      ORDER BY [s].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (46ms) [Parameters=[@username='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[PasswordHash], [s].[RolId], [s].[RowVersion], [s].[Username], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [t1].[Id], [t1].[Activo], [t1].[CentroId], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioId], [t1].[UsuarioModificacion], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre0], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s0].[RolId], [s0].[PermisoId], [s0].[Id], [s0].[Activo], [s0].[Codigo], [s0].[FechaCreacion], [s0].[FechaModificacion], [s0].[Nombre], [s0].[RowVersion], [s0].[UsuarioCreacion], [s0].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[PasswordHash], [t].[RolId], [t].[RowVersion], [t].[Username], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre] AS [Nombre0], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Usuario] AS [t]
+          INNER JOIN [TBL_Rol] AS [t0] ON [t].[RolId] = [t0].[Id]
+          WHERE [t].[Username] = @username AND [t].[Activo] = CAST(1 AS bit) AND [t0].[Activo] = CAST(1 AS bit)
+      ) AS [s]
+      LEFT JOIN [TBL_UsuarioCentro] AS [t1] ON [s].[Id] = [t1].[UsuarioId]
+      LEFT JOIN (
+          SELECT [t2].[RolId], [t2].[PermisoId], [t3].[Id], [t3].[Activo], [t3].[Codigo], [t3].[FechaCreacion], [t3].[FechaModificacion], [t3].[Nombre], [t3].[RowVersion], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t2]
+          INNER JOIN [TBL_Permiso] AS [t3] ON [t2].[PermisoId] = [t3].[Id]
+      ) AS [s0] ON [s].[Id0] = [s0].[RolId]
+      ORDER BY [s].[Id], [s].[Id0], [t1].[Id], [s0].[RolId], [s0].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@username='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[PasswordHash], [s].[RolId], [s].[RowVersion], [s].[Username], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [t1].[Id], [t1].[Activo], [t1].[CentroId], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioId], [t1].[UsuarioModificacion], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre0], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s0].[RolId], [s0].[PermisoId], [s0].[Id], [s0].[Activo], [s0].[Codigo], [s0].[FechaCreacion], [s0].[FechaModificacion], [s0].[Nombre], [s0].[RowVersion], [s0].[UsuarioCreacion], [s0].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[PasswordHash], [t].[RolId], [t].[RowVersion], [t].[Username], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre] AS [Nombre0], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Usuario] AS [t]
+          INNER JOIN [TBL_Rol] AS [t0] ON [t].[RolId] = [t0].[Id]
+          WHERE [t].[Username] = @username AND [t].[Activo] = CAST(1 AS bit) AND [t0].[Activo] = CAST(1 AS bit)
+      ) AS [s]
+      LEFT JOIN [TBL_UsuarioCentro] AS [t1] ON [s].[Id] = [t1].[UsuarioId]
+      LEFT JOIN (
+          SELECT [t2].[RolId], [t2].[PermisoId], [t3].[Id], [t3].[Activo], [t3].[Codigo], [t3].[FechaCreacion], [t3].[FechaModificacion], [t3].[Nombre], [t3].[RowVersion], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t2]
+          INNER JOIN [TBL_Permiso] AS [t3] ON [t2].[PermisoId] = [t3].[Id]
+      ) AS [s0] ON [s].[Id0] = [s0].[RolId]
+      ORDER BY [s].[Id], [s].[Id0], [t1].[Id], [s0].[RolId], [s0].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT TOP(@p) [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE 0 = 1
+          ORDER BY [t].[Codigo]
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (51ms) [Parameters=[@username='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[PasswordHash], [s].[RolId], [s].[RowVersion], [s].[Username], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [t1].[Id], [t1].[Activo], [t1].[CentroId], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioId], [t1].[UsuarioModificacion], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre0], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s0].[RolId], [s0].[PermisoId], [s0].[Id], [s0].[Activo], [s0].[Codigo], [s0].[FechaCreacion], [s0].[FechaModificacion], [s0].[Nombre], [s0].[RowVersion], [s0].[UsuarioCreacion], [s0].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[PasswordHash], [t].[RolId], [t].[RowVersion], [t].[Username], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre] AS [Nombre0], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Usuario] AS [t]
+          INNER JOIN [TBL_Rol] AS [t0] ON [t].[RolId] = [t0].[Id]
+          WHERE [t].[Username] = @username AND [t].[Activo] = CAST(1 AS bit) AND [t0].[Activo] = CAST(1 AS bit)
+      ) AS [s]
+      LEFT JOIN [TBL_UsuarioCentro] AS [t1] ON [s].[Id] = [t1].[UsuarioId]
+      LEFT JOIN (
+          SELECT [t2].[RolId], [t2].[PermisoId], [t3].[Id], [t3].[Activo], [t3].[Codigo], [t3].[FechaCreacion], [t3].[FechaModificacion], [t3].[Nombre], [t3].[RowVersion], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t2]
+          INNER JOIN [TBL_Permiso] AS [t3] ON [t2].[PermisoId] = [t3].[Id]
+      ) AS [s0] ON [s].[Id0] = [s0].[RolId]
+      ORDER BY [s].[Id], [s].[Id0], [t1].[Id], [s0].[RolId], [s0].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (84ms) [Parameters=[@usuario='?' (Size = 150), @p='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[TipoActividad], [t].[FechaProgramada], [t0].[Nombre], [t].[VehiculoId], CASE
+          WHEN [t1].[Id] IS NULL THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END, [t1].[NumeroInterno], [t1].[Placa], [t].[Prioridad], CASE [t].[Estado]
+          WHEN 0 THEN N'Pendiente'
+          WHEN 1 THEN N'EnEjecucion'
+          WHEN 2 THEN N'Cumplida'
+          WHEN 3 THEN N'Vencida'
+          WHEN 4 THEN N'Cancelada'
+          ELSE CAST([t].[Estado] AS nvarchar(max))
+      END, CASE
+          WHEN [t].[TipoActividad] = N'Inspección' THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+      FROM [TBL_ActividadProgramada] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      LEFT JOIN [TBL_Vehiculo] AS [t1] ON [t].[VehiculoId] = [t1].[Id]
+      WHERE ([t].[TecnicoId] = @usuario OR [t].[TecnicoId] = @p) AND [t].[Estado] <> 4
+      ORDER BY [t].[FechaProgramada]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (67ms) [Parameters=[@username='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[PasswordHash], [s].[RolId], [s].[RowVersion], [s].[Username], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [t1].[Id], [t1].[Activo], [t1].[CentroId], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioId], [t1].[UsuarioModificacion], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre0], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s0].[RolId], [s0].[PermisoId], [s0].[Id], [s0].[Activo], [s0].[Codigo], [s0].[FechaCreacion], [s0].[FechaModificacion], [s0].[Nombre], [s0].[RowVersion], [s0].[UsuarioCreacion], [s0].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[PasswordHash], [t].[RolId], [t].[RowVersion], [t].[Username], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre] AS [Nombre0], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Usuario] AS [t]
+          INNER JOIN [TBL_Rol] AS [t0] ON [t].[RolId] = [t0].[Id]
+          WHERE [t].[Username] = @username AND [t].[Activo] = CAST(1 AS bit) AND [t0].[Activo] = CAST(1 AS bit)
+      ) AS [s]
+      LEFT JOIN [TBL_UsuarioCentro] AS [t1] ON [s].[Id] = [t1].[UsuarioId]
+      LEFT JOIN (
+          SELECT [t2].[RolId], [t2].[PermisoId], [t3].[Id], [t3].[Activo], [t3].[Codigo], [t3].[FechaCreacion], [t3].[FechaModificacion], [t3].[Nombre], [t3].[RowVersion], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t2]
+          INNER JOIN [TBL_Permiso] AS [t3] ON [t2].[PermisoId] = [t3].[Id]
+      ) AS [s0] ON [s].[Id0] = [s0].[RolId]
+      ORDER BY [s].[Id], [s].[Id0], [t1].[Id], [s0].[RolId], [s0].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1,204ms) [Parameters=[@usuario='?' (Size = 150), @p='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[TipoActividad], [t].[FechaProgramada], [t0].[Nombre], [t].[VehiculoId], CASE
+          WHEN [t1].[Id] IS NULL THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END, [t1].[NumeroInterno], [t1].[Placa], [t].[Prioridad], CASE [t].[Estado]
+          WHEN 0 THEN N'Pendiente'
+          WHEN 1 THEN N'EnEjecucion'
+          WHEN 2 THEN N'Cumplida'
+          WHEN 3 THEN N'Vencida'
+          WHEN 4 THEN N'Cancelada'
+          ELSE CAST([t].[Estado] AS nvarchar(max))
+      END, CASE
+          WHEN [t].[TipoActividad] = N'Inspección' THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+      FROM [TBL_ActividadProgramada] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      LEFT JOIN [TBL_Vehiculo] AS [t1] ON [t].[VehiculoId] = [t1].[Id]
+      WHERE ([t].[TecnicoId] = @usuario OR [t].[TecnicoId] = @p) AND [t].[Estado] <> 4
+      ORDER BY [t].[FechaProgramada]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (352ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (120ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (215ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (276ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (166ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (170ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (516ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (25ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (79ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (95ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (31ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (38ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (307ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (209ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (53ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (15ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (25ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (15ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (29ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[NumeroInterno], [t].[Placa], [t].[Tipo], [t].[CentroId], [t0].[Codigo], [t0].[Nombre]
+      FROM [TBL_Vehiculo] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      ORDER BY [t].[NumeroInterno]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[NumeroInterno], [t].[Placa], [t].[Tipo], [t].[CentroId], [t0].[Codigo], [t0].[Nombre]
+      FROM [TBL_Vehiculo] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      ORDER BY [t].[NumeroInterno]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[NumeroInterno], [t].[Placa], [t].[Tipo], [t].[CentroId], [t0].[Codigo], [t0].[Nombre]
+      FROM [TBL_Vehiculo] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      ORDER BY [t].[NumeroInterno]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre]
+      FROM [TBL_CondicionLlanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+      ORDER BY [t].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre]
+      FROM [TBL_CausaLlanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+      ORDER BY [t].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre]
+      FROM [TBL_RecomendacionInspeccion] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+      ORDER BY [t].[Nombre]
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (91ms) [Parameters=[@vehiculoId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[NumeroInterno], [s].[Placa], [s].[RowVersion], [s].[Tipo], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre], [s].[RegionalId], [s].[Relevancia], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s1].[Id], [s1].[Activo], [s1].[FechaCreacion], [s1].[FechaModificacion], [s1].[Nombre], [s1].[Numero], [s1].[RowVersion], [s1].[UsuarioCreacion], [s1].[UsuarioModificacion], [s1].[VehiculoId], [s1].[Id0], [s1].[Activo0], [s1].[Codigo], [s1].[EjeVehiculoId], [s1].[FechaCreacion0], [s1].[FechaModificacion0], [s1].[Lado], [s1].[LlantaActualId], [s1].[Orden], [s1].[RowVersion0], [s1].[UsuarioCreacion0], [s1].[UsuarioModificacion0], [s1].[Id00], [s1].[Activo00], [s1].[CentroId], [s1].[Codigo0], [s1].[Costo], [s1].[DimensionId], [s1].[EstadoLlantaId], [s1].[FechaCompra], [s1].[FechaCreacion00], [s1].[FechaIngreso], [s1].[FechaModificacion00], [s1].[KilometrajeAcumulado], [s1].[MarcaId], [s1].[NumeroReencauches], [s1].[Observaciones], [s1].[ProfundidadInicial], [s1].[ReferenciaId], [s1].[RowVersion00], [s1].[Serial], [s1].[TipoLlantaId], [s1].[UbicacionActual], [s1].[UsuarioCreacion00], [s1].[UsuarioModificacion00], [s1].[Id1], [s1].[Activo1], [s1].[Codigo1], [s1].[EsDisposicionFinal], [s1].[FechaCreacion1], [s1].[FechaModificacion1], [s1].[Nombre0], [s1].[PermiteMontaje], [s1].[RowVersion1], [s1].[UsuarioCreacion1], [s1].[UsuarioModificacion1]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[NumeroInterno], [t].[Placa], [t].[RowVersion], [t].[Tipo], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre], [t0].[RegionalId], [t0].[Relevancia], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Vehiculo] AS [t]
+          INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+          WHERE [t].[Id] = @vehiculoId
+      ) AS [s]
+      LEFT JOIN (
+          SELECT [t1].[Id], [t1].[Activo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[Numero], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion], [t1].[VehiculoId], [s0].[Id] AS [Id0], [s0].[Activo] AS [Activo0], [s0].[Codigo], [s0].[EjeVehiculoId], [s0].[FechaCreacion] AS [FechaCreacion0], [s0].[FechaModificacion] AS [FechaModificacion0], [s0].[Lado], [s0].[LlantaActualId], [s0].[Orden], [s0].[RowVersion] AS [RowVersion0], [s0].[UsuarioCreacion] AS [UsuarioCreacion0], [s0].[UsuarioModificacion] AS [UsuarioModificacion0], [s0].[Id0] AS [Id00], [s0].[Activo0] AS [Activo00], [s0].[CentroId], [s0].[Codigo0], [s0].[Costo], [s0].[DimensionId], [s0].[EstadoLlantaId], [s0].[FechaCompra], [s0].[FechaCreacion0] AS [FechaCreacion00], [s0].[FechaIngreso], [s0].[FechaModificacion0] AS [FechaModificacion00], [s0].[KilometrajeAcumulado], [s0].[MarcaId], [s0].[NumeroReencauches], [s0].[Observaciones], [s0].[ProfundidadInicial], [s0].[ReferenciaId], [s0].[RowVersion0] AS [RowVersion00], [s0].[Serial], [s0].[TipoLlantaId], [s0].[UbicacionActual], [s0].[UsuarioCreacion0] AS [UsuarioCreacion00], [s0].[UsuarioModificacion0] AS [UsuarioModificacion00], [s0].[Id1], [s0].[Activo1], [s0].[Codigo1], [s0].[EsDisposicionFinal], [s0].[FechaCreacion1], [s0].[FechaModificacion1], [s0].[Nombre] AS [Nombre0], [s0].[PermiteMontaje], [s0].[RowVersion1], [s0].[UsuarioCreacion1], [s0].[UsuarioModificacion1]
+          FROM [TBL_EjeVehiculo] AS [t1]
+          LEFT JOIN (
+              SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[EjeVehiculoId], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Lado], [t2].[LlantaActualId], [t2].[Orden], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [t4].[Id] AS [Id0], [t4].[Activo] AS [Activo0], [t4].[CentroId], [t4].[Codigo] AS [Codigo0], [t4].[Costo], [t4].[DimensionId], [t4].[EstadoLlantaId], [t4].[FechaCompra], [t4].[FechaCreacion] AS [FechaCreacion0], [t4].[FechaIngreso], [t4].[FechaModificacion] AS [FechaModificacion0], [t4].[KilometrajeAcumulado], [t4].[MarcaId], [t4].[NumeroReencauches], [t4].[Observaciones], [t4].[ProfundidadInicial], [t4].[ReferenciaId], [t4].[RowVersion] AS [RowVersion0], [t4].[Serial], [t4].[TipoLlantaId], [t4].[UbicacionActual], [t4].[UsuarioCreacion] AS [UsuarioCreacion0], [t4].[UsuarioModificacion] AS [UsuarioModificacion0], [t5].[Id] AS [Id1], [t5].[Activo] AS [Activo1], [t5].[Codigo] AS [Codigo1], [t5].[EsDisposicionFinal], [t5].[FechaCreacion] AS [FechaCreacion1], [t5].[FechaModificacion] AS [FechaModificacion1], [t5].[Nombre], [t5].[PermiteMontaje], [t5].[RowVersion] AS [RowVersion1], [t5].[UsuarioCreacion] AS [UsuarioCreacion1], [t5].[UsuarioModificacion] AS [UsuarioModificacion1]
+              FROM [TBL_PosicionVehiculo] AS [t2]
+              LEFT JOIN (
+                  SELECT [t3].[Id], [t3].[Activo], [t3].[CentroId], [t3].[Codigo], [t3].[Costo], [t3].[DimensionId], [t3].[EstadoLlantaId], [t3].[FechaCompra], [t3].[FechaCreacion], [t3].[FechaIngreso], [t3].[FechaModificacion], [t3].[KilometrajeAcumulado], [t3].[MarcaId], [t3].[NumeroReencauches], [t3].[Observaciones], [t3].[ProfundidadInicial], [t3].[ReferenciaId], [t3].[RowVersion], [t3].[Serial], [t3].[TipoLlantaId], [t3].[UbicacionActual], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+                  FROM [TBL_Llanta] AS [t3]
+                  WHERE [t3].[Activo] = CAST(1 AS bit)
+              ) AS [t4] ON [t2].[LlantaActualId] = [t4].[Id]
+              LEFT JOIN [TBL_EstadoLlanta] AS [t5] ON [t4].[EstadoLlantaId] = [t5].[Id]
+          ) AS [s0] ON [t1].[Id] = [s0].[EjeVehiculoId]
+      ) AS [s1] ON [s].[Id] = [s1].[VehiculoId]
+      ORDER BY [s].[Id], [s].[Id0], [s1].[Id], [s1].[Id0], [s1].[Id00]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (23ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (49ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (40ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (38ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (40ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (15ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (48ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (77ms) [Parameters=[@usuario='?' (Size = 150), @p='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[TipoActividad], [t].[FechaProgramada], [t0].[Nombre], [t].[VehiculoId], CASE
+          WHEN [t1].[Id] IS NULL THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END, [t1].[NumeroInterno], [t1].[Placa], [t].[Prioridad], CASE [t].[Estado]
+          WHEN 0 THEN N'Pendiente'
+          WHEN 1 THEN N'EnEjecucion'
+          WHEN 2 THEN N'Cumplida'
+          WHEN 3 THEN N'Vencida'
+          WHEN 4 THEN N'Cancelada'
+          ELSE CAST([t].[Estado] AS nvarchar(max))
+      END, CASE
+          WHEN [t].[TipoActividad] = N'Inspección' THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+      FROM [TBL_ActividadProgramada] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      LEFT JOIN [TBL_Vehiculo] AS [t1] ON [t].[VehiculoId] = [t1].[Id]
+      WHERE ([t].[TecnicoId] = @usuario OR [t].[TecnicoId] = @p) AND [t].[Estado] <> 4
+      ORDER BY [t].[FechaProgramada]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (22ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (47ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (38ms) [Parameters=[@s_contains='?' (Size = 50), @s_contains0='?' (Size = 100), @s_contains1='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t1] ON [t].[ReferenciaId] = [t1].[Id]
+      WHERE [t].[Activo] = CAST(1 AS bit) AND ([t].[Codigo] LIKE @s_contains ESCAPE N'\' OR [t].[Serial] LIKE @s_contains0 ESCAPE N'\' OR [t0].[Nombre] LIKE @s_contains1 ESCAPE N'\' OR [t1].[Nombre] LIKE @s_contains1 ESCAPE N'\')
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (34ms) [Parameters=[@s_contains='?' (Size = 50), @s_contains0='?' (Size = 100), @s_contains1='?' (Size = 150), @p='?' (DbType = Int32), @p5='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Codigo], [s].[Serial], [s].[Nombre], [s].[Nombre0], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [s].[UbicacionActual], [s].[ProfundidadInicial], [s].[Activo], [s].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[ProfundidadInicial], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual], [t0].[Nombre], [t1].[Nombre] AS [Nombre0]
+          FROM [TBL_Llanta] AS [t]
+          INNER JOIN [TBL_Marca] AS [t0] ON [t].[MarcaId] = [t0].[Id]
+          INNER JOIN [TBL_Referencia] AS [t1] ON [t].[ReferenciaId] = [t1].[Id]
+          WHERE [t].[Activo] = CAST(1 AS bit) AND ([t].[Codigo] LIKE @s_contains ESCAPE N'\' OR [t].[Serial] LIKE @s_contains0 ESCAPE N'\' OR [t0].[Nombre] LIKE @s_contains1 ESCAPE N'\' OR [t1].[Nombre] LIKE @s_contains1 ESCAPE N'\')
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p5 ROWS ONLY
+      ) AS [s]
+      INNER JOIN [TBL_Dimension] AS [t2] ON [s].[DimensionId] = [t2].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t3] ON [s].[TipoLlantaId] = [t3].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t4] ON [s].[EstadoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_Centro] AS [t5] ON [s].[CentroId] = [t5].[Id]
+      ORDER BY [s].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@s_contains='?' (Size = 50), @s_contains0='?' (Size = 100), @s_contains1='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t1] ON [t].[ReferenciaId] = [t1].[Id]
+      WHERE [t].[Activo] = CAST(1 AS bit) AND ([t].[Codigo] LIKE @s_contains ESCAPE N'\' OR [t].[Serial] LIKE @s_contains0 ESCAPE N'\' OR [t0].[Nombre] LIKE @s_contains1 ESCAPE N'\' OR [t1].[Nombre] LIKE @s_contains1 ESCAPE N'\')
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@s_contains='?' (Size = 50), @s_contains0='?' (Size = 100), @s_contains1='?' (Size = 150), @p='?' (DbType = Int32), @p5='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Codigo], [s].[Serial], [s].[Nombre], [s].[Nombre0], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [s].[UbicacionActual], [s].[ProfundidadInicial], [s].[Activo], [s].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[ProfundidadInicial], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual], [t0].[Nombre], [t1].[Nombre] AS [Nombre0]
+          FROM [TBL_Llanta] AS [t]
+          INNER JOIN [TBL_Marca] AS [t0] ON [t].[MarcaId] = [t0].[Id]
+          INNER JOIN [TBL_Referencia] AS [t1] ON [t].[ReferenciaId] = [t1].[Id]
+          WHERE [t].[Activo] = CAST(1 AS bit) AND ([t].[Codigo] LIKE @s_contains ESCAPE N'\' OR [t].[Serial] LIKE @s_contains0 ESCAPE N'\' OR [t0].[Nombre] LIKE @s_contains1 ESCAPE N'\' OR [t1].[Nombre] LIKE @s_contains1 ESCAPE N'\')
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p5 ROWS ONLY
+      ) AS [s]
+      INNER JOIN [TBL_Dimension] AS [t2] ON [s].[DimensionId] = [t2].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t3] ON [s].[TipoLlantaId] = [t3].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t4] ON [s].[EstadoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_Centro] AS [t5] ON [s].[CentroId] = [t5].[Id]
+      ORDER BY [s].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@s_contains='?' (Size = 50), @s_contains0='?' (Size = 100), @s_contains1='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t1] ON [t].[ReferenciaId] = [t1].[Id]
+      WHERE [t].[Activo] = CAST(1 AS bit) AND ([t].[Codigo] LIKE @s_contains ESCAPE N'\' OR [t].[Serial] LIKE @s_contains0 ESCAPE N'\' OR [t0].[Nombre] LIKE @s_contains1 ESCAPE N'\' OR [t1].[Nombre] LIKE @s_contains1 ESCAPE N'\')
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@s_contains='?' (Size = 50), @s_contains0='?' (Size = 100), @s_contains1='?' (Size = 150), @p='?' (DbType = Int32), @p5='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Codigo], [s].[Serial], [s].[Nombre], [s].[Nombre0], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [s].[UbicacionActual], [s].[ProfundidadInicial], [s].[Activo], [s].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[ProfundidadInicial], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual], [t0].[Nombre], [t1].[Nombre] AS [Nombre0]
+          FROM [TBL_Llanta] AS [t]
+          INNER JOIN [TBL_Marca] AS [t0] ON [t].[MarcaId] = [t0].[Id]
+          INNER JOIN [TBL_Referencia] AS [t1] ON [t].[ReferenciaId] = [t1].[Id]
+          WHERE [t].[Activo] = CAST(1 AS bit) AND ([t].[Codigo] LIKE @s_contains ESCAPE N'\' OR [t].[Serial] LIKE @s_contains0 ESCAPE N'\' OR [t0].[Nombre] LIKE @s_contains1 ESCAPE N'\' OR [t1].[Nombre] LIKE @s_contains1 ESCAPE N'\')
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p5 ROWS ONLY
+      ) AS [s]
+      INNER JOIN [TBL_Dimension] AS [t2] ON [s].[DimensionId] = [t2].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t3] ON [s].[TipoLlantaId] = [t3].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t4] ON [s].[EstadoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_Centro] AS [t5] ON [s].[CentroId] = [t5].[Id]
+      ORDER BY [s].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (28ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (15ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (42ms) [Parameters=[@usuario='?' (Size = 150), @p='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[TipoActividad], [t].[FechaProgramada], [t0].[Nombre], [t].[VehiculoId], CASE
+          WHEN [t1].[Id] IS NULL THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END, [t1].[NumeroInterno], [t1].[Placa], [t].[Prioridad], CASE [t].[Estado]
+          WHEN 0 THEN N'Pendiente'
+          WHEN 1 THEN N'EnEjecucion'
+          WHEN 2 THEN N'Cumplida'
+          WHEN 3 THEN N'Vencida'
+          WHEN 4 THEN N'Cancelada'
+          ELSE CAST([t].[Estado] AS nvarchar(max))
+      END, CASE
+          WHEN [t].[TipoActividad] = N'Inspección' THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+      FROM [TBL_ActividadProgramada] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      LEFT JOIN [TBL_Vehiculo] AS [t1] ON [t].[VehiculoId] = [t1].[Id]
+      WHERE ([t].[TecnicoId] = @usuario OR [t].[TecnicoId] = @p) AND [t].[Estado] <> 4
+      ORDER BY [t].[FechaProgramada]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (34ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (27ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (62ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (28ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (61ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (50ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[NumeroInterno], [t].[Placa], [t].[Tipo], [t].[CentroId], [t0].[Codigo], [t0].[Nombre]
+      FROM [TBL_Vehiculo] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      ORDER BY [t].[NumeroInterno]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (63ms) [Parameters=[@usuario='?' (Size = 150), @p='?' (Size = 150)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[TipoActividad], [t].[FechaProgramada], [t0].[Nombre], [t].[VehiculoId], CASE
+          WHEN [t1].[Id] IS NULL THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END, [t1].[NumeroInterno], [t1].[Placa], [t].[Prioridad], CASE [t].[Estado]
+          WHEN 0 THEN N'Pendiente'
+          WHEN 1 THEN N'EnEjecucion'
+          WHEN 2 THEN N'Cumplida'
+          WHEN 3 THEN N'Vencida'
+          WHEN 4 THEN N'Cancelada'
+          ELSE CAST([t].[Estado] AS nvarchar(max))
+      END, CASE
+          WHEN [t].[TipoActividad] = N'Inspección' THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+      FROM [TBL_ActividadProgramada] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      LEFT JOIN [TBL_Vehiculo] AS [t1] ON [t].[VehiculoId] = [t1].[Id]
+      WHERE ([t].[TecnicoId] = @usuario OR [t].[TecnicoId] = @p) AND [t].[Estado] <> 4
+      ORDER BY [t].[FechaProgramada]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (35ms) [Parameters=[@username='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[PasswordHash], [s].[RolId], [s].[RowVersion], [s].[Username], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [t1].[Id], [t1].[Activo], [t1].[CentroId], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioId], [t1].[UsuarioModificacion], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre0], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s0].[RolId], [s0].[PermisoId], [s0].[Id], [s0].[Activo], [s0].[Codigo], [s0].[FechaCreacion], [s0].[FechaModificacion], [s0].[Nombre], [s0].[RowVersion], [s0].[UsuarioCreacion], [s0].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[PasswordHash], [t].[RolId], [t].[RowVersion], [t].[Username], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre] AS [Nombre0], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Usuario] AS [t]
+          INNER JOIN [TBL_Rol] AS [t0] ON [t].[RolId] = [t0].[Id]
+          WHERE [t].[Username] = @username AND [t].[Activo] = CAST(1 AS bit) AND [t0].[Activo] = CAST(1 AS bit)
+      ) AS [s]
+      LEFT JOIN [TBL_UsuarioCentro] AS [t1] ON [s].[Id] = [t1].[UsuarioId]
+      LEFT JOIN (
+          SELECT [t2].[RolId], [t2].[PermisoId], [t3].[Id], [t3].[Activo], [t3].[Codigo], [t3].[FechaCreacion], [t3].[FechaModificacion], [t3].[Nombre], [t3].[RowVersion], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t2]
+          INNER JOIN [TBL_Permiso] AS [t3] ON [t2].[PermisoId] = [t3].[Id]
+      ) AS [s0] ON [s].[Id0] = [s0].[RolId]
+      ORDER BY [s].[Id], [s].[Id0], [t1].[Id], [s0].[RolId], [s0].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (22ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[NumeroInterno], [t].[Placa], [t].[Tipo], [t].[CentroId], [t0].[Codigo], [t0].[Nombre]
+      FROM [TBL_Vehiculo] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      ORDER BY [t].[NumeroInterno]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre]
+      FROM [TBL_CondicionLlanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+      ORDER BY [t].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre]
+      FROM [TBL_CausaLlanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+      ORDER BY [t].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre]
+      FROM [TBL_RecomendacionInspeccion] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+      ORDER BY [t].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (428ms) [Parameters=[@vehiculoId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT [s].[Id], [s].[Activo], [s].[CentroId], [s].[FechaCreacion], [s].[FechaModificacion], [s].[NumeroInterno], [s].[Placa], [s].[RowVersion], [s].[Tipo], [s].[UsuarioCreacion], [s].[UsuarioModificacion], [s].[Id0], [s].[Activo0], [s].[Codigo], [s].[FechaCreacion0], [s].[FechaModificacion0], [s].[Nombre], [s].[RegionalId], [s].[Relevancia], [s].[RowVersion0], [s].[UsuarioCreacion0], [s].[UsuarioModificacion0], [s1].[Id], [s1].[Activo], [s1].[FechaCreacion], [s1].[FechaModificacion], [s1].[Nombre], [s1].[Numero], [s1].[RowVersion], [s1].[UsuarioCreacion], [s1].[UsuarioModificacion], [s1].[VehiculoId], [s1].[Id0], [s1].[Activo0], [s1].[Codigo], [s1].[EjeVehiculoId], [s1].[FechaCreacion0], [s1].[FechaModificacion0], [s1].[Lado], [s1].[LlantaActualId], [s1].[Orden], [s1].[RowVersion0], [s1].[UsuarioCreacion0], [s1].[UsuarioModificacion0], [s1].[Id00], [s1].[Activo00], [s1].[CentroId], [s1].[Codigo0], [s1].[Costo], [s1].[DimensionId], [s1].[EstadoLlantaId], [s1].[FechaCompra], [s1].[FechaCreacion00], [s1].[FechaIngreso], [s1].[FechaModificacion00], [s1].[KilometrajeAcumulado], [s1].[MarcaId], [s1].[NumeroReencauches], [s1].[Observaciones], [s1].[ProfundidadInicial], [s1].[ReferenciaId], [s1].[RowVersion00], [s1].[Serial], [s1].[TipoLlantaId], [s1].[UbicacionActual], [s1].[UsuarioCreacion00], [s1].[UsuarioModificacion00], [s1].[Id1], [s1].[Activo1], [s1].[Codigo1], [s1].[EsDisposicionFinal], [s1].[FechaCreacion1], [s1].[FechaModificacion1], [s1].[Nombre0], [s1].[PermiteMontaje], [s1].[RowVersion1], [s1].[UsuarioCreacion1], [s1].[UsuarioModificacion1]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[CentroId], [t].[FechaCreacion], [t].[FechaModificacion], [t].[NumeroInterno], [t].[Placa], [t].[RowVersion], [t].[Tipo], [t].[UsuarioCreacion], [t].[UsuarioModificacion], [t0].[Id] AS [Id0], [t0].[Activo] AS [Activo0], [t0].[Codigo], [t0].[FechaCreacion] AS [FechaCreacion0], [t0].[FechaModificacion] AS [FechaModificacion0], [t0].[Nombre], [t0].[RegionalId], [t0].[Relevancia], [t0].[RowVersion] AS [RowVersion0], [t0].[UsuarioCreacion] AS [UsuarioCreacion0], [t0].[UsuarioModificacion] AS [UsuarioModificacion0]
+          FROM [TBL_Vehiculo] AS [t]
+          INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+          WHERE [t].[Id] = @vehiculoId
+      ) AS [s]
+      LEFT JOIN (
+          SELECT [t1].[Id], [t1].[Activo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[Numero], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion], [t1].[VehiculoId], [s0].[Id] AS [Id0], [s0].[Activo] AS [Activo0], [s0].[Codigo], [s0].[EjeVehiculoId], [s0].[FechaCreacion] AS [FechaCreacion0], [s0].[FechaModificacion] AS [FechaModificacion0], [s0].[Lado], [s0].[LlantaActualId], [s0].[Orden], [s0].[RowVersion] AS [RowVersion0], [s0].[UsuarioCreacion] AS [UsuarioCreacion0], [s0].[UsuarioModificacion] AS [UsuarioModificacion0], [s0].[Id0] AS [Id00], [s0].[Activo0] AS [Activo00], [s0].[CentroId], [s0].[Codigo0], [s0].[Costo], [s0].[DimensionId], [s0].[EstadoLlantaId], [s0].[FechaCompra], [s0].[FechaCreacion0] AS [FechaCreacion00], [s0].[FechaIngreso], [s0].[FechaModificacion0] AS [FechaModificacion00], [s0].[KilometrajeAcumulado], [s0].[MarcaId], [s0].[NumeroReencauches], [s0].[Observaciones], [s0].[ProfundidadInicial], [s0].[ReferenciaId], [s0].[RowVersion0] AS [RowVersion00], [s0].[Serial], [s0].[TipoLlantaId], [s0].[UbicacionActual], [s0].[UsuarioCreacion0] AS [UsuarioCreacion00], [s0].[UsuarioModificacion0] AS [UsuarioModificacion00], [s0].[Id1], [s0].[Activo1], [s0].[Codigo1], [s0].[EsDisposicionFinal], [s0].[FechaCreacion1], [s0].[FechaModificacion1], [s0].[Nombre] AS [Nombre0], [s0].[PermiteMontaje], [s0].[RowVersion1], [s0].[UsuarioCreacion1], [s0].[UsuarioModificacion1]
+          FROM [TBL_EjeVehiculo] AS [t1]
+          LEFT JOIN (
+              SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[EjeVehiculoId], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Lado], [t2].[LlantaActualId], [t2].[Orden], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [t4].[Id] AS [Id0], [t4].[Activo] AS [Activo0], [t4].[CentroId], [t4].[Codigo] AS [Codigo0], [t4].[Costo], [t4].[DimensionId], [t4].[EstadoLlantaId], [t4].[FechaCompra], [t4].[FechaCreacion] AS [FechaCreacion0], [t4].[FechaIngreso], [t4].[FechaModificacion] AS [FechaModificacion0], [t4].[KilometrajeAcumulado], [t4].[MarcaId], [t4].[NumeroReencauches], [t4].[Observaciones], [t4].[ProfundidadInicial], [t4].[ReferenciaId], [t4].[RowVersion] AS [RowVersion0], [t4].[Serial], [t4].[TipoLlantaId], [t4].[UbicacionActual], [t4].[UsuarioCreacion] AS [UsuarioCreacion0], [t4].[UsuarioModificacion] AS [UsuarioModificacion0], [t5].[Id] AS [Id1], [t5].[Activo] AS [Activo1], [t5].[Codigo] AS [Codigo1], [t5].[EsDisposicionFinal], [t5].[FechaCreacion] AS [FechaCreacion1], [t5].[FechaModificacion] AS [FechaModificacion1], [t5].[Nombre], [t5].[PermiteMontaje], [t5].[RowVersion] AS [RowVersion1], [t5].[UsuarioCreacion] AS [UsuarioCreacion1], [t5].[UsuarioModificacion] AS [UsuarioModificacion1]
+              FROM [TBL_PosicionVehiculo] AS [t2]
+              LEFT JOIN (
+                  SELECT [t3].[Id], [t3].[Activo], [t3].[CentroId], [t3].[Codigo], [t3].[Costo], [t3].[DimensionId], [t3].[EstadoLlantaId], [t3].[FechaCompra], [t3].[FechaCreacion], [t3].[FechaIngreso], [t3].[FechaModificacion], [t3].[KilometrajeAcumulado], [t3].[MarcaId], [t3].[NumeroReencauches], [t3].[Observaciones], [t3].[ProfundidadInicial], [t3].[ReferenciaId], [t3].[RowVersion], [t3].[Serial], [t3].[TipoLlantaId], [t3].[UbicacionActual], [t3].[UsuarioCreacion], [t3].[UsuarioModificacion]
+                  FROM [TBL_Llanta] AS [t3]
+                  WHERE [t3].[Activo] = CAST(1 AS bit)
+              ) AS [t4] ON [t2].[LlantaActualId] = [t4].[Id]
+              LEFT JOIN [TBL_EstadoLlanta] AS [t5] ON [t4].[EstadoLlantaId] = [t5].[Id]
+          ) AS [s0] ON [t1].[Id] = [s0].[EjeVehiculoId]
+      ) AS [s1] ON [s].[Id] = [s1].[VehiculoId]
+      ORDER BY [s].[Id], [s].[Id0], [s1].[Id], [s1].[Id0], [s1].[Id00]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[NumeroInterno], [t].[Placa], [t].[Tipo], [t].[CentroId], [t0].[Codigo], [t0].[Nombre]
+      FROM [TBL_Vehiculo] AS [t]
+      INNER JOIN [TBL_Centro] AS [t0] ON [t].[CentroId] = [t0].[Id]
+      ORDER BY [t].[NumeroInterno]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (28ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (31ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (24ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (21ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (28ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (81ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (36ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (29ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Marca] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_TipoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_EstadoLlanta] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (23ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Llanta] AS [t]
+      WHERE [t].[Activo] = CAST(1 AS bit)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Referencia] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (26ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id], [t].[Codigo], [t].[Nombre], [t].[Activo]
+      FROM [TBL_Dimension] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+      ORDER BY [t].[Nombre]
+      OFFSET @p ROWS FETCH NEXT @p2 ROWS ONLY
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@c_Activo='?' (DbType = Boolean)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [TBL_Centro] AS [t]
+      WHERE [t].[Activo] = @c_Activo
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (22ms) [Parameters=[@c_Activo='?' (DbType = Boolean), @p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Nombre], [t1].[Activo], [t1].[RegionalId], [t0].[Nombre]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[Codigo], [t].[Nombre], [t].[RegionalId]
+          FROM [TBL_Centro] AS [t]
+          WHERE [t].[Activo] = @c_Activo
+          ORDER BY [t].[Nombre]
+          OFFSET @p ROWS FETCH NEXT @p ROWS ONLY
+      ) AS [t1]
+      LEFT JOIN [TBL_Regional] AS [t0] ON [t1].[RegionalId] = [t0].[Id]
+      ORDER BY [t1].[Nombre]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (99ms) [Parameters=[@p='?' (DbType = Int32), @p1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT [t1].[Id], [t1].[Codigo], [t1].[Serial], [t0].[Nombre], [t2].[Nombre], [t3].[Nombre], [t4].[Nombre], [t5].[Nombre], [t6].[Nombre], [t1].[UbicacionActual], [t1].[ProfundidadInicial], [t1].[Activo], [t1].[RowVersion]
+      FROM (
+          SELECT [t].[Id], [t].[Activo], [t].[CentroId], [t].[Codigo], [t].[DimensionId], [t].[EstadoLlantaId], [t].[MarcaId], [t].[ProfundidadInicial], [t].[ReferenciaId], [t].[RowVersion], [t].[Serial], [t].[TipoLlantaId], [t].[UbicacionActual]
+          FROM [TBL_Llanta] AS [t]
+          WHERE [t].[Activo] = CAST(1 AS bit)
+          ORDER BY [t].[Codigo]
+          OFFSET @p ROWS FETCH NEXT @p1 ROWS ONLY
+      ) AS [t1]
+      INNER JOIN [TBL_Marca] AS [t0] ON [t1].[MarcaId] = [t0].[Id]
+      INNER JOIN [TBL_Referencia] AS [t2] ON [t1].[ReferenciaId] = [t2].[Id]
+      INNER JOIN [TBL_Dimension] AS [t3] ON [t1].[DimensionId] = [t3].[Id]
+      INNER JOIN [TBL_TipoLlanta] AS [t4] ON [t1].[TipoLlantaId] = [t4].[Id]
+      INNER JOIN [TBL_EstadoLlanta] AS [t5] ON [t1].[EstadoLlantaId] = [t5].[Id]
+      INNER JOIN [TBL_Centro] AS [t6] ON [t1].[CentroId] = [t6].[Id]
+      ORDER BY [t1].[Codigo]
