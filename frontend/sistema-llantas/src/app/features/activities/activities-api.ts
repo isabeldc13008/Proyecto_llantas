@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 
 export interface Activity {
   id:string; tipo:string; fecha:string; centro:string; vehiculoId:string|null;
-  vehiculo:string; prioridad:string; estado:string; rutaInicio:string;
+  vehiculo:string; prioridad:string; estado:string; rutaInicio:string; fechaCumplimiento:string|null;
 }
 
 @Injectable({providedIn:'root'})

@@ -7,7 +7,7 @@
     <p class="nav-label">Operación</p>
     <nav (click)="menuOpen=false">
       @if(auth.canModule('resumen')){<a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">◫ <span>Resumen</span></a>}
-      @if(auth.canModule('actividades')){<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>Mis actividades</span></a>}
+      @if(auth.canModule('actividades')){<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>{{auth.user()?.role==='TECNICO'?'Mis actividades':'Actividades'}}</span></a>}
       @if(auth.canModule('llantas')){<a routerLink="/llantas" routerLinkActive="active">◉ <span>Llantas</span></a>}
       @if(auth.canModule('vehiculos')){<a routerLink="/vehiculos" routerLinkActive="active">▰ <span>Vehículos</span></a>}
       @if(auth.canModule('inventario')){<a routerLink="/inventario" routerLinkActive="active">▦ <span>Inventario</span></a>}

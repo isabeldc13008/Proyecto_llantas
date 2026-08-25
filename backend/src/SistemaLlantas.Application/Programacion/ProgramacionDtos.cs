@@ -3,7 +3,7 @@ using SistemaLlantas.Application.Common;
 
 namespace SistemaLlantas.Application.Programacion;
 
-public sealed record ProgramacionDto(Guid Id,string Tipo,DateTimeOffset Inicio,DateTimeOffset? Fin,Guid CentroId,string Centro,Guid? VehiculoId,string Vehiculo,Guid? TecnicoUsuarioId,string Tecnico,string TecnicoNombre,string Prioridad,string Estado,string RutaInicio,bool TieneSolapamiento,string? Observaciones,string? MotivoCancelacion,byte[] RowVersion);
+public sealed record ProgramacionDto(Guid Id,string Tipo,DateTimeOffset Inicio,DateTimeOffset? Fin,Guid CentroId,string Centro,Guid? VehiculoId,string Vehiculo,Guid? TecnicoUsuarioId,string Tecnico,string TecnicoNombre,string Prioridad,string Estado,string RutaInicio,bool TieneSolapamiento,string? Observaciones,string? MotivoCancelacion,DateTimeOffset? FechaCumplimiento,byte[] RowVersion);
 public sealed record TecnicoProgramacionDto(Guid Id,string Username,string Nombre,IReadOnlyList<Guid> CentroIds);
 public sealed record ProgramacionFiltro(Guid? CentroId,Guid? VehiculoId,Guid? TecnicoUsuarioId,string? Tipo,string? Estado,DateTimeOffset? Desde,DateTimeOffset? Hasta,string? Prioridad);
 public sealed class GuardarProgramacionDto
