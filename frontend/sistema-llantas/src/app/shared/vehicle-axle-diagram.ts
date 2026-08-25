@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export interface DiagramPosition { id:number|string; code:string; side:string; tire?:string; state?:'normal'|'alert'|'empty'|'inconsistency' }
+export interface DiagramPosition { id:number|string; code:string; side:string; tire?:string; state?:'normal'|'alert'|'critical'|'empty'|'inconsistency' }
 export interface DiagramAxle { id:number|string; name:string; type:string; positions:DiagramPosition[] }
 
 @Component({selector:'app-vehicle-axle-diagram',imports:[CommonModule],template:`
