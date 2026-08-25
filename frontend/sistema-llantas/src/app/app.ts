@@ -12,9 +12,4 @@ export class App {
     this.auth.logout();
     void this.router.navigateByUrl('/acceso');
   }
-
-  isDemoContext(){
-    const path=this.router.url.split('?')[0].replace(/^\//,'');
-    return !(path==='inspecciones'||path==='mis-actividades'||path==='administracion'||(path===''&&this.auth.user()?.role==='TECNICO'));
-  }
 }
