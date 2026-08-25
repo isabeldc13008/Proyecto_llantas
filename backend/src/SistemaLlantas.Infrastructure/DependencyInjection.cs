@@ -7,6 +7,7 @@ using SistemaLlantas.Application.Inspecciones;
 using SistemaLlantas.Application.Operaciones;
 using SistemaLlantas.Application.Vehiculos;
 using SistemaLlantas.Application.Programacion;
+using SistemaLlantas.Application.Dashboard;
 using SistemaLlantas.Infrastructure.Persistence;
 using SistemaLlantas.Infrastructure.Services;
 
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IOperacionService, OperacionService>();
         services.AddScoped<IVehiculoService, VehiculoService>();
         services.AddScoped<IProgramacionService, ProgramacionService>();
+        services.AddScoped<IDashboardService, DashboardService>();
         return services;
     }
 }

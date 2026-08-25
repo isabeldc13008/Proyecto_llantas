@@ -23,6 +23,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 }
 builder.Services.AddAuthorization(o =>
 {
+    o.AddPolicy("Dashboard.Consultar",p=>p.RequireClaim("permiso","modulos.resumen.consultar"));
     o.AddPolicy("Llantas.Consultar", p => p.RequireClaim("permiso", "llantas.consultar", "llantas.administrar"));
     o.AddPolicy("Llantas.Administrar", p => p.RequireClaim("permiso", "llantas.administrar"));
     o.AddPolicy("Catalogos.Administrar", p => p.RequireClaim("permiso", "catalogos.administrar"));
