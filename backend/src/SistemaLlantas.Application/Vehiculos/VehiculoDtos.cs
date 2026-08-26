@@ -2,11 +2,14 @@ using SistemaLlantas.Application.Common;
 
 namespace SistemaLlantas.Application.Vehiculos;
 
-public sealed record VehiculoResumenDto(Guid Id,string NumeroInterno,string Placa,string Tipo,Guid CentroId,string Centro,string? Configuracion,string Estado,decimal? Kilometraje,int Ejes,int Posiciones,string RowVersion);
-public sealed record PosicionVehiculoDto(Guid Id,string Codigo,string Lado,string Ubicacion,int Orden,Guid? LlantaId,string? LlantaCodigo,string? LlantaSerial);
+public sealed record VehiculoResumenDto(Guid Id,string NumeroInterno,string Placa,string Tipo,Guid CentroId,string Centro,string? Configuracion,string Estado,decimal? Kilometraje,int Ejes,int Posiciones,int PosicionesCubiertas,int Alertas,DateTimeOffset? UltimaInspeccion,decimal? PorcentajeCompletitud,string RowVersion);
+public sealed record PosicionVehiculoDto(Guid Id,string Codigo,string Lado,string Ubicacion,int Orden,Guid? LlantaId,string? LlantaCodigo,string? LlantaSerial,string? MarcaReferencia,string? Dimension,string? EstadoLlanta,decimal? ProfundidadActual,decimal? KilometrajeLlanta,decimal? KilometrajeMontaje,DateTimeOffset? UltimaInspeccion,int Reencauches,int Reparaciones,string Atencion);
 public sealed record EjeVehiculoDto(Guid Id,int Numero,int Orden,string Nombre,string TipoEje,IReadOnlyList<PosicionVehiculoDto> Posiciones);
 public sealed record AsignacionVehiculoDto(Guid Id,string LlantaCodigo,string Posicion,DateTimeOffset FechaInicio,DateTimeOffset? FechaFin,bool EsActiva);
-public sealed record VehiculoDetalleDto(Guid Id,string NumeroInterno,string Placa,string Tipo,Guid CentroId,string Centro,Guid? ConfiguracionVehiculoId,string? Configuracion,string Estado,decimal? Kilometraje,IReadOnlyList<EjeVehiculoDto> Ejes,IReadOnlyList<AsignacionVehiculoDto> Historial,string RowVersion);
+public sealed record InspeccionVehiculoVidaDto(Guid Id,DateTimeOffset Fecha,string Tecnico,string Posicion,string? Llanta,string Profundidades,string Estado,int Alertas);
+public sealed record MovimientoVehiculoVidaDto(Guid Id,DateTimeOffset Fecha,string Tipo,string Usuario,string Llanta,string? Origen,string? Destino,decimal? Kilometraje);
+public sealed record EventoVehiculoDto(DateTimeOffset Fecha,string Tipo,string Descripcion,string Usuario);
+public sealed record VehiculoDetalleDto(Guid Id,string NumeroInterno,string Placa,string Tipo,Guid CentroId,string Centro,Guid? ConfiguracionVehiculoId,string? Configuracion,string Estado,decimal? Kilometraje,IReadOnlyList<EjeVehiculoDto> Ejes,IReadOnlyList<AsignacionVehiculoDto> Historial,IReadOnlyList<InspeccionVehiculoVidaDto> Inspecciones,IReadOnlyList<MovimientoVehiculoVidaDto> Movimientos,IReadOnlyList<EventoVehiculoDto> Eventos,int AlertasActivas,int InspeccionesVencidas,DateTimeOffset? UltimaInspeccion,string RowVersion);
 public sealed record ConfiguracionPosicionDto(string Codigo,string Lado,string Ubicacion,int Orden);
 public sealed record ConfiguracionEjeDto(int Orden,string Nombre,string TipoEje,IReadOnlyList<ConfiguracionPosicionDto> Posiciones);
 public sealed record ConfiguracionVehiculoDto(Guid Id,string Codigo,string Nombre,string TipoVehiculo,IReadOnlyList<ConfiguracionEjeDto> Ejes,bool Activo);

@@ -47,6 +47,7 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<SolicitudOperacion> SolicitudesOperacion => Set<SolicitudOperacion>();
     public DbSet<ProveedorServicio> ProveedoresServicio => Set<ProveedorServicio>();
     public DbSet<OrdenServicioLlanta> OrdenesServicioLlanta => Set<OrdenServicioLlanta>();
+    public DbSet<LoteEnvioReparacion> LotesEnvioReparacion => Set<LoteEnvioReparacion>();
     public DbSet<EvidenciaFlujo> EvidenciasFlujo => Set<EvidenciaFlujo>();
     public DbSet<CargaMasiva> CargasMasivas => Set<CargaMasiva>();
 

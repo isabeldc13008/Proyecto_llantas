@@ -1,0 +1,415 @@
+Usando la configuración de inicio de backend\src\SistemaLlantas.Api\Properties\launchSettings.json...
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Llanta' has a global query filter defined and is the required end of a relationship with the entity 'AsignacionLlantaPosicion'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10622]
+      Entity 'Llanta' has a global query filter defined and is the required end of a relationship with the entity 'MovimientoDetalle'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (49ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Migrations[20411]
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (102ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+      SELECT @result
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (29ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+      BEGIN
+          CREATE TABLE [__EFMigrationsHistory] (
+              [MigrationId] nvarchar(150) NOT NULL,
+              [ProductVersion] nvarchar(32) NOT NULL,
+              CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+          );
+      END;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT [MigrationId], [ProductVersion]
+      FROM [__EFMigrationsHistory]
+      ORDER BY [MigrationId];
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      DECLARE @result int;
+      EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+      SELECT @result
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (26ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@code='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Permiso] AS [t]
+              WHERE [t].[Codigo] = @code) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (17ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120), @pair_Value21='?' (Size = 120), @pair_Value22='?' (Size = 120), @pair_Value23='?' (Size = 120), @pair_Value24='?' (Size = 120), @pair_Value25='?' (Size = 120), @pair_Value26='?' (Size = 120), @pair_Value27='?' (Size = 120), @pair_Value28='?' (Size = 120), @pair_Value29='?' (Size = 120), @pair_Value30='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20, @pair_Value21, @pair_Value22, @pair_Value23, @pair_Value24, @pair_Value25, @pair_Value26, @pair_Value27, @pair_Value28, @pair_Value29, @pair_Value30)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Key='?' (Size = 60)], CommandType='Text', CommandTimeout='30']
+      SELECT [t2].[Id], [t2].[Activo], [t2].[Codigo], [t2].[FechaCreacion], [t2].[FechaModificacion], [t2].[Nombre], [t2].[RowVersion], [t2].[UsuarioCreacion], [t2].[UsuarioModificacion], [s].[RolId], [s].[PermisoId], [s].[Id], [s].[Activo], [s].[Codigo], [s].[FechaCreacion], [s].[FechaModificacion], [s].[Nombre], [s].[RowVersion], [s].[UsuarioCreacion], [s].[UsuarioModificacion]
+      FROM (
+          SELECT TOP(2) [t].[Id], [t].[Activo], [t].[Codigo], [t].[FechaCreacion], [t].[FechaModificacion], [t].[Nombre], [t].[RowVersion], [t].[UsuarioCreacion], [t].[UsuarioModificacion]
+          FROM [TBL_Rol] AS [t]
+          WHERE [t].[Codigo] = @pair_Key
+      ) AS [t2]
+      LEFT JOIN (
+          SELECT [t0].[RolId], [t0].[PermisoId], [t1].[Id], [t1].[Activo], [t1].[Codigo], [t1].[FechaCreacion], [t1].[FechaModificacion], [t1].[Nombre], [t1].[RowVersion], [t1].[UsuarioCreacion], [t1].[UsuarioModificacion]
+          FROM [TBL_RolPermiso] AS [t0]
+          INNER JOIN [TBL_Permiso] AS [t1] ON [t0].[PermisoId] = [t1].[Id]
+      ) AS [s] ON [t2].[Id] = [s].[RolId]
+      ORDER BY [t2].[Id], [s].[RolId], [s].[PermisoId]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@pair_Value1='?' (Size = 120), @pair_Value2='?' (Size = 120), @pair_Value3='?' (Size = 120), @pair_Value4='?' (Size = 120), @pair_Value5='?' (Size = 120), @pair_Value6='?' (Size = 120), @pair_Value7='?' (Size = 120), @pair_Value8='?' (Size = 120), @pair_Value9='?' (Size = 120), @pair_Value10='?' (Size = 120), @pair_Value11='?' (Size = 120), @pair_Value12='?' (Size = 120), @pair_Value13='?' (Size = 120), @pair_Value14='?' (Size = 120), @pair_Value15='?' (Size = 120), @pair_Value16='?' (Size = 120), @pair_Value17='?' (Size = 120), @pair_Value18='?' (Size = 120), @pair_Value19='?' (Size = 120), @pair_Value20='?' (Size = 120), @pair_Value21='?' (Size = 120), @pair_Value22='?' (Size = 120), @pair_Value23='?' (Size = 120), @pair_Value24='?' (Size = 120), @pair_Value25='?' (Size = 120), @pair_Value26='?' (Size = 120), @pair_Value27='?' (Size = 120), @pair_Value28='?' (Size = 120), @pair_Value29='?' (Size = 120), @pair_Value30='?' (Size = 120)], CommandType='Text', CommandTimeout='30']
+      SELECT [t].[Id]
+      FROM [TBL_Permiso] AS [t]
+      WHERE [t].[Codigo] IN (@pair_Value1, @pair_Value2, @pair_Value3, @pair_Value4, @pair_Value5, @pair_Value6, @pair_Value7, @pair_Value8, @pair_Value9, @pair_Value10, @pair_Value11, @pair_Value12, @pair_Value13, @pair_Value14, @pair_Value15, @pair_Value16, @pair_Value17, @pair_Value18, @pair_Value19, @pair_Value20, @pair_Value21, @pair_Value22, @pair_Value23, @pair_Value24, @pair_Value25, @pair_Value26, @pair_Value27, @pair_Value28, @pair_Value29, @pair_Value30)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@seed_Item1='?' (Size = 80)], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [TBL_Usuario] AS [t]
+              WHERE [t].[Username] = @seed_Item1) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5262
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\isabe\Documents\ChatGPT\Llantas\backend\src\SistemaLlantas.Api

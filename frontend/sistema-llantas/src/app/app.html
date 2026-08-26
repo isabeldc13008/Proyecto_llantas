@@ -7,7 +7,7 @@
     <p class="nav-label">Operación</p>
     <nav (click)="menuOpen=false">
       @if(auth.canModule('resumen')){<a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">◫ <span>Resumen</span></a>}
-      @if(auth.canModule('actividades')){<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>Mis actividades</span></a>}
+      @if(auth.canModule('actividades')){<a routerLink="/mis-actividades" routerLinkActive="active">▣ <span>{{auth.user()?.role==='TECNICO'?'Mis actividades':'Actividades'}}</span></a>}
       @if(auth.canModule('llantas')){<a routerLink="/llantas" routerLinkActive="active">◉ <span>Llantas</span></a>}
       @if(auth.canModule('vehiculos')){<a routerLink="/vehiculos" routerLinkActive="active">▰ <span>Vehículos</span></a>}
       @if(auth.canModule('inventario')){<a routerLink="/inventario" routerLinkActive="active">▦ <span>Inventario</span></a>}
@@ -29,8 +29,7 @@
       @if(auth.canModule('auditoria')){<a routerLink="/auditoria" routerLinkActive="active">☷ <span>Auditoría</span></a>}
     </nav>
     <div class="company"><b>EDINSA</b><span>Operador de transporte</span><small>POSTOBÓN</small></div>
-    @if (isDemoContext()) {<div class="demo"><i></i><div><b>Modo demostración</b><small>Este módulo aún usa datos de prueba</small></div></div>}
   </aside>
-  <div class="content"><header class="topbar"><button class="menu" (click)="menuOpen=true">☰</button><div class="context">@if(isDemoContext()){<span>Entorno actual</span><b>Datos de prueba</b>}@else{<span>Fuente de datos</span><b>Servidor operativo</b>}</div><div class="user"><div>{{auth.user()?.initials}}</div><span><b>{{auth.user()?.name}}</b><small>{{auth.user()?.roleName}}</small></span></div><button class="logout" (click)="logout()">Salir</button></header><main>@if(!auth.hasOperationalScope()){<div class="scope-warning" role="status"><b>Usuario sin centros asignados</b><span>Puedes iniciar sesión, pero no verás información operativa hasta que un administrador te asigne uno o varios centros.</span></div>}<router-outlet /></main></div>
+  <div class="content"><header class="topbar"><button class="menu" (click)="menuOpen=true">☰</button><div class="context"><span>Fuente de datos</span><b>Servidor operativo</b></div><div class="user"><div>{{auth.user()?.initials}}</div><span><b>{{auth.user()?.name}}</b><small>{{auth.user()?.roleName}}</small></span></div><button class="logout" (click)="logout()">Salir</button></header><main>@if(!auth.hasOperationalScope()){<div class="scope-warning" role="status"><b>Usuario sin centros asignados</b><span>Puedes iniciar sesión, pero no verás información operativa hasta que un administrador te asigne uno o varios centros.</span></div>}<router-outlet /></main></div>
 </div>
 }

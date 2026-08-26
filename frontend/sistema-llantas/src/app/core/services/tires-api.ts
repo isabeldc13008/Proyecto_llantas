@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { CatalogItem, Page, Tire, TireDetail, TireInput } from '../models/api.models';
+import { CatalogItem, Page, Tire, TireDetail, TireInput, TireMetrics } from '../models/api.models';
 import { CatalogsApi } from './catalogs-api';
 
 @Injectable({providedIn:'root'})
@@ -14,8 +14,9 @@ export class TiresApi {
     params=this.withFilters(params,filters);
     return this.http.get<Page<Tire>>('/api/llantas',{params});
   }
+  metrics(search='',filters:Record<string,unknown>={}){let params=this.withFilters(new HttpParams().set('search',search),filters);return this.http.get<TireMetrics>('/api/llantas/metricas',{params})}
   export(search:string,sortBy:string,format:'csv'|'xlsx',filters:Record<string,unknown>={}){let params=new HttpParams().set('search',search).set('sortBy',sortBy).set('formato',format);params=this.withFilters(params,filters);return this.http.get('/api/llantas/exportar',{params,responseType:'blob',observe:'response'});}
-  private withFilters(params:HttpParams,filters:Record<string,unknown>){const centers=filters['centroIds'] as string[]|undefined;const states=filters['estados'] as string[]|undefined;if(centers?.length)params=params.set('centroIds',centers.join(','));if(states?.length)params=params.set('estados',states.join(','));if(filters['profundidadMin']!==''&&filters['profundidadMin']!=null)params=params.set('profundidadMin',String(filters['profundidadMin']));if(filters['profundidadMax']!==''&&filters['profundidadMax']!=null)params=params.set('profundidadMax',String(filters['profundidadMax']));return params}
+  private withFilters(params:HttpParams,filters:Record<string,unknown>){for(const key of ['centroIds','estados','marcaIds','referenciaIds','dimensionIds','tipoLlantaIds','reencauches']){const values=filters[key] as string[]|undefined;if(values?.length)params=params.set(key,values.join(','))}for(const key of ['tieneReencauches','tieneReparaciones','requiereAtencion','activo']){const values=filters[key] as string[]|undefined;if(values?.length===1)params=params.set(key,values[0])}for(const key of ['profundidadMin','profundidadMax','vehiculo','kilometrajeMin','kilometrajeMax','inspeccionDesde','inspeccionHasta'])if(filters[key]!==''&&filters[key]!=null)params=params.set(key,String(filters[key]));return params}
   create(value:TireInput){return this.http.post<Tire>('/api/llantas',value);}
   update(id:string,value:TireInput){return this.http.put<Tire>(`/api/llantas/${id}`,value);}
   setActive(id:string,activo:boolean){return this.http.patch<void>(`/api/llantas/${id}/estado`,{activo});}

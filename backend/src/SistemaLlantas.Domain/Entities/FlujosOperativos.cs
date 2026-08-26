@@ -49,7 +49,26 @@ public sealed class OrdenServicioLlanta : EntidadAuditable
     public string? Aprobador {get;set;}
     public DateTimeOffset? FechaEnvio {get;set;}
     public DateTimeOffset? FechaRecepcion {get;set;}
+    public string OrigenTipo {get;set;}="MANUAL";
+    public Guid? OrigenEntidadId {get;set;}
+    public Guid? VehiculoOrigenId {get;set;}
+    public Guid? PosicionOrigenId {get;set;}
+    public DateTimeOffset FechaOpcionada {get;set;}=DateTimeOffset.UtcNow;
+    public DateTimeOffset? FechaAprobacion {get;set;}
+    public string UsuarioOpciona {get;set;}=string.Empty;
+    public string? MotivoRechazo {get;set;}
+    public string? Resultado {get;set;}
+    public Guid? LoteEnvioReparacionId {get;set;} public LoteEnvioReparacion? LoteEnvioReparacion {get;set;}
     public ICollection<EvidenciaFlujo> Evidencias {get;set;}=[];
+}
+public sealed class LoteEnvioReparacion:EntidadAuditable
+{
+    public string Codigo {get;set;}=string.Empty;public string Estado {get;set;}="ENVIADO";
+    public Guid CentroOrigenId {get;set;}public Centro CentroOrigen {get;set;}=null!;
+    public Guid ProveedorId {get;set;}public ProveedorServicio Proveedor {get;set;}=null!;
+    public DateTimeOffset FechaSalida {get;set;}public string? Remision {get;set;}public string? Transportador {get;set;}public string? Observaciones {get;set;}
+    public string Solicitante {get;set;}=string.Empty;public string? Receptor {get;set;}public DateTimeOffset? FechaCierre {get;set;}public string IdempotencyKey {get;set;}=string.Empty;
+    public ICollection<OrdenServicioLlanta> Ordenes {get;set;}=[];
 }
 public sealed class EvidenciaFlujo : EntidadAuditable
 {

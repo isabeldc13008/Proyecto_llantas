@@ -116,6 +116,8 @@ public sealed class InconsistenciaInspeccion : EntidadAuditable
     public PosicionVehiculo PosicionVehiculo { get; set; } = null!;
     public Guid? LlantaEsperadaId { get; set; }
     public Llanta? LlantaEsperada { get; set; }
+    public Guid? LlantaEncontradaId { get; set; }
+    public Llanta? LlantaEncontrada { get; set; }
     public string IdentificadorEncontrado { get; set; } = string.Empty;
     public string TecnicoId { get; set; } = string.Empty;
     public string Observacion { get; set; } = string.Empty;

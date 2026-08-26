@@ -14,6 +14,7 @@ public sealed class LlantasController(ILlantaService service,ICicloVidaLlantaSer
 {
     [HttpGet]
     public Task<Pagina<LlantaResumenDto>> Consultar([FromQuery] ConsultaPaginada consulta, CancellationToken ct) => service.ConsultarAsync(consulta, User.AlcanceCentros(), ct);
+    [HttpGet("metricas")] public Task<LlantaMetricasDto> Metricas([FromQuery]ConsultaPaginada consulta,CancellationToken ct)=>service.MetricasAsync(consulta,User.AlcanceCentros(),ct);
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<LlantaResumenDto>> Obtener(Guid id, CancellationToken ct) => await service.ObtenerAsync(id, User.AlcanceCentros(), ct) is { } item ? Ok(item) : NotFound();

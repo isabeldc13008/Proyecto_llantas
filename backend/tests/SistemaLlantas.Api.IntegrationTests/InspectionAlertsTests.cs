@@ -117,6 +117,53 @@ public sealed class InspectionAlertsTests : IClassFixture<WebApplicationFactory<
         Assert.All(allowed, x => Assert.Equal(vehicle.CentroId, x.CentroId));
         var denied = await service.ObtenerVehiculosAsync("qa", false, vehicle.Placa, new(false, [Guid.NewGuid()]), CancellationToken.None);
         Assert.Empty(denied);
+        var contextual = await service.ObtenerVehiculosAsync("tecnico", true, vehicle.Placa, new(false, [Guid.NewGuid()]), CancellationToken.None, true);
+        Assert.Contains(contextual, x => x.Id == vehicle.Id);
+    }
+
+    [Fact]
+    public async Task CrearInspeccion_ExigeKilometrajeCoherente()
+    {
+        _ = factory.CreateClient();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LlantasDbContext>();
+        var strategy = db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var tx = await db.Database.BeginTransactionAsync();
+            var vehicle = await db.Vehiculos.FirstAsync(x => x.Ejes.Any(e => e.Posiciones.Any()));
+            vehicle.Kilometraje = 5000;
+            await db.SaveChangesAsync();
+            var service = scope.ServiceProvider.GetRequiredService<IInspeccionService>();
+            var missing = await Assert.ThrowsAsync<ValidacionException>(() => service.CrearAsync(new() { VehiculoId = vehicle.Id }, "qa", new(true, []), CancellationToken.None));
+            Assert.Contains("kilometraje actual", missing.Message, StringComparison.OrdinalIgnoreCase);
+            await Assert.ThrowsAsync<ValidacionException>(() => service.CrearAsync(new() { VehiculoId = vehicle.Id, Kilometraje = 4999 }, "qa", new(true, []), CancellationToken.None));
+            await tx.RollbackAsync();
+        });
+    }
+
+    [Fact]
+    public async Task ReportarLlantaDiferente_NoModificaMontajeAntesDeAutorizar()
+    {
+        _ = factory.CreateClient();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<LlantasDbContext>();
+        var strategy = db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var tx = await db.Database.BeginTransactionAsync();
+            var vehicle = await db.Vehiculos.AsNoTracking().FirstAsync(x => x.Ejes.Any(e => e.Posiciones.Any(p => p.LlantaActualId != null)));
+            var position = await db.PosicionesVehiculo.AsNoTracking().FirstAsync(x => x.EjeVehiculo.VehiculoId == vehicle.Id && x.LlantaActualId != null);
+            var found = await db.Llantas.AsNoTracking().FirstAsync(x => x.Id != position.LlantaActualId);
+            var service = scope.ServiceProvider.GetRequiredService<IInspeccionService>();
+            var inspection = await service.CrearAsync(new() { VehiculoId = vehicle.Id, Kilometraje = vehicle.Kilometraje ?? 0 }, "qa", new(true, []), CancellationToken.None);
+            var report = await service.ReportarAsync(inspection.Id, new() { PosicionId = position.Id, LlantaEncontradaId = found.Id, IdentificadorEncontrado = found.Codigo, Observacion = "Validación QA" }, "qa", CancellationToken.None);
+            db.ChangeTracker.Clear();
+            Assert.Equal(position.LlantaActualId, (await db.PosicionesVehiculo.AsNoTracking().SingleAsync(x => x.Id == position.Id)).LlantaActualId);
+            Assert.Equal(found.Id, report.LlantaEncontradaId);
+            Assert.Equal("PendienteAutorizacion", report.Estado);
+            await tx.RollbackAsync();
+        });
     }
 
     private sealed class TestEnvironment(string contentRoot) : IWebHostEnvironment

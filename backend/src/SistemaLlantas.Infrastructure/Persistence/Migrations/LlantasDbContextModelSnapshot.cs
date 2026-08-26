@@ -58,6 +58,10 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("GrupoProgramacionId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("IdempotencyKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<Guid?>("LlantaId")
                         .HasColumnType("uniqueidentifier");
 
@@ -68,6 +72,14 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid?>("OrigenEntidadId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PosicionVehiculoId")
                         .HasColumnType("uniqueidentifier");
@@ -114,7 +126,13 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CentroId");
 
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique()
+                        .HasFilter("[IdempotencyKey] IS NOT NULL");
+
                     b.HasIndex("VehiculoId");
+
+                    b.HasIndex("Origen", "OrigenEntidadId");
 
                     b.HasIndex("TecnicoId", "Estado", "FechaProgramada");
 
@@ -1070,6 +1088,9 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("InspeccionId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("LlantaEncontradaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("LlantaEsperadaId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1110,6 +1131,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("InspeccionId");
+
+                    b.HasIndex("LlantaEncontradaId");
 
                     b.HasIndex("LlantaEsperadaId");
 
@@ -1421,6 +1444,97 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.ToTable("TBL_LlantaTemporal", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.LoteEnvioReparacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("CentroOrigenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTimeOffset?>("FechaCierre")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("FechaCreacion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("FechaModificacion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("FechaSalida")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("ProveedorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Receptor")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Remision")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Solicitante")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Transportador")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("UsuarioCreacion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsuarioModificacion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CentroOrigenId");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("TBL_LoteEnvioReparacion", (string)null);
+                });
+
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Marca", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1703,6 +1817,9 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
+                    b.Property<DateTimeOffset?>("FechaAprobacion")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset>("FechaCreacion")
                         .HasColumnType("datetimeoffset");
 
@@ -1712,10 +1829,16 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("FechaModificacion")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<DateTimeOffset>("FechaOpcionada")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset?>("FechaRecepcion")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("LlantaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("LoteEnvioReparacionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Motivo")
@@ -1723,12 +1846,31 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("MotivoRechazo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<Guid?>("OrigenEntidadId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OrigenTipo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid?>("PosicionOrigenId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ProveedorId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Resultado")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -1751,13 +1893,25 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Property<string>("UsuarioModificacion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UsuarioOpciona")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<Guid?>("VehiculoOrigenId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CentroOrigenId");
 
                     b.HasIndex("LlantaId");
 
+                    b.HasIndex("LoteEnvioReparacionId");
+
                     b.HasIndex("ProveedorId");
+
+                    b.HasIndex("OrigenTipo", "OrigenEntidadId");
 
                     b.HasIndex("Tipo", "Estado", "CentroOrigenId");
 
@@ -2701,6 +2855,10 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "LlantaEncontrada")
+                        .WithMany()
+                        .HasForeignKey("LlantaEncontradaId");
+
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "LlantaEsperada")
                         .WithMany()
                         .HasForeignKey("LlantaEsperadaId");
@@ -2712,6 +2870,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Inspeccion");
+
+                    b.Navigation("LlantaEncontrada");
 
                     b.Navigation("LlantaEsperada");
 
@@ -2842,6 +3002,25 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Navigation("InconsistenciaInspeccion");
                 });
 
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.LoteEnvioReparacion", b =>
+                {
+                    b.HasOne("SistemaLlantas.Domain.Entities.Centro", "CentroOrigen")
+                        .WithMany()
+                        .HasForeignKey("CentroOrigenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaLlantas.Domain.Entities.ProveedorServicio", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CentroOrigen");
+
+                    b.Navigation("Proveedor");
+                });
+
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Movimiento", b =>
                 {
                     b.HasOne("SistemaLlantas.Domain.Entities.Centro", "Centro")
@@ -2886,6 +3065,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SistemaLlantas.Domain.Entities.LoteEnvioReparacion", "LoteEnvioReparacion")
+                        .WithMany("Ordenes")
+                        .HasForeignKey("LoteEnvioReparacionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SistemaLlantas.Domain.Entities.ProveedorServicio", "Proveedor")
                         .WithMany()
                         .HasForeignKey("ProveedorId")
@@ -2894,6 +3078,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Navigation("CentroOrigen");
 
                     b.Navigation("Llanta");
+
+                    b.Navigation("LoteEnvioReparacion");
 
                     b.Navigation("Proveedor");
                 });
@@ -3050,6 +3236,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Inspeccion", b =>
                 {
                     b.Navigation("Detalles");
+                });
+
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.LoteEnvioReparacion", b =>
+                {
+                    b.Navigation("Ordenes");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Marca", b =>

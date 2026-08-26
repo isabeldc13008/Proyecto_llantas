@@ -68,4 +68,7 @@ public sealed class ActividadProgramada : EntidadAuditable
     public string? MotivoCancelacion { get; set; }
     public Guid? GrupoProgramacionId { get; set; }
     public string? ReasignadoPor { get; set; }
+    public string Origen { get; set; } = "MANUAL";
+    public Guid? OrigenEntidadId { get; set; }
+    public string? IdempotencyKey { get; set; }
 }
