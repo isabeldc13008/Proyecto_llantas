@@ -45,6 +45,7 @@ builder.Services.AddAuthorization(o =>
     o.AddPolicy("Operaciones.Montar",p=>p.RequireClaim("permiso","operaciones.montar"));
     o.AddPolicy("ServiciosLlanta.Consultar",p=>p.RequireClaim("permiso","servicios_llanta.consultar","servicios_llanta.gestionar"));
     o.AddPolicy("ServiciosLlanta.Gestionar",p=>p.RequireClaim("permiso","servicios_llanta.gestionar"));
+    o.AddPolicy("ServiciosLlanta.Opcionar",p=>p.RequireClaim("permiso","servicios_llanta.opcionar","servicios_llanta.gestionar"));
     o.AddPolicy("CargaMasiva.Importar",p=>p.RequireClaim("permiso","carga_masiva.importar"));
     o.AddPolicy("Reportes.Exportar",p=>p.RequireClaim("permiso","reportes.exportar"));
 });

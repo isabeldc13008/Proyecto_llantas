@@ -14,7 +14,7 @@ const protectedRoutes:Routes=[
  {path:'programacion',loadComponent:()=>import('./features/scheduling/scheduling-page').then(m=>m.SchedulingPage)},
  {path:'montajes',loadComponent:()=>import('./features/movements/movements-page').then(m=>m.MovementsPage)},
  {path:'movimientos',loadComponent:()=>import('./features/movements/movement-ledger-page').then(m=>m.MovementLedgerPage)},
- {path:'reparaciones',data:{serviceType:'Reparacion'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
+ {path:'reparaciones',loadComponent:()=>import('./features/services/repairs-page').then(m=>m.RepairsPage)},
  {path:'reencauches',data:{serviceType:'Reencauche'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
  {path:'disposicion-final',data:{serviceType:'DisposicionFinal'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
  {path:'historial',data:demo('Historial de llantas','Línea de tiempo','Consulta cronológica de inspecciones, movimientos y servicios.','Buscar llanta','historial'),loadComponent:page},
