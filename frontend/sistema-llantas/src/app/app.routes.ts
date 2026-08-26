@@ -13,7 +13,7 @@ const protectedRoutes:Routes=[
  {path:'alertas',loadComponent:()=>import('./features/alerts/alerts-page').then(m=>m.AlertsPage)},
  {path:'programacion',loadComponent:()=>import('./features/scheduling/scheduling-page').then(m=>m.SchedulingPage)},
  {path:'montajes',loadComponent:()=>import('./features/movements/movements-page').then(m=>m.MovementsPage)},
- {path:'movimientos',loadComponent:()=>import('./features/movements/movements-page').then(m=>m.MovementsPage)},
+ {path:'movimientos',loadComponent:()=>import('./features/movements/movement-ledger-page').then(m=>m.MovementLedgerPage)},
  {path:'reparaciones',data:{serviceType:'Reparacion'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
  {path:'reencauches',data:{serviceType:'Reencauche'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
  {path:'disposicion-final',data:{serviceType:'DisposicionFinal'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
