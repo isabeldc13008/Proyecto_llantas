@@ -6,6 +6,10 @@ using SistemaLlantas.Application.Common;
 public sealed record ActividadDto(Guid Id,string Tipo,DateTimeOffset Fecha,string Centro,Guid? VehiculoId,string Vehiculo,string Prioridad,string Estado,string RutaInicio,DateTimeOffset? FechaCumplimiento);
 public sealed record MovimientoDto(Guid Id,string Numero,string Tipo,string Motivo,DateTimeOffset Fecha,IReadOnlyList<MovimientoDetalleDto> Detalles);
 public sealed record MovimientoDetalleDto(Guid LlantaId,string Llanta,string? Origen,string Destino);
+public sealed class ConsultaMovimientos
+{
+ public int Pagina {get;init;}=1; public int Tamano {get;init;}=20; public string? Buscar {get;init;} public string? Numero {get;init;} public string? Tipo {get;init;} public Guid? CentroId {get;init;} public string? Usuario {get;init;} public string? Origen {get;init;} public string? Destino {get;init;} public DateTimeOffset? Desde {get;init;} public DateTimeOffset? Hasta {get;init;}
+}
 public sealed record MovimientoTrazabilidadDto(Guid Id,string Numero,DateTimeOffset Fecha,string Tipo,Guid LlantaId,string Llanta,string Serial,string Origen,string Destino,string VehiculoPosicion,string Centro,decimal? KilometrajeVehiculo,decimal? KilometrosTramo,string Usuario,Guid? ActividadProgramadaId,string Motivo,string? Observaciones,string Estado);
 public sealed record SolicitudOperacionDto(Guid Id,string Tipo,string Estado,Guid CentroId,string Centro,Guid LlantaId,string Llanta,Guid? PosicionOrigenId,Guid? PosicionDestinoId,string TipoDestino,Guid? CentroDestinoId,string Motivo,string? Observaciones,string Solicitante,string? Aprobador,string? MotivoRechazo,DateTimeOffset Fecha,DateTimeOffset? FechaRecepcionDestino,string RowVersion);
 public sealed class CrearSolicitudOperacionDto
