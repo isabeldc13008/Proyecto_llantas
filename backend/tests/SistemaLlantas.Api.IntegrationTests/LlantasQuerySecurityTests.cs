@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace SistemaLlantas.Api.IntegrationTests;
 
-public sealed class LlantasQuerySecurityTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class LlantasQuerySecurityTests : IClassFixture<TestApplicationFactory>
 {
- private readonly WebApplicationFactory<Program> factory;
- public LlantasQuerySecurityTests(WebApplicationFactory<Program> factory)=>this.factory=factory;
+ private readonly TestApplicationFactory factory;
+ public LlantasQuerySecurityTests(TestApplicationFactory factory)=>this.factory=factory;
 
  [Fact]
  public async Task FiltrosCombinados_DevuelvenSoloFilasQueCumplenTodo()

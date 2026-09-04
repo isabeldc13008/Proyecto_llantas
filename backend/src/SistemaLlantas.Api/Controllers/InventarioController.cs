@@ -11,7 +11,7 @@ namespace SistemaLlantas.Api.Controllers;
 [ApiController,Route("api/inventario"),Authorize]
 public sealed class InventarioController(LlantasDbContext db):ControllerBase
 {
-    [HttpGet("metricas")]
+    [HttpGet("metricas"),Authorize(Policy="Llantas.Consultar")]
     public async Task<InventarioMetricasDto> Metricas(CancellationToken ct)
     {
         var q=Alcanzables();
@@ -24,7 +24,7 @@ public sealed class InventarioController(LlantasDbContext db):ControllerBase
         return new(disponibles,reparacion,reencauche,traslado,bloqueadas,atencion);
     }
 
-    [HttpGet("reservas")]
+    [HttpGet("reservas"),Authorize(Policy="Llantas.Consultar")]
     public async Task<IReadOnlyList<ReservaInventarioDto>> Reservas(CancellationToken ct)
     {
         var a=User.AlcanceCentros();
@@ -60,7 +60,7 @@ public sealed class InventarioController(LlantasDbContext db):ControllerBase
         tire.UsuarioModificacion=Usuario();tire.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return NoContent();
     }
 
-    [HttpGet("compatibles")]
+    [HttpGet("compatibles"),Authorize(Policy="Llantas.Consultar")]
     public async Task<IReadOnlyList<CompatibleInventarioDto>> Compatibles(Guid centroId,Guid dimensionId,Guid? tipoLlantaId,CancellationToken ct)
     {
         var a=User.AlcanceCentros();if(!a.Autoriza(centroId))throw new UnauthorizedAccessException("Centro no autorizado.");

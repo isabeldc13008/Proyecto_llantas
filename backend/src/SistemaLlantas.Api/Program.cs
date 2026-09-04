@@ -1,6 +1,4 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using SistemaLlantas.Api.Security;
 using SistemaLlantas.Api;
 using SistemaLlantas.Api.Middleware;
 using SistemaLlantas.Infrastructure;
@@ -10,17 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);
-{
-    var jwtKey = builder.Configuration["Jwt:Key"] ?? (builder.Environment.IsDevelopment()?"development-only-key-change-me-2026-llantas":throw new InvalidOperationException("Configure Jwt:Key mediante secretos o variables de entorno."));
-    builder.Configuration["Jwt:Key"]=jwtKey;
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new()
-    {
-        ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "SistemaLlantas",
-        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "SistemaLlantas.Web",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.FromMinutes(1)
-    });
-}
+builder.AddApplicationAuthentication();
 builder.Services.AddAuthorization(o =>
 {
     o.AddPolicy("Dashboard.Consultar",p=>p.RequireClaim("permiso","modulos.resumen.consultar"));
@@ -52,7 +40,7 @@ builder.Services.AddAuthorization(o =>
 builder.Services.AddCors(o => o.AddPolicy("Angular", p => p.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
-if(app.Environment.IsDevelopment())await DevelopmentSecuritySeeder.SeedAsync(app.Services);
+if(AuthenticationConfiguration.IsLocal(builder.Configuration, app.Environment) && builder.Configuration.GetValue<bool>("Authentication:SeedDevelopmentUsers")) await DevelopmentSecuritySeeder.SeedAsync(app.Services);
 app.UseMiddleware<ApiExceptionMiddleware>();
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 app.UseCors("Angular"); app.UseAuthentication(); app.UseAuthorization(); app.MapControllers();

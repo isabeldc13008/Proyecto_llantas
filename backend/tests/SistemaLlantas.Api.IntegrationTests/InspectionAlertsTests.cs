@@ -13,10 +13,10 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Api.IntegrationTests;
 
-public sealed class InspectionAlertsTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class InspectionAlertsTests : IClassFixture<TestApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> factory;
-    public InspectionAlertsTests(WebApplicationFactory<Program> factory) => this.factory = factory;
+    private readonly TestApplicationFactory factory;
+    public InspectionAlertsTests(TestApplicationFactory factory) => this.factory = factory;
 
     [Fact]
     public async Task ReglaParametrizada_GeneraAlertaYPreservaHistorial()

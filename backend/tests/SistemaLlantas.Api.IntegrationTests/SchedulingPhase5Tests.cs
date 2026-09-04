@@ -9,10 +9,10 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Api.IntegrationTests;
 
-public sealed class SchedulingPhase5Tests:IClassFixture<WebApplicationFactory<Program>>
+public sealed class SchedulingPhase5Tests:IClassFixture<TestApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> factory;
-    public SchedulingPhase5Tests(WebApplicationFactory<Program> factory)=>this.factory=factory;
+    private readonly TestApplicationFactory factory;
+    public SchedulingPhase5Tests(TestApplicationFactory factory)=>this.factory=factory;
 
     [Fact]
     public async Task Programacion_FiltraAdvierteSolapamientoYAlimentaMisActividades()

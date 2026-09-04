@@ -19,13 +19,11 @@ describe('App', () => {
   });
 
   it('should render the product brand', () => {
-    localStorage.setItem('access_token','test-token');
     TestBed.inject(AuthService).user.set({name:'Isabel Martínez',username:'administrador',role:'ADMINISTRADOR',roleName:'Administrador',initials:'IM',permissions:['centros.ver_todos','modulos.resumen.consultar'],centerIds:[],canViewAllCenters:true});
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.brand')?.textContent).toContain('GLLD');
-    localStorage.removeItem('access_token');
   });
 
   it('recognizes explicit module and global-center permissions',()=>{

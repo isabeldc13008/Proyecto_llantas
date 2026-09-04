@@ -18,6 +18,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connection = configuration.GetConnectionString("SqlServer") ?? throw new InvalidOperationException("Falta ConnectionStrings:SqlServer.");
+        if (new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connection).Authentication == Microsoft.Data.SqlClient.SqlAuthenticationMethod.ActiveDirectoryInteractive)
+            throw new InvalidOperationException("El backend requiere autenticación SQL no interactiva.");
         services.AddDbContext<LlantasDbContext>(o => o.UseSqlServer(connection, sql => sql.EnableRetryOnFailure()));
         services.AddScoped<ILlantaService, LlantaService>(); services.AddScoped<ICatalogoService, CatalogoService>();
         services.AddScoped<ICicloVidaLlantaService, CicloVidaLlantaService>();

@@ -15,10 +15,10 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Api.IntegrationTests;
 
-public sealed class OperationalPhasesTests:IClassFixture<WebApplicationFactory<Program>>
+public sealed class OperationalPhasesTests:IClassFixture<TestApplicationFactory>
 {
- private readonly WebApplicationFactory<Program> factory;
- public OperationalPhasesTests(WebApplicationFactory<Program> factory)=>this.factory=factory;
+ private readonly TestApplicationFactory factory;
+ public OperationalPhasesTests(TestApplicationFactory factory)=>this.factory=factory;
 
  [Fact]
  public async Task OperacionNoProgramada_RequiereDecisionYRegistraRechazo()

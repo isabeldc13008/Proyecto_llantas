@@ -1,0 +1,4 @@
+{
+  "/api": {"target":"http://localhost:5262","secure":false},
+  "/auth-config.json": {"target":"http://localhost:5262","secure":false,"pathRewrite":{"^/auth-config.json":"/api/auth/local-config"}}
+}

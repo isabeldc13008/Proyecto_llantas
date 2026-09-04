@@ -7,7 +7,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
-$env:Jwt__Key = 'GLLD-LOCAL-MIGRATION-ONLY-CHANGE-BEFORE-RUNNING'
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+dotnet tool restore
+if ($LASTEXITCODE -ne 0) { throw 'No fue posible restaurar dotnet-ef.' }
 dotnet ef database update `
   --project (Join-Path $repoRoot 'backend\src\SistemaLlantas.Infrastructure\SistemaLlantas.Infrastructure.csproj') `
   --startup-project (Join-Path $repoRoot 'backend\src\SistemaLlantas.Api\SistemaLlantas.Api.csproj') `

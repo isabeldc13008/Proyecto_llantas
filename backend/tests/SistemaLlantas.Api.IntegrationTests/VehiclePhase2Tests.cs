@@ -8,10 +8,10 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Api.IntegrationTests;
 
-public sealed class VehiclePhase2Tests:IClassFixture<WebApplicationFactory<Program>>
+public sealed class VehiclePhase2Tests:IClassFixture<TestApplicationFactory>
 {
- private readonly WebApplicationFactory<Program> factory;
- public VehiclePhase2Tests(WebApplicationFactory<Program> factory)=>this.factory=factory;
+ private readonly TestApplicationFactory factory;
+ public VehiclePhase2Tests(TestApplicationFactory factory)=>this.factory=factory;
 
  [Fact]
  public async Task CrearVehiculo_ClonaConfiguracionDinamicaSinLimiteFijo()

@@ -10,5 +10,5 @@ export const roleGuard: CanActivateFn = route => {
   const path = route.routeConfig?.path ?? '';
   const module=modules[path];
   if(module&&auth.canModule(module)) return true;
-  return router.createUrlTree(['/']);
+  return router.createUrlTree(['/sin-acceso']);
 };

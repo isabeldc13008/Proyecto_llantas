@@ -24,8 +24,9 @@ const protectedRoutes:Routes=[
  {path:'auditoria',data:demo('Auditoría','Gobierno de datos','Quién cambió qué, cuándo, desde dónde y con qué resultado.','Exportar auditoría','auditoria'),loadComponent:page},
 ];
 export const routes:Routes=[
+ {path:'sin-acceso',data:{title:'Sin permisos para este módulo'},loadComponent:page},
  {path:'acceso',loadComponent:()=>import('./features/auth/login').then(m=>m.Login)},
  ...protectedRoutes.map(route=>({...route,canActivate:[authGuard,roleGuard]})),
  {path:'**',redirectTo:''}
 ];
-function page(){return import('./features/demo/demo-page').then(m=>m.DemoPage);}
+function page(){return import('./features/demo/pending-page').then(m=>m.PendingPage);}

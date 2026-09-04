@@ -1,0 +1,68 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: windows-2022
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      ASPNETCORE_ENVIRONMENT: Development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Start isolated SQL test server
+        shell: pwsh
+        run: |
+          sqllocaldb start MSSQLLocalDB
+          if ($LASTEXITCODE -ne 0) { throw 'LocalDB failed to start' }
+      - run: dotnet restore SistemaLlantas.slnx
+      - run: dotnet build SistemaLlantas.slnx --configuration Release --no-restore
+      - run: dotnet test SistemaLlantas.slnx --configuration Release --no-build --logger trx --results-directory TestResults
+      - name: Verify migration model and generate repeatable SQL
+        shell: pwsh
+        run: |
+          dotnet tool restore
+          if ($LASTEXITCODE -ne 0) { throw 'Tool restore failed' }
+          dotnet ef migrations has-pending-model-changes --project backend/src/SistemaLlantas.Infrastructure --startup-project backend/src/SistemaLlantas.Api --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) { throw 'Uncommitted migration changes' }
+          dotnet ef migrations script --idempotent --project backend/src/SistemaLlantas.Infrastructure --startup-project backend/src/SistemaLlantas.Api --configuration Release --no-build --output artifacts/database.sql
+          if ($LASTEXITCODE -ne 0) { throw 'Migration script failed' }
+      - run: dotnet publish backend/src/SistemaLlantas.Api --configuration Release --no-build --output artifacts/api
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-and-migrations
+          path: artifacts/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-tests
+          path: TestResults/
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/sistema-llantas
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/sistema-llantas/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test --watch=false --browsers=ChromeHeadless
+      - run: pnpm build --configuration production
+      - uses: actions/upload-artifact@v4
+        with:
+          name: angular
+          path: frontend/sistema-llantas/dist/sistema-llantas/browser/

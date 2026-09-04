@@ -29,6 +29,8 @@ describe('InspectionPage vehicle search', () => {
     http.expectOne('/api/inspecciones/resumen').flush({ pendientesHoy: 0, realizadasHoy: 0, conNovedad: 0, conAlerta: 0 });
     http.expectOne('/api/inspecciones/historial').flush([]);
     await fixture.whenStable();
+    expect(fixture.componentInstance.selectedVehicleId()).toBeFalsy();
+    void fixture.componentInstance.chooseVehicle('1');
     http.expectOne('/api/inspecciones/contexto/1').flush({ vehiculoId: '1', numeroInterno: 'BUS-101', placa: 'ABC123', tipo: 'Bus', centroNombre: 'Bogotá Norte', ejes: [] });
     await fixture.whenStable();
 
@@ -49,6 +51,8 @@ describe('InspectionPage vehicle search', () => {
     http.expectOne('/api/inspecciones/resumen').flush({ pendientesHoy: 0, realizadasHoy: 0, conNovedad: 0, conAlerta: 0 });
     http.expectOne('/api/inspecciones/historial').flush([]);
     await fixture.whenStable();
+    expect(fixture.componentInstance.selectedVehicleId()).toBeFalsy();
+    void fixture.componentInstance.chooseVehicle('1');
     http.expectOne('/api/inspecciones/contexto/1').flush({ vehiculoId: '1', numeroInterno: 'BUS-101', placa: 'ABC123', tipo: 'Bus', centroNombre: 'Bogotá', ejes: [] });
     await fixture.whenStable();
 
@@ -57,6 +61,6 @@ describe('InspectionPage vehicle search', () => {
 
     expect(fixture.componentInstance.filteredVehicles()).toEqual([]);
     expect(fixture.componentInstance.selectedVehicleId()).toBe('1');
-    expect((fixture.nativeElement as HTMLElement).querySelector('.search-status')?.textContent).toContain('No se encontraron');
+    expect(fixture.componentInstance.stage()).toBe('summary');
   });
 });

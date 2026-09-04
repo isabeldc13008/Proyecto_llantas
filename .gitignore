@@ -13,3 +13,16 @@ dist/
 *.user
 *.suo
 appsettings.Development.local.json
+*.log
+*.tmp
+*.temp
+**/TestResults/
+**/coverage/
+**/artifacts/
+**/publish/
+.env
+.env.*
+!.env.example
+**/App_Data/
+glld-*.tar.gz
+qa_documentacion/*.png

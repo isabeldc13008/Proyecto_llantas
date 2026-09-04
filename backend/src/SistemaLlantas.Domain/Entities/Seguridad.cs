@@ -24,6 +24,7 @@ public sealed class UsuarioSistema : EntidadAuditable
 {
     public string Username { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
+    public Guid? EntraObjectId { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
     public Guid RolId { get; set; } public RolSistema Rol { get; set; } = null!;
     public Guid? CentroId { get; set; } public Centro? Centro { get; set; }

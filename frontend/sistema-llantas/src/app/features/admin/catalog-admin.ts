@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/auth/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -6,10 +7,11 @@ import { CatalogItem } from '../../core/models/api.models';
 import { CatalogsApi } from '../../core/services/catalogs-api';
 
 interface CatalogType {key:string;name:string;description:string}
-interface UserRow{id:string;username:string;nombre:string;activo:boolean;rolId:string;rol:string;rolCodigo:string;centroIds:string[];centros:string[];accesoGlobal:boolean}
+interface UserRow{entraObjectId?:string;id:string;username:string;nombre:string;activo:boolean;rolId:string;rol:string;rolCodigo:string;centroIds:string[];centros:string[];accesoGlobal:boolean}
 interface RoleRow{id:string;codigo:string;nombre:string;permisos:string[]}
 @Component({selector:'app-catalog-admin',imports:[FormsModule],templateUrl:'./catalog-admin.html',styleUrl:'./catalog-admin.scss'})
 export class CatalogAdmin implements OnInit{
+ readonly auth=inject(AuthService); entraObjectId="";
  private readonly http=inject(HttpClient);
  private readonly catalogsApi=inject(CatalogsApi);
  readonly types:CatalogType[]=[{key:'usuarios',name:'Usuarios',description:'Cuentas, roles y accesos efectivos'},{key:'marcas',name:'Marcas',description:'Fabricantes de llantas'},{key:'referencias',name:'Referencias',description:'Líneas y modelos asociados a una marca'},{key:'dimensiones',name:'Dimensiones',description:'Medidas homologadas'},{key:'tipos-llanta',name:'Tipos de llanta',description:'Clasificación operativa'},{key:'estados-llanta',name:'Estados',description:'Estados del ciclo de vida'},{key:'regionales',name:'Regionales',description:'Agrupación territorial de centros'},{key:'centros',name:'Centros',description:'Centros operativos por regional'}];
@@ -17,12 +19,12 @@ export class CatalogAdmin implements OnInit{
  ngOnInit(){void this.load()}
  async choose(type:CatalogType){this.selected.set(type);this.search='';this.showForm=false;await this.load()}
  async load(){this.loading.set(true);this.error.set('');try{if(this.selected().key==='usuarios'){const [users,roles,centers]=await Promise.all([firstValueFrom(this.http.get<UserRow[]>('/api/usuarios')),firstValueFrom(this.http.get<RoleRow[]>('/api/usuarios/roles')),firstValueFrom(this.catalogsApi.all('centros',true))]);this.users.set(users);this.roles.set(roles);this.centers.set(centers);return}const all=await firstValueFrom(this.catalogsApi.all(this.selected().key));const term=this.search.trim().toLocaleLowerCase('es');this.records.set(term?all.filter(x=>`${x.codigo} ${x.nombre}`.toLocaleLowerCase('es').includes(term)):all);const parentType=this.selected().key==='referencias'?'marcas':this.selected().key==='centros'?'regionales':'';this.brands.set(parentType?await firstValueFrom(this.catalogsApi.all(parentType,true)):[])}catch(error:any){this.error.set(error?.userMessage??'No fue posible cargar los datos desde la base de datos.')}finally{this.loading.set(false)}}
- open(){this.codigo='';this.nombre='';this.parentId='';this.username='';this.password='';this.roleId='';this.editingId='';this.active=true;this.centerIds=[];this.showForm=true}
+ open(){this.entraObjectId='';this.codigo='';this.nombre='';this.parentId='';this.username='';this.password='';this.roleId='';this.editingId='';this.active=true;this.centerIds=[];this.showForm=true}
  edit(record:CatalogItem){this.editingId=record.id;this.codigo=record.codigo;this.nombre=record.nombre;this.parentId=record.padreId??'';this.showForm=true}
  async save(){if(!this.codigo.trim()||!this.nombre.trim()||(['referencias','centros'].includes(this.selected().key)&&!this.parentId))return;this.error.set('');try{const body={codigo:this.codigo.trim(),nombre:this.nombre.trim(),padreId:this.parentId||null};const saved=await firstValueFrom(this.editingId?this.http.put<CatalogItem>(`/api/catalogos/${this.selected().key}/${this.editingId}`,body):this.http.post<CatalogItem>(`/api/catalogos/${this.selected().key}`,body));this.records.update(all=>this.editingId?all.map(item=>item.id===saved.id?saved:item):[saved,...all]);this.showForm=false;this.message=`${saved.nombre} fue guardado en la base de datos.`;setTimeout(()=>this.message='',2500)}catch(error:any){this.error.set(error?.userMessage??'No fue posible guardar el parámetro.')}}
  async toggle(record:CatalogItem){const activo=!record.activo;this.error.set('');try{await firstValueFrom(this.http.patch(`/api/catalogos/${this.selected().key}/${record.id}/estado`,{activo}));this.records.update(all=>all.map(item=>item.id===record.id?{...item,activo}:item))}catch(error:any){this.error.set(error?.userMessage??'No fue posible cambiar el estado.')}}
- editUser(user:UserRow){this.editingId=user.id;this.username=user.username;this.nombre=user.nombre;this.roleId=user.rolId;this.active=user.activo;this.password='';this.centerIds=[...user.centroIds];this.showForm=true}
- async saveUser(){try{const body={nombre:this.nombre,rolId:this.roleId,activo:this.active,password:this.password||null,centroIds:this.centerIds};if(this.editingId)await firstValueFrom(this.http.put(`/api/usuarios/${this.editingId}`,body));else await firstValueFrom(this.http.post('/api/usuarios',{username:this.username,...body,password:this.password}));this.showForm=false;await this.load()}catch(error:any){this.error.set(error?.userMessage??'No fue posible guardar el usuario.')}}
+ editUser(user:UserRow){this.entraObjectId=user.entraObjectId??"";this.editingId=user.id;this.username=user.username;this.nombre=user.nombre;this.roleId=user.rolId;this.active=user.activo;this.password='';this.centerIds=[...user.centroIds];this.showForm=true}
+ async saveUser(){try{const body={entraObjectId:this.entraObjectId||null,nombre:this.nombre,rolId:this.roleId,activo:this.active,password:this.password||null,centroIds:this.centerIds};if(this.editingId)await firstValueFrom(this.http.put(`/api/usuarios/${this.editingId}`,body));else await firstValueFrom(this.http.post('/api/usuarios',{username:this.username,...body,password:this.password}));this.showForm=false;await this.load()}catch(error:any){this.error.set(error?.userMessage??'No fue posible guardar el usuario.')}}
  toggleCenter(id:string,checked:boolean){this.centerIds=checked?[...new Set([...this.centerIds,id])]:this.centerIds.filter(x=>x!==id)}
  modules(roleId:string){const role=this.roles().find(x=>x.id===roleId);if(!role)return'';if(role.codigo==='SUPERVISOR_ADMINISTRADOR')return'Todos salvo Administración, Montajes, Vehículos y Programación';return role.permisos.join(' · ')}
 }

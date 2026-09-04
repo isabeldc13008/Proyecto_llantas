@@ -23,7 +23,7 @@
  <div class="backdrop" (click)="showForm=false"><section class="drawer" (click)="$event.stopPropagation()">
   <header><div><p class="eyebrow">{{editingId?'Editar':'Nuevo'}} registro</p><h2>{{selected().name}}</h2></div><button (click)="showForm=false">×</button></header>
   @if(selected().key==='usuarios'){
-   <label>Usuario<input [(ngModel)]="username" [disabled]="!!editingId"></label><label>Nombre<input [(ngModel)]="nombre"></label><label>{{editingId?'Nueva contraseña (opcional)':'Contraseña'}}<input type="password" [(ngModel)]="password"></label>
+   <label>Usuario<input [(ngModel)]="username" [disabled]="!!editingId"></label><label>Nombre<input [(ngModel)]="nombre"></label>@if(auth.localMode()){<label>{{editingId?'Nueva contraseña (opcional)':'Contraseña'}}<input type="password" [(ngModel)]="password"></label>}@else{<label>Object ID de Microsoft Entra<input [(ngModel)]="entraObjectId" placeholder="GUID del usuario en el tenant"></label>}
    <label>Rol<select [(ngModel)]="roleId"><option value="">Selecciona un rol</option>@for(role of roles();track role.id){<option [value]="role.id">{{role.nombre}}</option>}</select></label>
    <fieldset><legend>Centros autorizados</legend>@for(center of centers();track center.id){<label><input type="checkbox" [checked]="centerIds.includes(center.id)" (change)="toggleCenter(center.id,$any($event.target).checked)"> {{center.codigo}} · {{center.nombre}}</label>}<small>Sin centros asignados, el usuario inicia sesión pero no ve información operativa, salvo permiso global.</small></fieldset>
    @if(editingId){<label><input type="checkbox" [(ngModel)]="active"> Cuenta activa</label>}<div class="hint"><b>Módulos efectivos</b><span>{{modules(roleId)||'Selecciona un rol para ver sus accesos.'}}</span></div>

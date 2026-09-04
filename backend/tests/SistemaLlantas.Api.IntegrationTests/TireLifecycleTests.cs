@@ -9,9 +9,9 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Api.IntegrationTests;
 
-public sealed class TireLifecycleTests:IClassFixture<WebApplicationFactory<Program>>
+public sealed class TireLifecycleTests:IClassFixture<TestApplicationFactory>
 {
- private readonly WebApplicationFactory<Program> factory;public TireLifecycleTests(WebApplicationFactory<Program> factory)=>this.factory=factory;
+ private readonly TestApplicationFactory factory;public TireLifecycleTests(TestApplicationFactory factory)=>this.factory=factory;
  [Fact] public async Task TrasladoCentro_GeneraMovimientoYNoEsEdicionSilenciosa()
  {
   _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var db=scope.ServiceProvider.GetRequiredService<LlantasDbContext>();var strategy=db.Database.CreateExecutionStrategy();await strategy.ExecuteAsync(async()=>{await using var tx=await db.Database.BeginTransactionAsync();var centers=await db.Centros.Take(2).ToListAsync();Assert.Equal(2,centers.Count);var tire=await NuevaLlanta(db,centers[0].Id);var llantaService=scope.ServiceProvider.GetRequiredService<ILlantaService>();await Assert.ThrowsAsync<ConflictoException>(()=>llantaService.ActualizarAsync(tire.Id,new(){CentroId=centers[1].Id},"qa",new(true,[]),CancellationToken.None));var lifecycle=scope.ServiceProvider.GetRequiredService<ICicloVidaLlantaService>();await lifecycle.TrasladarCentroAsync(tire.Id,new(centers[1].Id,"Traslado de prueba","Trazabilidad QA"),"qa",new(true,[]),CancellationToken.None);db.ChangeTracker.Clear();var moved=await db.Llantas.SingleAsync(x=>x.Id==tire.Id);var movement=await db.Movimientos.Include(x=>x.Detalles).SingleAsync(x=>x.Detalles.Any(d=>d.LlantaId==tire.Id));Assert.Equal(centers[1].Id,moved.CentroId);Assert.Equal(centers[0].Id,movement.CentroId);Assert.Equal(centers[1].Id,Assert.Single(movement.Detalles).CentroDestinoId);Assert.Equal("qa",movement.Usuario);await tx.RollbackAsync();});
