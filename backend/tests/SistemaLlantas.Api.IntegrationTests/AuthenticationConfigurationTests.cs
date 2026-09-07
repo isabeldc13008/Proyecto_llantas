@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SistemaLlantas.Api.Security;
 using SistemaLlantas.Domain.Entities;
 
@@ -6,6 +9,36 @@ namespace SistemaLlantas.Api.IntegrationTests;
 
 public sealed class AuthenticationConfigurationTests
 {
+    [Fact]
+    public async Task EntraValidatesApiAudienceAndNormalizesTenant()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
+        var tenant = Guid.NewGuid(); var api = Guid.NewGuid();
+        builder.Configuration["Authentication:Mode"] = "Entra";
+        builder.Configuration["Entra:TenantId"] = tenant.ToString().ToUpperInvariant();
+        builder.Configuration["Entra:ClientId"] = api.ToString();
+        builder.AddApplicationAuthentication();
+        await using var app = builder.Build();
+        var options = app.Services.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get("Bearer");
+        Assert.Equal($"https://login.microsoftonline.com/{tenant}/v2.0", options.Authority);
+        Assert.Equal(api.ToString(), options.Audience);
+        Assert.True(options.TokenValidationParameters.ValidateIssuer);
+        Assert.True(options.TokenValidationParameters.ValidateAudience);
+        Assert.True(options.TokenValidationParameters.ValidateLifetime);
+        Assert.True(options.TokenValidationParameters.ValidateIssuerSigningKey);
+    }
+
+    [Fact]
+    public void ApiScopeConfigurationRejectsTheFullSpaScopeUri()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
+        builder.Configuration["Authentication:Mode"] = "Entra";
+        builder.Configuration["Entra:TenantId"] = Guid.NewGuid().ToString();
+        builder.Configuration["Entra:ClientId"] = Guid.NewGuid().ToString();
+        builder.Configuration["Entra:Scope"] = "api://api/access_as_user";
+        Assert.Throws<InvalidOperationException>(() => builder.AddApplicationAuthentication());
+    }
+
     [Fact]
     public void ProductionRejectsLocalPasswords()
     {

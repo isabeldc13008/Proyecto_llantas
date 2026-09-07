@@ -22,7 +22,15 @@ public static class AuthenticationConfiguration
         var tenant = config["Entra:TenantId"];
         var audience = config["Entra:ClientId"];
         if (!local && (!Guid.TryParse(tenant, out _) || !Guid.TryParse(audience, out _)))
-            throw new InvalidOperationException("Configure Entra:TenantId y Entra:ClientId (registro de la API).");
+            throw new InvalidOperationException("Configure Entra__TenantId=<TENANT_ID> y Entra__ClientId=<API_CLIENT_ID>. ClientId debe ser el registro de la API, no el de la SPA.");
+        var apiScope = config["Entra:Scope"] ?? "access_as_user";
+        if (!local)
+        {
+            tenant = Guid.Parse(tenant!).ToString();
+            audience = Guid.Parse(audience!).ToString();
+            if (string.IsNullOrWhiteSpace(apiScope) || apiScope.IndexOfAny(['/', '<', '>', ' ']) >= 0)
+                throw new InvalidOperationException("Entra:Scope requiere el nombre corto del scope, por ejemplo access_as_user, no la URI completa.");
+        }
         if (local)
         {
             config["Jwt:Key"] ??= Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
@@ -44,6 +52,10 @@ public static class AuthenticationConfiguration
             {
                 options.Authority = $"https://login.microsoftonline.com/{tenant}/v2.0";
                 options.Audience = audience;
+                options.TokenValidationParameters.ValidateIssuer = true;
+                options.TokenValidationParameters.ValidateAudience = true;
+                options.TokenValidationParameters.ValidateLifetime = true;
+                options.TokenValidationParameters.ValidateIssuerSigningKey = true;
                 options.TokenValidationParameters.ValidIssuer = options.Authority;
                 options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.RsaSha256];
             }
@@ -65,7 +77,7 @@ public static class AuthenticationConfiguration
                     else
                     {
                         var scopes = principal.FindFirstValue("scp")?.Split(' ') ?? [];
-                        if (principal.FindFirstValue("tid") != tenant || !scopes.Contains(config["Entra:Scope"] ?? "access_as_user"))
+                        if (!Guid.TryParse(principal.FindFirstValue("tid"), out var tokenTenant) || tokenTenant.ToString() != tenant || !scopes.Contains(apiScope))
                         { context.Fail("Se requiere un token delegado de la API y del tenant configurado."); return; }
                         var username = (principal.FindFirstValue("preferred_username") ?? principal.FindFirstValue("upn"))?.Trim().ToLowerInvariant();
                         if (!Guid.TryParse(principal.FindFirstValue("oid"), out var oid) || string.IsNullOrWhiteSpace(username))

@@ -8,10 +8,11 @@ Angular 20, ASP.NET Core/.NET 10 y EF Core/SQL Server. Se conserva Domain / Appl
 - SQL Server local: `localhost\SQLEXPRESS`; configurar `ConnectionStrings__SqlServer` si cambia.
 - `dotnet tool restore` y `dotnet ef database update --project backend/src/SistemaLlantas.Infrastructure --startup-project backend/src/SistemaLlantas.Api` con `ASPNETCORE_ENVIRONMENT=Development`.
 - Para usuarios demo, habilitar explícitamente `Authentication__SeedDevelopmentUsers=true` solo en una base de desarrollo.
-- API: `dotnet run --project backend/src/SistemaLlantas.Api` (puerto 5262).
+- API local con contraseñas de desarrollo: `dotnet run --project backend/src/SistemaLlantas.Api --launch-profile local` (puerto 5262).
 - Frontend: en `frontend/sistema-llantas`, `pnpm install --frozen-lockfile` y `pnpm start:local`.
 
 Producción utiliza Entra ID y autorización interna SQL. Configuración, aprovisionamiento, Azure SQL, migraciones y restricciones de despliegue: [operación del MVP](docs/mvp-operacion.md).
+Para login Microsoft, usa el perfil API `http` y `pnpm start`; sigue la [configuración paso a paso de Entra](docs/entra-login.md). No mezcles ese frontend con el perfil API `local`.
 
 ## Verificación
 
