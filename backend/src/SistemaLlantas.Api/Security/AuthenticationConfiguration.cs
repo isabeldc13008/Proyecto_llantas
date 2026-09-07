@@ -53,7 +53,7 @@ public static class AuthenticationConfiguration
                 {
                     var principal = context.Principal!;
                     var db = context.HttpContext.RequestServices.GetRequiredService<LlantasDbContext>();
-                    var query = db.UsuariosSistema.AsNoTracking().Include(x => x.Centros).ThenInclude(x => x.Centro)
+                    var query = db.UsuariosSistema.AsNoTracking().AsSplitQuery().Include(x => x.Centros).ThenInclude(x => x.Centro)
                         .Include(x => x.Rol).ThenInclude(x => x.Permisos).ThenInclude(x => x.Permiso)
                         .Where(x => x.Activo && x.Rol.Activo);
                     UsuarioSistema? user;
