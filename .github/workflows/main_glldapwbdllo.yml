@@ -1,13 +1,17 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - GLLDAPWBDLLO
+name: Build and deploy GLLD API and Angular - GLLDAPWBDLLO
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+
+concurrency:
+  group: deploy-GLLDAPWBDLLO
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -21,19 +25,49 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/sistema-llantas/package-lock.json
+
+      - name: Install Angular dependencies
+        working-directory: frontend/sistema-llantas
+        run: npm ci
+
+      - name: Build Angular
+        working-directory: frontend/sistema-llantas
+        run: npm run build -- --configuration production
 
       - name: Build with dotnet
         run: dotnet build backend/src/SistemaLlantas.Api/SistemaLlantas.Api.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish backend/src/SistemaLlantas.Api/SistemaLlantas.Api.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish backend/src/SistemaLlantas.Api/SistemaLlantas.Api.csproj -c Release -o artifacts/app -p:UseAppHost=false
+
+      - name: Include Angular in the API package
+        shell: pwsh
+        run: |
+          $browser = Join-Path $env:GITHUB_WORKSPACE 'frontend/sistema-llantas/dist/sistema-llantas/browser'
+          $package = Join-Path $env:GITHUB_WORKSPACE 'artifacts/app'
+          if (!(Test-Path (Join-Path $browser 'index.html'))) { throw 'Angular index.html is missing.' }
+          New-Item -ItemType Directory -Force (Join-Path $package 'wwwroot') | Out-Null
+          Copy-Item (Join-Path $browser '*') (Join-Path $package 'wwwroot') -Recurse -Force
+          $development = Join-Path $package 'appsettings.Development.json'
+          if (Test-Path -LiteralPath $development) { Remove-Item -LiteralPath $development }
+          foreach ($file in @('web.config', 'SistemaLlantas.Api.dll', 'wwwroot/index.html')) {
+            if (!(Test-Path (Join-Path $package $file))) { throw "Package is missing $file" }
+          }
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: glld-app
+          path: artifacts/app/
+          if-no-files-found: error
 
   deploy:
     runs-on: windows-latest
@@ -43,7 +77,8 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: glld-app
+          path: package
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -51,5 +86,5 @@ jobs:
         with:
           app-name: 'GLLDAPWBDLLO'
           slot-name: 'Production'
-          package: .
+          package: package
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DB1E108411D64F82ABA7765652E47CF9 }}
