@@ -26,2704 +26,3387 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaFinProgramada")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaFinProgramada");
 
                     b.Property<DateTimeOffset?>("FechaFinReal")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaFinReal");
 
                     b.Property<DateTimeOffset?>("FechaInicioReal")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaInicioReal");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<DateTimeOffset>("FechaProgramada")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaProgramada");
 
                     b.Property<Guid?>("GrupoProgramacionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GGrupoProgramacionId");
 
                     b.Property<string>("IdempotencyKey")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SIdempotencyKey");
 
                     b.Property<Guid?>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<string>("MotivoCancelacion")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SMotivoCancelacion");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<string>("Origen")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SOrigen");
 
                     b.Property<Guid?>("OrigenEntidadId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GOrigenEntidadId");
 
                     b.Property<Guid?>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionVehiculoId");
 
                     b.Property<string>("Prioridad")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SPrioridad");
 
                     b.Property<string>("ReasignadoPor")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SReasignadoPor");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TecnicoId")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("STecnicoId");
 
                     b.Property<Guid?>("TecnicoUsuarioId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GTecnicoUsuarioId");
 
                     b.Property<string>("TipoActividad")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("STipoActividad");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<Guid?>("VehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GVehiculoId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ActividadProgramada");
 
-                    b.HasIndex("CentroId");
+                    b.HasIndex("CentroId")
+                        .HasDatabaseName("IX_ActividadProgramada_GCentroId");
 
                     b.HasIndex("IdempotencyKey")
                         .IsUnique()
-                        .HasFilter("[IdempotencyKey] IS NOT NULL");
+                        .HasDatabaseName("IX_ActividadProgramada_SIdempotencyKey")
+                        .HasFilter("([SIdempotencyKey] IS NOT NULL)");
 
-                    b.HasIndex("VehiculoId");
+                    b.HasIndex("VehiculoId")
+                        .HasDatabaseName("IX_ActividadProgramada_GVehiculoId");
 
-                    b.HasIndex("Origen", "OrigenEntidadId");
+                    b.HasIndex("Origen", "OrigenEntidadId")
+                        .HasDatabaseName("IX_ActividadProgramada_SOrigen_GOrigenEntidadId");
 
-                    b.HasIndex("TecnicoId", "Estado", "FechaProgramada");
+                    b.HasIndex("TecnicoId", "Estado", "FechaProgramada")
+                        .HasDatabaseName("IX_ActividadProgramada_STecnicoId_NEstado_DFechaProgramada");
 
-                    b.HasIndex("TecnicoUsuarioId", "FechaProgramada", "FechaFinProgramada");
+                    b.HasIndex("TecnicoUsuarioId", "FechaProgramada", "FechaFinProgramada")
+                        .HasDatabaseName("IX_ActividadProgramada_GTecnicoUsuarioId_DFechaProgramada_DFechaFinProgramada");
 
                     b.HasIndex("TecnicoUsuarioId", "VehiculoId", "TipoActividad", "FechaProgramada")
                         .IsUnique()
-                        .HasFilter("[Activo] = 1 AND [Estado] <> 4 AND [TecnicoUsuarioId] IS NOT NULL");
+                        .HasDatabaseName("IX_ActividadProgramada_GTecnicoUsuarioId_GVehiculoId_STipoActividad_DFechaProgramada")
+                        .HasFilter("([BActivo]=(1) AND [NEstado]<>(4) AND [GTecnicoUsuarioId] IS NOT NULL)");
 
-                    b.ToTable("TBL_ActividadProgramada", (string)null);
+                    b.ToTable("TBL_ActividadProgramada", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.AlertaHistorial", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("AlertaInspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GAlertaInspeccionId");
 
                     b.Property<int>("EstadoAnterior")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstadoAnterior");
 
                     b.Property<int>("EstadoNuevo")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstadoNuevo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Observacion")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservacion");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_AlertaHistorial");
 
-                    b.HasIndex("AlertaInspeccionId");
+                    b.HasIndex("AlertaInspeccionId")
+                        .HasDatabaseName("IX_AlertaHistorial_GAlertaInspeccionId");
 
-                    b.ToTable("TBL_AlertaHistorial", (string)null);
+                    b.ToTable("TBL_AlertaHistorial", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.AlertaInspeccion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SDescripcion");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<Guid>("InspeccionDetalleId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionDetalleId");
 
                     b.Property<Guid>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionId");
 
                     b.Property<Guid?>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<Guid>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionVehiculoId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
+                        .HasColumnType("nvarchar(80)")
+                        .HasColumnName("STipo");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<Guid>("VehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GVehiculoId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_AlertaInspeccion");
 
-                    b.HasIndex("InspeccionId");
+                    b.HasIndex("InspeccionId")
+                        .HasDatabaseName("IX_AlertaInspeccion_GInspeccionId");
 
                     b.HasIndex("InspeccionDetalleId", "Tipo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_AlertaInspeccion_GInspeccionDetalleId_STipo");
 
-                    b.HasIndex("CentroId", "Estado", "FechaCreacion");
+                    b.HasIndex("CentroId", "Estado", "FechaCreacion")
+                        .HasDatabaseName("IX_AlertaInspeccion_GCentroId_NEstado_DFechaCreacion");
 
-                    b.ToTable("TBL_AlertaInspeccion", (string)null);
+                    b.ToTable("TBL_AlertaInspeccion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.AsignacionLlantaPosicion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<bool>("EsActiva")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BEsActiva");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaFin")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaFin");
 
                     b.Property<DateTimeOffset>("FechaInicio")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaInicio");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<decimal?>("KilometrajeDesmontaje")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometrajeDesmontaje");
 
                     b.Property<decimal?>("KilometrajeMontaje")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometrajeMontaje");
 
                     b.Property<decimal?>("KilometrajeRecorrido")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometrajeRecorrido");
 
                     b.Property<Guid>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<Guid>("MovimientoOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GMovimientoOrigenId");
 
                     b.Property<Guid>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionVehiculoId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_AsignacionLlantaPosicion");
 
                     b.HasIndex("LlantaId")
                         .IsUnique()
-                        .HasDatabaseName("UX_Asignacion_LlantaActiva")
-                        .HasFilter("[EsActiva] = 1");
+                        .HasDatabaseName("IX_AsignacionLlantaPosicion_GLlantaId")
+                        .HasFilter("([BEsActiva]=(1))");
 
                     b.HasIndex("PosicionVehiculoId")
                         .IsUnique()
-                        .HasDatabaseName("UX_Asignacion_PosicionActiva")
-                        .HasFilter("[EsActiva] = 1");
+                        .HasDatabaseName("IX_AsignacionLlantaPosicion_GPosicionVehiculoId")
+                        .HasFilter("([BEsActiva]=(1))");
 
-                    b.ToTable("TBL_AsignacionLlantaPosicion", (string)null);
+                    b.ToTable("TBL_AsignacionLlantaPosicion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Auditoria", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasColumnName("NId");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"))
+                        .HasColumnName("NId");
 
                     b.Property<string>("Accion")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SAccion");
 
                     b.Property<string>("DireccionIp")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SDireccionIp");
 
                     b.Property<string>("Entidad")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SEntidad");
 
                     b.Property<DateTimeOffset>("Fecha")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFecha");
 
                     b.Property<string>("Identificador")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SIdentificador");
 
                     b.Property<string>("Origen")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SOrigen");
 
                     b.Property<string>("Usuario")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUsuario");
 
                     b.Property<string>("ValoresAnteriores")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SValoresAnteriores");
 
                     b.Property<string>("ValoresNuevos")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SValoresNuevos");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Auditoria");
 
                     b.HasIndex("Entidad", "Identificador", "Fecha")
-                        .HasDatabaseName("IX_Auditoria_EntidadFecha");
+                        .HasDatabaseName("IX_Auditoria_SEntidad_SIdentificador_DFecha");
 
-                    b.ToTable("TBL_Auditoria", (string)null);
+                    b.ToTable("TBL_Auditoria", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.CargaMasiva", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("ErroresJson")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SErroresJson");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<DateTimeOffset?>("FechaProcesamiento")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaProcesamiento");
 
                     b.Property<int>("FilasConError")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NFilasConError");
 
                     b.Property<string>("FilasJson")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SFilasJson");
 
                     b.Property<int>("FilasValidas")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NFilasValidas");
 
                     b.Property<string>("NombreArchivo")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("SNombreArchivo");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("STipo");
 
                     b.Property<int>("TotalFilas")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NTotalFilas");
 
                     b.Property<string>("Usuario")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUsuario");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_CargaMasiva");
 
-                    b.HasIndex("Usuario", "FechaCreacion");
+                    b.HasIndex("Usuario", "FechaCreacion")
+                        .HasDatabaseName("IX_CargaMasiva_SUsuario_DFechaCreacion");
 
-                    b.ToTable("TBL_CargaMasiva", (string)null);
+                    b.ToTable("TBL_CargaMasiva", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.CausaLlanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_CausaLlanta");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_CausaLlanta_SCodigo");
 
-                    b.ToTable("TBL_CausaLlanta", (string)null);
+                    b.ToTable("TBL_CausaLlanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Centro", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<Guid?>("RegionalId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GRegionalId");
 
                     b.Property<string>("Relevancia")
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)");
+                        .HasColumnType("nvarchar(2)")
+                        .HasColumnName("SRelevancia");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Centro");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_Centro_Codigo");
+                        .HasDatabaseName("IX_Centro_SCodigo");
 
-                    b.HasIndex("RegionalId");
+                    b.HasIndex("RegionalId")
+                        .HasDatabaseName("IX_Centro_GRegionalId");
 
-                    b.ToTable("TBL_Centro", (string)null);
+                    b.ToTable("TBL_Centro", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.CondicionLlanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<bool>("RequiereCausa")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BRequiereCausa");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_CondicionLlanta");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_CondicionLlanta_SCodigo");
 
-                    b.ToTable("TBL_CondicionLlanta", (string)null);
+                    b.ToTable("TBL_CondicionLlanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ConfiguracionEje", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("ConfiguracionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GConfiguracionVehiculoId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SNombre");
 
                     b.Property<int>("Orden")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NOrden");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TipoEje")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("STipoEje");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ConfiguracionEje");
 
                     b.HasIndex("ConfiguracionVehiculoId", "Orden")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_ConfiguracionEje_GConfiguracionVehiculoId_NOrden");
 
-                    b.ToTable("TBL_ConfiguracionEje", (string)null);
+                    b.ToTable("TBL_ConfiguracionEje", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ConfiguracionPosicion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<Guid>("ConfiguracionEjeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GConfiguracionEjeId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Lado")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SLado");
 
                     b.Property<int>("Orden")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NOrden");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SUbicacion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ConfiguracionPosicion");
 
                     b.HasIndex("ConfiguracionEjeId", "Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_ConfiguracionPosicion_GConfiguracionEjeId_SCodigo");
 
                     b.HasIndex("ConfiguracionEjeId", "Orden")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_ConfiguracionPosicion_GConfiguracionEjeId_NOrden");
 
-                    b.ToTable("TBL_ConfiguracionPosicion", (string)null);
+                    b.ToTable("TBL_ConfiguracionPosicion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ConfiguracionVehiculo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TipoVehiculo")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("STipoVehiculo");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ConfiguracionVehiculo");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_ConfiguracionVehiculo_SCodigo");
 
-                    b.ToTable("TBL_ConfiguracionVehiculo", (string)null);
+                    b.ToTable("TBL_ConfiguracionVehiculo", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Dimension", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Dimension");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_Dimension_Codigo");
+                        .HasDatabaseName("IX_Dimension_SCodigo");
 
-                    b.ToTable("TBL_Dimension", (string)null);
+                    b.ToTable("TBL_Dimension", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.EjeVehiculo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SNombre");
 
                     b.Property<int>("Numero")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NNumero");
 
                     b.Property<int>("Orden")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NOrden");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TipoEje")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("STipoEje");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<Guid>("VehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GVehiculoId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_EjeVehiculo");
 
                     b.HasIndex("VehiculoId", "Numero")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_EjeVehiculo_GVehiculoId_NNumero");
 
-                    b.ToTable("TBL_EjeVehiculo", (string)null);
+                    b.ToTable("TBL_EjeVehiculo", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.EstadoLlanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<bool>("EsDisposicionFinal")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BEsDisposicionFinal");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<bool>("PermiteMontaje")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BPermiteMontaje");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_EstadoLlanta");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_EstadoLlanta_Codigo");
+                        .HasDatabaseName("IX_EstadoLlanta_SCodigo");
 
-                    b.ToTable("TBL_EstadoLlanta", (string)null);
+                    b.ToTable("TBL_EstadoLlanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.EvidenciaFlujo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Hash")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("SHash");
 
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SMimeType");
 
                     b.Property<string>("NombreArchivo")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("SNombreArchivo");
 
                     b.Property<Guid>("OrdenServicioLlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GOrdenServicioLlantaId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<long>("TamanoBytes")
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasColumnName("NTamanoBytes");
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SUbicacion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_EvidenciaFlujo");
 
-                    b.HasIndex("OrdenServicioLlantaId");
+                    b.HasIndex("OrdenServicioLlantaId")
+                        .HasDatabaseName("IX_EvidenciaFlujo_GOrdenServicioLlantaId");
 
-                    b.ToTable("TBL_EvidenciaFlujo", (string)null);
+                    b.ToTable("TBL_EvidenciaFlujo", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.EvidenciaInspeccion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Hash")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("SHash");
 
                     b.Property<Guid?>("InconsistenciaInspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInconsistenciaInspeccionId");
 
                     b.Property<Guid?>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionId");
 
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SMimeType");
 
                     b.Property<string>("NombreArchivo")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("SNombreArchivo");
 
                     b.Property<DateTimeOffset?>("RetenerHasta")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DRetenerHasta");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<long>("TamanoBytes")
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasColumnName("NTamanoBytes");
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SUbicacion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_EvidenciaInspeccion");
 
-                    b.ToTable("TBL_EvidenciaInspeccion", (string)null);
+                    b.ToTable("TBL_EvidenciaInspeccion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.InconsistenciaInspeccion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstado");
 
                     b.Property<DateTimeOffset?>("FechaAutorizacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaAutorizacion");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("IdentificadorEncontrado")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SIdentificadorEncontrado");
 
                     b.Property<Guid>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionId");
 
                     b.Property<Guid?>("LlantaEncontradaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaEncontradaId");
 
                     b.Property<Guid?>("LlantaEsperadaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaEsperadaId");
 
                     b.Property<string>("Observacion")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservacion");
 
                     b.Property<string>("ObservacionAutorizacion")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservacionAutorizacion");
 
                     b.Property<Guid>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionVehiculoId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TecnicoId")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("STecnicoId");
 
                     b.Property<string>("UsuarioAutorizador")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUsuarioAutorizador");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_InconsistenciaInspeccion");
 
-                    b.HasIndex("InspeccionId");
+                    b.HasIndex("InspeccionId")
+                        .HasDatabaseName("IX_InconsistenciaInspeccion_GInspeccionId");
 
-                    b.HasIndex("LlantaEncontradaId");
+                    b.HasIndex("LlantaEncontradaId")
+                        .HasDatabaseName("IX_InconsistenciaInspeccion_GLlantaEncontradaId");
 
-                    b.HasIndex("LlantaEsperadaId");
+                    b.HasIndex("LlantaEsperadaId")
+                        .HasDatabaseName("IX_InconsistenciaInspeccion_GLlantaEsperadaId");
 
-                    b.HasIndex("PosicionVehiculoId");
+                    b.HasIndex("PosicionVehiculoId")
+                        .HasDatabaseName("IX_InconsistenciaInspeccion_GPosicionVehiculoId");
 
-                    b.ToTable("TBL_InconsistenciaInspeccion", (string)null);
+                    b.ToTable("TBL_InconsistenciaInspeccion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Inspeccion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<decimal?>("Kilometraje")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometraje");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TecnicoId")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("STecnicoId");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<Guid>("VehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GVehiculoId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Inspeccion");
 
-                    b.HasIndex("CentroId");
+                    b.HasIndex("CentroId")
+                        .HasDatabaseName("IX_Inspeccion_GCentroId");
 
-                    b.HasIndex("VehiculoId");
+                    b.HasIndex("VehiculoId")
+                        .HasDatabaseName("IX_Inspeccion_GVehiculoId");
 
-                    b.ToTable("TBL_Inspeccion", (string)null);
+                    b.ToTable("TBL_Inspeccion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.InspeccionDetalle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid?>("CausaLlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCausaLlantaId");
 
                     b.Property<Guid?>("CondicionLlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCondicionLlantaId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<Guid>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionId");
 
                     b.Property<Guid?>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<Guid>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionVehiculoId");
 
                     b.Property<decimal?>("ProfundidadCentro")
                         .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
+                        .HasColumnType("decimal(8,2)")
+                        .HasColumnName("NProfundidadCentro");
 
                     b.Property<decimal?>("ProfundidadExterior")
                         .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
+                        .HasColumnType("decimal(8,2)")
+                        .HasColumnName("NProfundidadExterior");
 
                     b.Property<decimal?>("ProfundidadInterior")
                         .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
+                        .HasColumnType("decimal(8,2)")
+                        .HasColumnName("NProfundidadInterior");
 
                     b.Property<Guid?>("RecomendacionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GRecomendacionId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_InspeccionDetalle");
 
-                    b.HasIndex("CausaLlantaId");
+                    b.HasIndex("CausaLlantaId")
+                        .HasDatabaseName("IX_InspeccionDetalle_GCausaLlantaId");
 
-                    b.HasIndex("CondicionLlantaId");
+                    b.HasIndex("CondicionLlantaId")
+                        .HasDatabaseName("IX_InspeccionDetalle_GCondicionLlantaId");
 
-                    b.HasIndex("LlantaId");
+                    b.HasIndex("LlantaId")
+                        .HasDatabaseName("IX_InspeccionDetalle_GLlantaId");
 
-                    b.HasIndex("PosicionVehiculoId");
+                    b.HasIndex("PosicionVehiculoId")
+                        .HasDatabaseName("IX_InspeccionDetalle_GPosicionVehiculoId");
 
-                    b.HasIndex("RecomendacionId");
+                    b.HasIndex("RecomendacionId")
+                        .HasDatabaseName("IX_InspeccionDetalle_GRecomendacionId");
 
                     b.HasIndex("InspeccionId", "PosicionVehiculoId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_InspeccionDetalle_GInspeccionId_GPosicionVehiculoId");
 
-                    b.ToTable("TBL_InspeccionDetalle", (string)null);
+                    b.ToTable("TBL_InspeccionDetalle", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Llanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<decimal?>("Costo")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NCosto");
 
                     b.Property<Guid>("DimensionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GDimensionId");
 
                     b.Property<Guid>("EstadoLlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GEstadoLlantaId");
 
                     b.Property<DateOnly?>("FechaCompra")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("DFechaCompra");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateOnly>("FechaIngreso")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("DFechaIngreso");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<decimal>("KilometrajeAcumulado")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometrajeAcumulado");
 
                     b.Property<Guid>("MarcaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GMarcaId");
 
                     b.Property<int>("NumeroReencauches")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NNumeroReencauches");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<decimal>("ProfundidadInicial")
                         .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
+                        .HasColumnType("decimal(8,2)")
+                        .HasColumnName("NProfundidadInicial");
 
                     b.Property<Guid>("ReferenciaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GReferenciaId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Serial")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SSerial");
 
                     b.Property<Guid>("TipoLlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GTipoLlantaId");
 
                     b.Property<string>("UbicacionActual")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUbicacionActual");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Llanta");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_Llanta_Codigo");
+                        .HasDatabaseName("IX_Llanta_SCodigo");
 
-                    b.HasIndex("DimensionId");
+                    b.HasIndex("DimensionId")
+                        .HasDatabaseName("IX_Llanta_GDimensionId");
 
-                    b.HasIndex("EstadoLlantaId");
+                    b.HasIndex("EstadoLlantaId")
+                        .HasDatabaseName("IX_Llanta_GEstadoLlantaId");
 
-                    b.HasIndex("MarcaId");
+                    b.HasIndex("MarcaId")
+                        .HasDatabaseName("IX_Llanta_GMarcaId");
 
-                    b.HasIndex("ReferenciaId");
+                    b.HasIndex("ReferenciaId")
+                        .HasDatabaseName("IX_Llanta_GReferenciaId");
 
                     b.HasIndex("Serial")
                         .IsUnique()
-                        .HasDatabaseName("IX_Llanta_Serial");
+                        .HasDatabaseName("IX_Llanta_SSerial");
 
-                    b.HasIndex("TipoLlantaId");
+                    b.HasIndex("TipoLlantaId")
+                        .HasDatabaseName("IX_Llanta_GTipoLlantaId");
 
                     b.HasIndex("CentroId", "EstadoLlantaId")
-                        .HasDatabaseName("IX_Llanta_CentroEstado");
+                        .HasDatabaseName("IX_Llanta_GCentroId_GEstadoLlantaId");
 
-                    b.ToTable("TBL_Llanta", (string)null);
+                    b.ToTable("TBL_Llanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.LlantaTemporal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("IdentificadorFisico")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SIdentificadorFisico");
 
                     b.Property<string>("IdentificadorTemporal")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("SIdentificadorTemporal");
 
                     b.Property<Guid>("InconsistenciaInspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInconsistenciaInspeccionId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_LlantaTemporal");
 
                     b.HasIndex("InconsistenciaInspeccionId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_LlantaTemporal_GInconsistenciaInspeccionId");
 
-                    b.ToTable("TBL_LlantaTemporal", (string)null);
+                    b.ToTable("TBL_LlantaTemporal", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.LoteEnvioReparacion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroOrigenId");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SEstado");
 
                     b.Property<DateTimeOffset?>("FechaCierre")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCierre");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<DateTimeOffset>("FechaSalida")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaSalida");
 
                     b.Property<string>("IdempotencyKey")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SIdempotencyKey");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<Guid>("ProveedorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GProveedorId");
 
                     b.Property<string>("Receptor")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SReceptor");
 
                     b.Property<string>("Remision")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SRemision");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Solicitante")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SSolicitante");
 
                     b.Property<string>("Transportador")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("STransportador");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_LoteEnvioReparacion");
 
-                    b.HasIndex("CentroOrigenId");
+                    b.HasIndex("CentroOrigenId")
+                        .HasDatabaseName("IX_LoteEnvioReparacion_GCentroOrigenId");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_LoteEnvioReparacion_SCodigo");
 
                     b.HasIndex("IdempotencyKey")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_LoteEnvioReparacion_SIdempotencyKey");
 
-                    b.HasIndex("ProveedorId");
+                    b.HasIndex("ProveedorId")
+                        .HasDatabaseName("IX_LoteEnvioReparacion_GProveedorId");
 
-                    b.ToTable("TBL_LoteEnvioReparacion", (string)null);
+                    b.ToTable("TBL_LoteEnvioReparacion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Marca", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Marca");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_Marca_Codigo");
+                        .HasDatabaseName("IX_Marca_SCodigo");
 
-                    b.ToTable("TBL_Marca", (string)null);
+                    b.ToTable("TBL_Marca", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Movimiento", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<Guid?>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionId");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SMotivo");
 
                     b.Property<string>("Numero")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SNumero");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("STipo");
 
                     b.Property<string>("Usuario")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUsuario");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Movimiento");
 
-                    b.HasIndex("CentroId");
+                    b.HasIndex("CentroId")
+                        .HasDatabaseName("IX_Movimiento_GCentroId");
 
                     b.HasIndex("Numero")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Movimiento_SNumero");
 
-                    b.ToTable("TBL_Movimiento", (string)null);
+                    b.ToTable("TBL_Movimiento", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.MovimientoDetalle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid?>("CentroDestinoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroDestinoId");
 
                     b.Property<string>("DestinoDescripcion")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("SDestinoDescripcion");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<Guid>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<Guid>("MovimientoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GMovimientoId");
 
                     b.Property<Guid?>("PosicionDestinoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionDestinoId");
 
                     b.Property<Guid?>("PosicionOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionOrigenId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<int>("TipoDestino")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NTipoDestino");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_MovimientoDetalle");
 
-                    b.HasIndex("LlantaId");
+                    b.HasIndex("LlantaId")
+                        .HasDatabaseName("IX_MovimientoDetalle_GLlantaId");
 
-                    b.HasIndex("MovimientoId");
+                    b.HasIndex("MovimientoId")
+                        .HasDatabaseName("IX_MovimientoDetalle_GMovimientoId");
 
-                    b.ToTable("TBL_MovimientoDetalle", (string)null);
+                    b.ToTable("TBL_MovimientoDetalle", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.MovimientoLlanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<DateTimeOffset>("FechaAutorizacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaAutorizacion");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<DateTimeOffset>("FechaReporte")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaReporte");
 
                     b.Property<Guid>("InconsistenciaInspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInconsistenciaInspeccionId");
 
                     b.Property<Guid>("InspeccionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GInspeccionId");
 
                     b.Property<Guid?>("LlantaAnteriorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaAnteriorId");
 
                     b.Property<Guid?>("LlantaNuevaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaNuevaId");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("SMotivo");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<Guid>("PosicionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionVehiculoId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("TecnicoReporta")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("STecnicoReporta");
 
                     b.Property<string>("UsuarioAutoriza")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUsuarioAutoriza");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_MovimientoLlanta");
 
-                    b.ToTable("TBL_MovimientoLlanta", (string)null);
+                    b.ToTable("TBL_MovimientoLlanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.OrdenServicioLlanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Aprobador")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SAprobador");
 
                     b.Property<Guid>("CentroOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroOrigenId");
 
                     b.Property<decimal?>("Costo")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NCosto");
 
                     b.Property<string>("CriterioElegibilidad")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SCriterioElegibilidad");
 
                     b.Property<bool>("Elegible")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BElegible");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnName("SEstado");
 
                     b.Property<DateTimeOffset?>("FechaAprobacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaAprobacion");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaEnvio")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaEnvio");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<DateTimeOffset>("FechaOpcionada")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaOpcionada");
 
                     b.Property<DateTimeOffset?>("FechaRecepcion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaRecepcion");
 
                     b.Property<Guid>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<Guid?>("LoteEnvioReparacionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLoteEnvioReparacionId");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SMotivo");
 
                     b.Property<string>("MotivoRechazo")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SMotivoRechazo");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<Guid?>("OrigenEntidadId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GOrigenEntidadId");
 
                     b.Property<string>("OrigenTipo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SOrigenTipo");
 
                     b.Property<Guid?>("PosicionOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionOrigenId");
 
                     b.Property<Guid?>("ProveedorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GProveedorId");
 
                     b.Property<string>("Resultado")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SResultado");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Solicitante")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SSolicitante");
 
                     b.Property<int>("Tipo")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NTipo");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<string>("UsuarioOpciona")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SUsuarioOpciona");
 
                     b.Property<Guid?>("VehiculoOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GVehiculoOrigenId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_OrdenServicioLlanta");
 
-                    b.HasIndex("CentroOrigenId");
+                    b.HasIndex("CentroOrigenId")
+                        .HasDatabaseName("IX_OrdenServicioLlanta_GCentroOrigenId");
 
-                    b.HasIndex("LlantaId");
+                    b.HasIndex("LlantaId")
+                        .HasDatabaseName("IX_OrdenServicioLlanta_GLlantaId");
 
-                    b.HasIndex("LoteEnvioReparacionId");
+                    b.HasIndex("LoteEnvioReparacionId")
+                        .HasDatabaseName("IX_OrdenServicioLlanta_GLoteEnvioReparacionId");
 
-                    b.HasIndex("ProveedorId");
+                    b.HasIndex("ProveedorId")
+                        .HasDatabaseName("IX_OrdenServicioLlanta_GProveedorId");
 
-                    b.HasIndex("OrigenTipo", "OrigenEntidadId");
+                    b.HasIndex("OrigenTipo", "OrigenEntidadId")
+                        .HasDatabaseName("IX_OrdenServicioLlanta_SOrigenTipo_GOrigenEntidadId");
 
-                    b.HasIndex("Tipo", "Estado", "CentroOrigenId");
+                    b.HasIndex("Tipo", "Estado", "CentroOrigenId")
+                        .HasDatabaseName("IX_OrdenServicioLlanta_NTipo_SEstado_GCentroOrigenId");
 
-                    b.ToTable("TBL_OrdenServicioLlanta", (string)null);
+                    b.ToTable("TBL_OrdenServicioLlanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ParametroAlerta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
+                        .HasColumnType("nvarchar(80)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Unidad")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SUnidad");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("NValor");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ParametroAlerta");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_ParametroAlerta_SCodigo");
 
-                    b.ToTable("TBL_ParametroAlerta", (string)null);
+                    b.ToTable("TBL_ParametroAlerta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ParametroReencauche", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid?>("DimensionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GDimensionId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<int>("MaximoReencauches")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NMaximoReencauches");
 
                     b.Property<decimal>("ProfundidadMinima")
                         .HasPrecision(8, 2)
-                        .HasColumnType("decimal(8,2)");
+                        .HasColumnType("decimal(8,2)")
+                        .HasColumnName("NProfundidadMinima");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
                     b.Property<DateOnly>("VigenteDesde")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("DVigenteDesde");
 
                     b.Property<DateOnly?>("VigenteHasta")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("DVigenteHasta");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ParametroReencauche");
 
-                    b.ToTable("TBL_ParametroReencauche", (string)null);
+                    b.ToTable("TBL_ParametroReencauche", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.PermisoSistema", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasColumnType("nvarchar(120)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(160)
-                        .HasColumnType("nvarchar(160)");
+                        .HasColumnType("nvarchar(160)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Permiso");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Permiso_SCodigo");
 
-                    b.ToTable("TBL_Permiso", (string)null);
+                    b.ToTable("TBL_Permiso", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.PosicionVehiculo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<Guid>("EjeVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GEjeVehiculoId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Lado")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SLado");
 
                     b.Property<Guid?>("LlantaActualId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaActualId");
 
                     b.Property<int>("Orden")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NOrden");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SUbicacion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_PosicionVehiculo");
 
-                    b.HasIndex("LlantaActualId");
+                    b.HasIndex("LlantaActualId")
+                        .HasDatabaseName("IX_PosicionVehiculo_GLlantaActualId");
 
                     b.HasIndex("EjeVehiculoId", "Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_PosicionVehiculo_GEjeVehiculoId_SCodigo");
 
-                    b.ToTable("TBL_PosicionVehiculo", (string)null);
+                    b.ToTable("TBL_PosicionVehiculo", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ProveedorServicio", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("STipo");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_ProveedorServicio");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_ProveedorServicio_SCodigo");
 
-                    b.ToTable("TBL_ProveedorServicio", (string)null);
+                    b.ToTable("TBL_ProveedorServicio", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.RecomendacionInspeccion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<bool>("EsCandidataReencauche")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BEsCandidataReencauche");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_RecomendacionInspeccion");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_RecomendacionInspeccion_SCodigo");
 
-                    b.ToTable("TBL_RecomendacionInspeccion", (string)null);
+                    b.ToTable("TBL_RecomendacionInspeccion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Referencia", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<Guid>("MarcaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GMarcaId");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Referencia");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_Referencia_Codigo");
+                        .HasDatabaseName("IX_Referencia_SCodigo");
 
-                    b.HasIndex("MarcaId");
+                    b.HasIndex("MarcaId")
+                        .HasDatabaseName("IX_Referencia_GMarcaId");
 
-                    b.ToTable("TBL_Referencia", (string)null);
+                    b.ToTable("TBL_Referencia", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Regional", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Regional");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_Regional_Codigo");
+                        .HasDatabaseName("IX_Regional_SCodigo");
 
-                    b.ToTable("TBL_Regional", (string)null);
+                    b.ToTable("TBL_Regional", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.RolPermiso", b =>
                 {
                     b.Property<Guid>("RolId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GRolId");
 
                     b.Property<Guid>("PermisoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPermisoId");
 
-                    b.HasKey("RolId", "PermisoId");
+                    b.HasKey("RolId", "PermisoId")
+                        .HasName("PK_TBL_RolPermiso");
 
-                    b.HasIndex("PermisoId");
+                    b.HasIndex("PermisoId")
+                        .HasDatabaseName("IX_RolPermiso_GPermisoId");
 
-                    b.ToTable("TBL_RolPermiso", (string)null);
+                    b.ToTable("TBL_RolPermiso", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.RolSistema", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
+                        .HasColumnType("nvarchar(60)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Rol");
 
                     b.HasIndex("Codigo")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Rol_SCodigo");
 
-                    b.ToTable("TBL_Rol", (string)null);
+                    b.ToTable("TBL_Rol", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.SolicitudOperacion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<Guid?>("ActividadProgramadaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GActividadProgramadaId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Aprobador")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SAprobador");
 
                     b.Property<Guid?>("CentroDestinoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroDestinoId");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<string>("DestinoDesplazada")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SDestinoDesplazada");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("NEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaDecision")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaDecision");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<DateTimeOffset?>("FechaRecepcionDestino")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaRecepcionDestino");
 
                     b.Property<decimal?>("KilometrajeVehiculo")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometrajeVehiculo");
 
                     b.Property<Guid?>("LlantaDesplazadaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaDesplazadaId");
 
                     b.Property<Guid>("LlantaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GLlantaId");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SMotivo");
 
                     b.Property<string>("MotivoRechazo")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SMotivoRechazo");
 
                     b.Property<Guid?>("MovimientoEjecutadoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GMovimientoEjecutadoId");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("SObservaciones");
 
                     b.Property<Guid?>("PosicionDestinoDesplazadaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionDestinoDesplazadaId");
 
                     b.Property<Guid?>("PosicionDestinoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionDestinoId");
 
                     b.Property<Guid?>("PosicionOrigenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GPosicionOrigenId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Solicitante")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SSolicitante");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("STipo");
 
                     b.Property<string>("TipoDestino")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("STipoDestino");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_SolicitudOperacion");
 
-                    b.HasIndex("LlantaId");
+                    b.HasIndex("LlantaId")
+                        .HasDatabaseName("IX_SolicitudOperacion_GLlantaId");
 
-                    b.HasIndex("CentroId", "Estado", "FechaCreacion");
+                    b.HasIndex("CentroId", "Estado", "FechaCreacion")
+                        .HasDatabaseName("IX_SolicitudOperacion_GCentroId_NEstado_DFechaCreacion");
 
-                    b.ToTable("TBL_SolicitudOperacion", (string)null);
+                    b.ToTable("TBL_SolicitudOperacion", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.TipoLlanta", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SCodigo");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_TipoLlanta");
 
                     b.HasIndex("Codigo")
                         .IsUnique()
-                        .HasDatabaseName("IX_TipoLlanta_Codigo");
+                        .HasDatabaseName("IX_TipoLlanta_SCodigo");
 
-                    b.ToTable("TBL_TipoLlanta", (string)null);
+                    b.ToTable("TBL_TipoLlanta", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.UsuarioCentro", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<Guid>("UsuarioId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GUsuarioId");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_UsuarioCentro");
 
-                    b.HasIndex("CentroId");
+                    b.HasIndex("CentroId")
+                        .HasDatabaseName("IX_UsuarioCentro_GCentroId");
 
                     b.HasIndex("UsuarioId", "CentroId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_UsuarioCentro_GUsuarioId_GCentroId");
 
-                    b.ToTable("TBL_UsuarioCentro", (string)null);
+                    b.ToTable("TBL_UsuarioCentro", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.UsuarioSistema", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid?>("CentroId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("EntraObjectId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("SNombre");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("SPasswordHash");
 
                     b.Property<Guid>("RolId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GRolId");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
+                        .HasColumnType("nvarchar(80)")
+                        .HasColumnName("SUsername");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Usuario");
 
-                    b.HasIndex("CentroId");
+                    b.HasIndex("CentroId")
+                        .HasDatabaseName("IX_Usuario_GCentroId");
 
-                    b.HasIndex("EntraObjectId")
-                        .IsUnique()
-                        .HasFilter("[EntraObjectId] IS NOT NULL");
-
-                    b.HasIndex("RolId");
+                    b.HasIndex("RolId")
+                        .HasDatabaseName("IX_Usuario_GRolId");
 
                     b.HasIndex("Username")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Usuario_SUsername");
 
-                    b.ToTable("TBL_Usuario", (string)null);
+                    b.ToTable("TBL_Usuario", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Vehiculo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GId");
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("BActivo");
 
                     b.Property<Guid>("CentroId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GCentroId");
 
                     b.Property<Guid?>("ConfiguracionVehiculoId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GConfiguracionVehiculoId");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("SEstado");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaCreacion");
 
                     b.Property<DateTimeOffset?>("FechaModificacion")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaModificacion");
 
                     b.Property<decimal?>("Kilometraje")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometraje");
 
                     b.Property<string>("NumeroInterno")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("SNumeroInterno");
 
                     b.Property<string>("Placa")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SPlaca");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("rowversion")
+                        .HasColumnName("TRowVersion");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("STipo");
 
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioCreacion");
 
                     b.Property<string>("UsuarioModificacion")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SUsuarioModificacion");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_TBL_Vehiculo");
 
-                    b.HasIndex("CentroId");
+                    b.HasIndex("CentroId")
+                        .HasDatabaseName("IX_Vehiculo_GCentroId");
 
-                    b.HasIndex("ConfiguracionVehiculoId");
+                    b.HasIndex("ConfiguracionVehiculoId")
+                        .HasDatabaseName("IX_Vehiculo_GConfiguracionVehiculoId");
 
                     b.HasIndex("NumeroInterno")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Vehiculo_SNumeroInterno");
 
-                    b.ToTable("TBL_Vehiculo", (string)null);
+                    b.ToTable("TBL_Vehiculo", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ActividadProgramada", b =>
@@ -2732,17 +3415,20 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_ActividadProgramada_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.UsuarioSistema", "TecnicoUsuario")
                         .WithMany()
                         .HasForeignKey("TecnicoUsuarioId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_ActividadProgramada_TBL_Usuario_GTecnicoUsuarioId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Vehiculo", "Vehiculo")
                         .WithMany()
                         .HasForeignKey("VehiculoId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_ActividadProgramada_TBL_Vehiculo_GVehiculoId");
 
                     b.Navigation("Centro");
 
@@ -2757,7 +3443,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Historial")
                         .HasForeignKey("AlertaInspeccionId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_AlertaHistorial_TBL_AlertaInspeccion_GAlertaInspeccionId");
 
                     b.Navigation("Alerta");
                 });
@@ -2768,13 +3455,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("InspeccionDetalleId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_AlertaInspeccion_TBL_InspeccionDetalle_GInspeccionDetalleId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Inspeccion", "Inspeccion")
                         .WithMany()
                         .HasForeignKey("InspeccionId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_AlertaInspeccion_TBL_Inspeccion_GInspeccionId");
 
                     b.Navigation("Inspeccion");
 
@@ -2787,13 +3476,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("LlantaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_AsignacionLlantaPosicion_TBL_Llanta_GLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.PosicionVehiculo", "PosicionVehiculo")
                         .WithMany()
                         .HasForeignKey("PosicionVehiculoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_AsignacionLlantaPosicion_TBL_PosicionVehiculo_GPosicionVehiculoId");
 
                     b.Navigation("Llanta");
 
@@ -2805,7 +3496,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.HasOne("SistemaLlantas.Domain.Entities.Regional", "Regional")
                         .WithMany("Centros")
                         .HasForeignKey("RegionalId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_Centro_TBL_Regional_GRegionalId");
 
                     b.Navigation("Regional");
                 });
@@ -2816,7 +3508,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Ejes")
                         .HasForeignKey("ConfiguracionVehiculoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_ConfiguracionEje_TBL_ConfiguracionVehiculo_GConfiguracionVehiculoId");
 
                     b.Navigation("ConfiguracionVehiculo");
                 });
@@ -2827,7 +3520,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Posiciones")
                         .HasForeignKey("ConfiguracionEjeId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_ConfiguracionPosicion_TBL_ConfiguracionEje_GConfiguracionEjeId");
 
                     b.Navigation("ConfiguracionEje");
                 });
@@ -2838,7 +3532,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Ejes")
                         .HasForeignKey("VehiculoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_EjeVehiculo_TBL_Vehiculo_GVehiculoId");
 
                     b.Navigation("Vehiculo");
                 });
@@ -2849,7 +3544,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Evidencias")
                         .HasForeignKey("OrdenServicioLlantaId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_EvidenciaFlujo_TBL_OrdenServicioLlanta_GOrdenServicioLlantaId");
 
                     b.Navigation("Orden");
                 });
@@ -2860,21 +3556,25 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("InspeccionId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_InconsistenciaInspeccion_TBL_Inspeccion_GInspeccionId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "LlantaEncontrada")
                         .WithMany()
-                        .HasForeignKey("LlantaEncontradaId");
+                        .HasForeignKey("LlantaEncontradaId")
+                        .HasConstraintName("FK_TBL_InconsistenciaInspeccion_TBL_Llanta_GLlantaEncontradaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "LlantaEsperada")
                         .WithMany()
-                        .HasForeignKey("LlantaEsperadaId");
+                        .HasForeignKey("LlantaEsperadaId")
+                        .HasConstraintName("FK_TBL_InconsistenciaInspeccion_TBL_Llanta_GLlantaEsperadaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.PosicionVehiculo", "PosicionVehiculo")
                         .WithMany()
                         .HasForeignKey("PosicionVehiculoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_InconsistenciaInspeccion_TBL_PosicionVehiculo_GPosicionVehiculoId");
 
                     b.Navigation("Inspeccion");
 
@@ -2891,13 +3591,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Inspeccion_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Vehiculo", "Vehiculo")
                         .WithMany()
                         .HasForeignKey("VehiculoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Inspeccion_TBL_Vehiculo_GVehiculoId");
 
                     b.Navigation("Centro");
 
@@ -2908,31 +3610,37 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("SistemaLlantas.Domain.Entities.CausaLlanta", "CausaLlanta")
                         .WithMany()
-                        .HasForeignKey("CausaLlantaId");
+                        .HasForeignKey("CausaLlantaId")
+                        .HasConstraintName("FK_TBL_InspeccionDetalle_TBL_CausaLlanta_GCausaLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.CondicionLlanta", "CondicionLlanta")
                         .WithMany()
-                        .HasForeignKey("CondicionLlantaId");
+                        .HasForeignKey("CondicionLlantaId")
+                        .HasConstraintName("FK_TBL_InspeccionDetalle_TBL_CondicionLlanta_GCondicionLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Inspeccion", "Inspeccion")
                         .WithMany("Detalles")
                         .HasForeignKey("InspeccionId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_InspeccionDetalle_TBL_Inspeccion_GInspeccionId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "Llanta")
                         .WithMany()
-                        .HasForeignKey("LlantaId");
+                        .HasForeignKey("LlantaId")
+                        .HasConstraintName("FK_TBL_InspeccionDetalle_TBL_Llanta_GLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.PosicionVehiculo", "PosicionVehiculo")
                         .WithMany()
                         .HasForeignKey("PosicionVehiculoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_InspeccionDetalle_TBL_PosicionVehiculo_GPosicionVehiculoId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.RecomendacionInspeccion", "Recomendacion")
                         .WithMany()
-                        .HasForeignKey("RecomendacionId");
+                        .HasForeignKey("RecomendacionId")
+                        .HasConstraintName("FK_TBL_InspeccionDetalle_TBL_RecomendacionInspeccion_GRecomendacionId");
 
                     b.Navigation("CausaLlanta");
 
@@ -2953,37 +3661,43 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Llanta_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Dimension", "Dimension")
                         .WithMany()
                         .HasForeignKey("DimensionId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Llanta_TBL_Dimension_GDimensionId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.EstadoLlanta", "EstadoLlanta")
                         .WithMany()
                         .HasForeignKey("EstadoLlantaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Llanta_TBL_EstadoLlanta_GEstadoLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Marca", "Marca")
                         .WithMany()
                         .HasForeignKey("MarcaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Llanta_TBL_Marca_GMarcaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Referencia", "Referencia")
                         .WithMany()
                         .HasForeignKey("ReferenciaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Llanta_TBL_Referencia_GReferenciaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.TipoLlanta", "TipoLlanta")
                         .WithMany()
                         .HasForeignKey("TipoLlantaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Llanta_TBL_TipoLlanta_GTipoLlantaId");
 
                     b.Navigation("Centro");
 
@@ -3004,7 +3718,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithOne("LlantaTemporal")
                         .HasForeignKey("SistemaLlantas.Domain.Entities.LlantaTemporal", "InconsistenciaInspeccionId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_LlantaTemporal_TBL_InconsistenciaInspeccion_GInconsistenciaInspeccionId");
 
                     b.Navigation("InconsistenciaInspeccion");
                 });
@@ -3015,13 +3730,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroOrigenId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_LoteEnvioReparacion_TBL_Centro_GCentroOrigenId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.ProveedorServicio", "Proveedor")
                         .WithMany()
                         .HasForeignKey("ProveedorId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_LoteEnvioReparacion_TBL_ProveedorServicio_GProveedorId");
 
                     b.Navigation("CentroOrigen");
 
@@ -3034,7 +3751,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Movimiento_TBL_Centro_GCentroId");
 
                     b.Navigation("Centro");
                 });
@@ -3045,13 +3763,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("LlantaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_MovimientoDetalle_TBL_Llanta_GLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Movimiento", "Movimiento")
                         .WithMany("Detalles")
                         .HasForeignKey("MovimientoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_MovimientoDetalle_TBL_Movimiento_GMovimientoId");
 
                     b.Navigation("Llanta");
 
@@ -3064,23 +3784,27 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroOrigenId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_OrdenServicioLlanta_TBL_Centro_GCentroOrigenId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "Llanta")
                         .WithMany()
                         .HasForeignKey("LlantaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_OrdenServicioLlanta_TBL_Llanta_GLlantaId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.LoteEnvioReparacion", "LoteEnvioReparacion")
                         .WithMany("Ordenes")
                         .HasForeignKey("LoteEnvioReparacionId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_OrdenServicioLlanta_TBL_LoteEnvioReparacion_GLoteEnvioReparacionId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.ProveedorServicio", "Proveedor")
                         .WithMany()
                         .HasForeignKey("ProveedorId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_OrdenServicioLlanta_TBL_ProveedorServicio_GProveedorId");
 
                     b.Navigation("CentroOrigen");
 
@@ -3097,12 +3821,14 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Posiciones")
                         .HasForeignKey("EjeVehiculoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_PosicionVehiculo_TBL_EjeVehiculo_GEjeVehiculoId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "LlantaActual")
                         .WithMany()
                         .HasForeignKey("LlantaActualId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_PosicionVehiculo_TBL_Llanta_GLlantaActualId");
 
                     b.Navigation("EjeVehiculo");
 
@@ -3115,7 +3841,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Referencias")
                         .HasForeignKey("MarcaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Referencia_TBL_Marca_GMarcaId");
 
                     b.Navigation("Marca");
                 });
@@ -3126,13 +3853,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany("Roles")
                         .HasForeignKey("PermisoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_RolPermiso_TBL_Permiso_GPermisoId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.RolSistema", "Rol")
                         .WithMany("Permisos")
                         .HasForeignKey("RolId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_RolPermiso_TBL_Rol_GRolId");
 
                     b.Navigation("Permiso");
 
@@ -3145,13 +3874,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_SolicitudOperacion_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.Llanta", "Llanta")
                         .WithMany()
                         .HasForeignKey("LlantaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_SolicitudOperacion_TBL_Llanta_GLlantaId");
 
                     b.Navigation("Centro");
 
@@ -3164,13 +3895,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_UsuarioCentro_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.UsuarioSistema", "Usuario")
                         .WithMany("Centros")
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_UsuarioCentro_TBL_Usuario_GUsuarioId");
 
                     b.Navigation("Centro");
 
@@ -3182,13 +3915,15 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.HasOne("SistemaLlantas.Domain.Entities.Centro", "Centro")
                         .WithMany()
                         .HasForeignKey("CentroId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_Usuario_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.RolSistema", "Rol")
                         .WithMany("Usuarios")
                         .HasForeignKey("RolId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Usuario_TBL_Rol_GRolId");
 
                     b.Navigation("Centro");
 
@@ -3201,12 +3936,14 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CentroId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_TBL_Vehiculo_TBL_Centro_GCentroId");
 
                     b.HasOne("SistemaLlantas.Domain.Entities.ConfiguracionVehiculo", "ConfiguracionVehiculo")
                         .WithMany("Vehiculos")
                         .HasForeignKey("ConfiguracionVehiculoId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TBL_Vehiculo_TBL_ConfiguracionVehiculo_GConfiguracionVehiculoId");
 
                     b.Navigation("Centro");
 

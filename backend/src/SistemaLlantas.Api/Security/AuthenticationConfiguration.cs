@@ -10,83 +10,41 @@ namespace SistemaLlantas.Api.Security;
 
 public static class AuthenticationConfiguration
 {
-    public static bool IsLocal(IConfiguration config, IHostEnvironment environment) =>
-        environment.IsDevelopment() && config["Authentication:Mode"] == "Local";
-
     public static void AddApplicationAuthentication(this WebApplicationBuilder builder)
     {
         var config = builder.Configuration;
-        var local = IsLocal(config, builder.Environment);
-        if (!local && config["Authentication:Mode"] != "Entra")
-            throw new InvalidOperationException("Producción requiere Authentication:Mode=Entra.");
-        var tenant = config["Entra:TenantId"];
-        var audience = config["Entra:ClientId"];
-        if (!local && (!Guid.TryParse(tenant, out _) || !Guid.TryParse(audience, out _)))
-            throw new InvalidOperationException("Configure Entra__TenantId=<TENANT_ID> y Entra__ClientId=<API_CLIENT_ID>. ClientId debe ser el registro de la API, no el de la SPA.");
-        var apiScope = config["Entra:Scope"] ?? "access_as_user";
-        if (!local)
+        if (string.IsNullOrWhiteSpace(config["Jwt:Key"]))
         {
-            tenant = Guid.Parse(tenant!).ToString();
-            audience = Guid.Parse(audience!).ToString();
-            if (string.IsNullOrWhiteSpace(apiScope) || apiScope.IndexOfAny(['/', '<', '>', ' ']) >= 0)
-                throw new InvalidOperationException("Entra:Scope requiere el nombre corto del scope, por ejemplo access_as_user, no la URI completa.");
+            if (!builder.Environment.IsDevelopment())
+                throw new InvalidOperationException("Configure Jwt__Key con una clave aleatoria de al menos 32 bytes para producción.");
+            config["Jwt:Key"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
         }
-        if (local)
-        {
-            config["Jwt:Key"] ??= Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
-            if (Encoding.UTF8.GetByteCount(config["Jwt:Key"]!) < 32)
-                throw new InvalidOperationException("Jwt:Key requiere al menos 32 bytes.");
-        }
+        if (Encoding.UTF8.GetByteCount(config["Jwt:Key"]!) < 32)
+            throw new InvalidOperationException("Jwt:Key requiere al menos 32 bytes.");
+        if (string.IsNullOrWhiteSpace(config["Jwt:Issuer"]) || string.IsNullOrWhiteSpace(config["Jwt:Audience"]))
+            throw new InvalidOperationException("Configure Jwt:Issuer y Jwt:Audience.");
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.MapInboundClaims = false;
-            if (local)
-                options.TokenValidationParameters = new()
-                {
-                    ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true,
-                    ValidIssuer = config["Jwt:Issuer"], ValidAudience = config["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
-                    ValidAlgorithms = [SecurityAlgorithms.HmacSha256], ClockSkew = TimeSpan.FromMinutes(1)
-                };
-            else
+            options.TokenValidationParameters = new()
             {
-                options.Authority = $"https://login.microsoftonline.com/{tenant}/v2.0";
-                options.Audience = audience;
-                options.TokenValidationParameters.ValidateIssuer = true;
-                options.TokenValidationParameters.ValidateAudience = true;
-                options.TokenValidationParameters.ValidateLifetime = true;
-                options.TokenValidationParameters.ValidateIssuerSigningKey = true;
-                options.TokenValidationParameters.ValidIssuer = options.Authority;
-                options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.RsaSha256];
-            }
+                ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true,
+                ValidIssuer = config["Jwt:Issuer"], ValidAudience = config["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
+                ValidAlgorithms = [SecurityAlgorithms.HmacSha256], ClockSkew = TimeSpan.FromMinutes(1)
+            };
             options.Events = new JwtBearerEvents
             {
                 OnTokenValidated = async context =>
                 {
-                    var principal = context.Principal!;
+                    if (!Guid.TryParse(context.Principal!.FindFirstValue("sub"), out var id))
+                    { context.Fail("Identidad inválida."); return; }
                     var db = context.HttpContext.RequestServices.GetRequiredService<LlantasDbContext>();
-                    var query = db.UsuariosSistema.AsNoTracking().AsSplitQuery().Include(x => x.Centros).ThenInclude(x => x.Centro)
+                    var user = await db.UsuariosSistema.AsNoTracking().AsSplitQuery()
+                        .Include(x => x.Centros).ThenInclude(x => x.Centro)
                         .Include(x => x.Rol).ThenInclude(x => x.Permisos).ThenInclude(x => x.Permiso)
-                        .Where(x => x.Activo && x.Rol.Activo);
-                    UsuarioSistema? user;
-                    if (local)
-                    {
-                        if (!Guid.TryParse(principal.FindFirstValue("sub"), out var id)) { context.Fail("Identidad inválida."); return; }
-                        user = await query.SingleOrDefaultAsync(x => x.Id == id, context.HttpContext.RequestAborted);
-                    }
-                    else
-                    {
-                        var scopes = principal.FindFirstValue("scp")?.Split(' ') ?? [];
-                        if (!Guid.TryParse(principal.FindFirstValue("tid"), out var tokenTenant) || tokenTenant.ToString() != tenant || !scopes.Contains(apiScope))
-                        { context.Fail("Se requiere un token delegado de la API y del tenant configurado."); return; }
-                        var username = (principal.FindFirstValue("preferred_username") ?? principal.FindFirstValue("upn"))?.Trim().ToLowerInvariant();
-                        if (!Guid.TryParse(principal.FindFirstValue("oid"), out var oid) || string.IsNullOrWhiteSpace(username))
-                        { context.Fail("Identidad corporativa incompleta."); return; }
-                        user = await query.SingleOrDefaultAsync(x => x.Username == username && x.EntraObjectId == oid,
-                            context.HttpContext.RequestAborted);
-                    }
+                        .SingleOrDefaultAsync(x => x.Id == id && x.Activo && x.Rol.Activo, context.HttpContext.RequestAborted);
                     if (user is null) { context.Fail("Usuario interno no habilitado."); return; }
-                    // Replace all external authorization claims; SQL is the only authority for permissions and centers.
                     context.Principal = CreatePrincipal(user);
                 }
             };

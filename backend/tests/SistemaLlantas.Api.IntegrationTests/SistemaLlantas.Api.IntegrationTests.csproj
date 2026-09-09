@@ -24,4 +24,5 @@
   </ItemGroup>
 
   <ItemGroup><None Include="../../scripts/seed-operational-data.sql" Link="seed-operational-data.sql" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><None Update="Schema\GDLLSQLDLLO.columns.tsv" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

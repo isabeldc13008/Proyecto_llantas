@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
@@ -7,8 +7,7 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5262",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "Authentication__Mode": "Entra"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "local": {
@@ -17,8 +16,7 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5262",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "Authentication__Mode": "Local"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

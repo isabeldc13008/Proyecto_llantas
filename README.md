@@ -11,11 +11,11 @@ Angular 20, ASP.NET Core/.NET 10 y EF Core/SQL Server. Se conserva Domain / Appl
 - API local con contraseñas de desarrollo: `dotnet run --project backend/src/SistemaLlantas.Api --launch-profile local` (puerto 5262).
 - Frontend: en `frontend/sistema-llantas`, `pnpm install --frozen-lockfile` y `pnpm start:local`.
 
-Producción utiliza Entra ID y autorización interna SQL. Configuración, aprovisionamiento, Azure SQL, migraciones y restricciones de despliegue: [operación del MVP](docs/mvp-operacion.md).
-Para login Microsoft, usa el perfil API `http` y `pnpm start`; sigue la [configuración paso a paso de Entra](docs/entra-login.md). No mezcles ese frontend con el perfil API `local`.
 
 ## Verificación
 
 `dotnet test` ejecuta Domain, Application e Integration. Integración utiliza bases aisladas en LocalDB o el servidor indicado por `TEST_SQL_CONNECTION`, sin datos previos requeridos.
 Frontend: `pnpm test --watch=false --browsers=ChromeHeadless` y `pnpm build`.
 GitHub Actions ejecuta ambas suites y genera artefactos; no despliega.
+
+Autenticación propia con usuario/contraseña y JWT en desarrollo y producción. Ver [configuración y arranque](docs/mvp-operacion.md).

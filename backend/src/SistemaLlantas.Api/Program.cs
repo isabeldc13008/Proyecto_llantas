@@ -40,10 +40,19 @@ builder.Services.AddAuthorization(o =>
 builder.Services.AddCors(o => o.AddPolicy("Angular", p => p.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
-if(AuthenticationConfiguration.IsLocal(builder.Configuration, app.Environment) && builder.Configuration.GetValue<bool>("Authentication:SeedDevelopmentUsers")) await DevelopmentSecuritySeeder.SeedAsync(app.Services);
+if(app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Authentication:SeedDevelopmentUsers")) await DevelopmentSecuritySeeder.SeedAsync(app.Services);
 app.UseMiddleware<ApiExceptionMiddleware>();
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "SistemaLlantas API v1"));
+}
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseCors("Angular"); app.UseAuthentication(); app.UseAuthorization(); app.MapControllers();
+// Unknown API paths must remain 404 instead of returning the Angular page.
+app.MapFallback("/api/{**path}", () => Results.NotFound());
+app.MapFallbackToFile("index.html");
 app.Run();
 
 public partial class Program { }
