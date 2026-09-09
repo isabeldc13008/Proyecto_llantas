@@ -57,6 +57,7 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
         foreach (var type in modelBuilder.Model.GetEntityTypes().Where(x => typeof(EntidadAuditable).IsAssignableFrom(x.ClrType)).Select(x => x.ClrType))
             modelBuilder.Entity(type).Property(nameof(EntidadAuditable.RowVersion)).IsRowVersion();
 
+        ExistingDatabaseSchemaConfiguration.Configure(modelBuilder);
         modelBuilder.Entity<Llanta>().HasQueryFilter(x => x.Activo);
     }
 

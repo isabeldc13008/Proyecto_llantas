@@ -1,7 +1,0 @@
-{
-  "mode": "Entra",
-  "tenantId": "<TENANT_ID>",
-  "clientId": "<SPA_CLIENT_ID>",
-  "apiScope": "<API_SCOPE>",
-  "redirectUri": "/acceso"
-}

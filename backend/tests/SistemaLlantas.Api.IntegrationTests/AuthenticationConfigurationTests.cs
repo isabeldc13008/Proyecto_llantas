@@ -2,59 +2,54 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using SistemaLlantas.Api.Security;
 using SistemaLlantas.Domain.Entities;
-
 namespace SistemaLlantas.Api.IntegrationTests;
-
 public sealed class AuthenticationConfigurationTests
 {
-    [Fact]
-    public async Task EntraValidatesApiAudienceAndNormalizesTenant()
+    private static WebApplicationBuilder Builder(string environment, string? key)
     {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
-        var tenant = Guid.NewGuid(); var api = Guid.NewGuid();
-        builder.Configuration["Authentication:Mode"] = "Entra";
-        builder.Configuration["Entra:TenantId"] = tenant.ToString().ToUpperInvariant();
-        builder.Configuration["Entra:ClientId"] = api.ToString();
-        builder.AddApplicationAuthentication();
-        await using var app = builder.Build();
+        var b = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environment });
+        b.Configuration["Jwt:Issuer"] = "SistemaLlantas";
+        b.Configuration["Jwt:Audience"] = "SistemaLlantas.Web";
+        b.Configuration["Jwt:Key"] = key;
+        return b;
+    }
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("short")]
+    public void ProductionRequiresStrongKey(string? key) =>
+        Assert.Throws<InvalidOperationException>(() => Builder("Production", key).AddApplicationAuthentication());
+
+    [Fact]
+    public void DevelopmentGeneratesTemporaryKey()
+    {
+        var b = Builder("Development", null); b.AddApplicationAuthentication();
+        Assert.True(Encoding.UTF8.GetByteCount(b.Configuration["Jwt:Key"]!) >= 32);
+    }
+    [Theory]
+    [InlineData("Development")]
+    [InlineData("Production")]
+    public async Task PasswordJwtWorksInBothEnvironmentsAndRejectsInvalidTokens(string environment)
+    {
+        var key = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+        var b = Builder(environment, key); b.AddApplicationAuthentication();
+        await using var app = b.Build();
         var options = app.Services.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get("Bearer");
-        Assert.Equal($"https://login.microsoftonline.com/{tenant}/v2.0", options.Authority);
-        Assert.Equal(api.ToString(), options.Audience);
-        Assert.True(options.TokenValidationParameters.ValidateIssuer);
-        Assert.True(options.TokenValidationParameters.ValidateAudience);
-        Assert.True(options.TokenValidationParameters.ValidateLifetime);
-        Assert.True(options.TokenValidationParameters.ValidateIssuerSigningKey);
+        Assert.Null(options.Authority);
+        string Token(string audience, string signingKey, DateTime expires) => new JwtSecurityTokenHandler().WriteToken(
+            new JwtSecurityToken("SistemaLlantas", audience, expires: expires,
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)), SecurityAlgorithms.HmacSha256)));
+        var handler = new JwtSecurityTokenHandler();
+        handler.ValidateToken(Token("SistemaLlantas.Web", key, DateTime.UtcNow.AddMinutes(5)), options.TokenValidationParameters, out _);
+        Assert.ThrowsAny<SecurityTokenException>(() => handler.ValidateToken(Token("wrong", key, DateTime.UtcNow.AddMinutes(5)), options.TokenValidationParameters, out _));
+        Assert.ThrowsAny<SecurityTokenException>(() => handler.ValidateToken(Token("SistemaLlantas.Web", new string('x',48), DateTime.UtcNow.AddMinutes(5)), options.TokenValidationParameters, out _));
+        Assert.ThrowsAny<SecurityTokenException>(() => handler.ValidateToken(Token("SistemaLlantas.Web", key, DateTime.UtcNow.AddMinutes(-5)), options.TokenValidationParameters, out _));
     }
-
-    [Fact]
-    public void ApiScopeConfigurationRejectsTheFullSpaScopeUri()
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
-        builder.Configuration["Authentication:Mode"] = "Entra";
-        builder.Configuration["Entra:TenantId"] = Guid.NewGuid().ToString();
-        builder.Configuration["Entra:ClientId"] = Guid.NewGuid().ToString();
-        builder.Configuration["Entra:Scope"] = "api://api/access_as_user";
-        Assert.Throws<InvalidOperationException>(() => builder.AddApplicationAuthentication());
-    }
-
-    [Fact]
-    public void ProductionRejectsLocalPasswords()
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
-        builder.Configuration["Authentication:Mode"] = "Local";
-        Assert.Throws<InvalidOperationException>(() => builder.AddApplicationAuthentication());
-    }
-
-    [Fact]
-    public void EntraRequiresExplicitTenantAndApiRegistration()
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
-        builder.Configuration["Authentication:Mode"] = "Entra";
-        Assert.Throws<InvalidOperationException>(() => builder.AddApplicationAuthentication());
-    }
-
     [Fact]
     public void InternalClaimsExcludeInactiveCentersAssignmentsAndPermissions()
     {
