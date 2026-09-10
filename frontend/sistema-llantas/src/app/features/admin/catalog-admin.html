@@ -4,9 +4,16 @@
   <aside class="panel catalog-menu"><h2>Parámetros</h2>@for(type of types;track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}</aside>
   <main>
    <div class="info"><div><p class="eyebrow">Catálogo seleccionado</p><h2>{{selected().name}}</h2><p>{{selected().description}}</p></div><button class="primary" (click)="open()">+ Agregar {{selected().name.toLowerCase()}}</button></div>
-   @if(selected().key!=='usuarios'){<div class="toolbar panel"><label>⌕ <input [(ngModel)]="search" (keyup.enter)="load()" placeholder="Buscar por código o nombre…"></label><button class="link" (click)="load()">Buscar</button><span>{{records().length}} registros</span></div>}
+   @if(selected().key==='usuarios'&&auth.isAdmin()){<button class="secondary import-button" (click)="openUserImport()">Importar usuarios</button>}
+   @if(selected().key!=='usuarios' &&selected().key!=='roles'){<div class="toolbar panel"><label>⌕ <input [(ngModel)]="search" (keyup.enter)="load()" placeholder="Buscar por código o nombre…"></label><button class="link" (click)="load()">Buscar</button><span>{{records().length}} registros</span></div>}
    @if(error()){<div class="hint" role="alert"><b>Error</b><span>{{error()}}</span></div>}
    @if(loading()){<div class="panel empty">Cargando desde la base de datos…</div>}
+   @else if(selected().key==='roles'){
+    <div class="panel table"><table><thead><tr><th>Nombre</th><th>Código</th><th>Estado</th><th>Usuarios</th><th>Acciones</th></tr></thead><tbody>
+    @for(role of managedRoles();track role.id){<tr><td>{{role.nombre}}</td><td>{{role.codigo}}</td><td><span class="status" [class.off]="!role.activo">{{role.activo?'Activo':'Inactivo'}}</span></td><td>{{role.usuarios}} <small>({{role.usuariosActivos}} activos)</small></td><td><button class="link" [disabled]="roleSaving" (click)="editRole(role)">Editar</button><button class="link" [disabled]="roleSaving" (click)="toggleRole(role)">{{role.activo?'Desactivar':'Activar'}}</button></td></tr>}
+    @empty{<tr><td colspan="5">No hay roles.</td></tr>}
+    </tbody></table></div>
+   }
    @else if(selected().key==='usuarios'){
     <div class="panel table"><table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Centros autorizados</th><th>Módulos efectivos</th><th>Estado</th><th></th></tr></thead><tbody>
      @for(user of users();track user.id){<tr><td><b>{{user.username}}</b></td><td>{{user.nombre}}</td><td>{{user.rol}}</td><td><small>{{user.accesoGlobal?'Todos (permiso global)':(user.centros.join(' · ')||'Sin centros asignados')}}</small></td><td><small>{{modules(user.rolId)}}</small></td><td><span class="status" [class.off]="!user.activo">{{user.activo?'Activo':'Inactivo'}}</span></td><td><button class="link" (click)="editUser(user)">Editar</button></td></tr>}
@@ -20,9 +27,27 @@
  </div>
 </section>
 @if(showForm){
- <div class="backdrop" (click)="showForm=false"><section class="drawer" (click)="$event.stopPropagation()">
+ <div class="backdrop" (click)="showForm=false"><section class="drawer" [class.roles-drawer]="selected().key==='roles'" (click)="$event.stopPropagation()">
   <header><div><p class="eyebrow">{{editingId?'Editar':'Nuevo'}} registro</p><h2>{{selected().name}}</h2></div><button (click)="showForm=false">×</button></header>
-  @if(selected().key==='usuarios'){
+  @if(selected().key==='roles'){
+   @if(error()){<div class="hint" role="alert">{{error()}}</div>}
+   <fieldset class="role-fields" [disabled]="roleSaving">
+   <label>Nombre<input [(ngModel)]="nombre" maxlength="100" required></label>
+   <label>Código<input [(ngModel)]="codigo" [disabled]="!!editingId" maxlength="60" required><small>Se guarda en mayúsculas y no puede cambiarse después.</small></label>
+   <label class="permission-option"><input type="checkbox" [(ngModel)]="active"> Rol activo</label>
+   <label>Buscar permisos<input [(ngModel)]="permissionSearch" type="search" placeholder="Módulo, acción o código"></label>
+   <p class="permission-help">Ver módulo controla su visibilidad. Las acciones se autorizan por separado. Los permisos compartidos pueden afectar varios módulos. La búsqueda muestra grupos completos.</p>
+   @for(group of permissionGroups();track group.key){
+    <details class="permission-group" [open]="!!permissionSearch">
+     <summary>{{group.label}} <span>{{selectedPermissions(group)}}/{{group.permissions.length}}</span></summary>
+     <div class="permission-tools"><button type="button" class="link" (click)="selectPermissionGroup(group,true)">Seleccionar todo</button><button type="button" class="link" (click)="selectPermissionGroup(group,false)">Quitar todo</button></div>
+     @for(permission of group.permissions;track permission.codigo){
+      <label class="permission-option"><input type="checkbox" [checked]="permissionCodes.includes(permission.codigo)" (change)="togglePermission(permission.codigo,$any($event.target).checked)"><span>{{permissionLabel(permission)}} <small>{{permission.codigo.startsWith('modulos.')?'Visibilidad':'Operativo'}} · {{permission.codigo}} {{permission.activo?'':'· Inactivo: no otorga acceso'}}</small></span></label>
+     }
+    </details>
+   } @empty{<p>No hay permisos coincidentes.</p>}
+   </fieldset>
+  } @else if(selected().key==='usuarios'){
    <label>Usuario<input [(ngModel)]="username" [disabled]="!!editingId"></label><label>Nombre<input [(ngModel)]="nombre"></label><label>{{editingId?'Nueva contraseña (opcional)':'Contraseña'}}<input type="password" [(ngModel)]="password"></label>
    <label>Rol<select [(ngModel)]="roleId"><option value="">Selecciona un rol</option>@for(role of roles();track role.id){<option [value]="role.id">{{role.nombre}}</option>}</select></label>
    <fieldset><legend>Centros autorizados</legend>@for(center of centers();track center.id){<label><input type="checkbox" [checked]="centerIds.includes(center.id)" (change)="toggleCenter(center.id,$any($event.target).checked)"> {{center.codigo}} · {{center.nombre}}</label>}<small>Sin centros asignados, el usuario inicia sesión pero no ve información operativa, salvo permiso global.</small></fieldset>
@@ -31,7 +56,33 @@
    <label>Código<input [(ngModel)]="codigo" placeholder="Ej. CONT"></label><label>Nombre o valor<input [(ngModel)]="nombre" placeholder="Nombre descriptivo"></label>
    @if(selected().key==='referencias'||selected().key==='centros'){<label>{{selected().key==='centros'?'Regional':'Marca relacionada'}}<select [(ngModel)]="parentId"><option value="">Selecciona {{selected().key==='centros'?'una regional':'una marca'}}</option>@for(brand of brands();track brand.id){<option [value]="brand.id">{{brand.codigo}} · {{brand.nombre}}</option>}</select></label>}
   }
-  <div class="actions"><button class="secondary" (click)="showForm=false">Cancelar</button><button class="primary" (click)="selected().key==='usuarios'?saveUser():save()">Guardar</button></div>
+  <div class="actions"><button class="secondary" (click)="showForm=false">Cancelar</button><button class="primary" [disabled]="roleSaving" (click)="selected().key==='roles'?saveRole():selected().key==='usuarios'?saveUser():save()">Guardar</button></div>
  </section></div>
 }
 @if(message){<div class="toast">✓ {{message}}</div>}
+
+@if(showImport){
+ <div class="backdrop" (click)="closeUserImport()"><section class="drawer import-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Importar usuarios">
+  <header><h2>Importar usuarios</h2><button [disabled]="importBusy" (click)="closeUserImport()" aria-label="Cerrar">×</button></header>
+  <p>CSV UTF-8, máximo 1 MB y 1000 usuarios. Cabecera: <code>Correo,Nombre,Rol,Centro,Activo</code>.</p>
+  <p>Usa códigos de roles activos, centros separados por <code>;</code> y estado <code>true</code> o <code>false</code>. Centro vacío permite crear sin centros, igual que el formulario individual.</p>
+  <p>Todo o nada: cualquier error impide guardar el lote. Los usuarios existentes no se actualizan.</p>
+  <label>Seleccionar CSV<input type="file" accept=".csv,text/csv" [disabled]="importBusy" (change)="selectImportFile($event)"></label>
+  @if(importBusy){<p role="status">Procesando…</p>}
+  @if(importError){<div class="hint" role="alert">{{importError}}</div>}
+  @if(importResult;as result){
+   <p role="status">Total: {{result.total}} · Válidas: {{result.validas}} · Con error: {{result.conError}}</p>
+   <div class="table import-preview"><table><thead><tr><th>Fila</th><th>Correo</th><th>Nombre</th><th>Rol</th><th>Centro</th><th>Activo</th></tr></thead><tbody>
+   @for(row of result.filas;track row.fila){<tr><td>{{row.fila}}</td><td>{{row.correo}}</td><td>{{row.nombre}}</td><td>{{row.rol}}</td><td>{{row.centro}}</td><td>{{row.activo}}</td></tr>}
+   </tbody></table></div>
+   @if(result.errores.length){
+    <h3>Errores</h3><button class="link" (click)="downloadImportErrors()">Descargar errores</button>
+    <div class="table import-preview"><table><thead><tr><th>Fila</th><th>Campo</th><th>Error</th><th>Valor recibido</th></tr></thead><tbody>
+    @for(error of result.errores;track $index){<tr><td>{{error.fila}}</td><td>{{error.campo}}</td><td>{{error.error}}</td><td>{{error.valorRecibido}}</td></tr>}
+    </tbody></table></div>
+   }
+   @if(result.puedeImportar){<label>Contraseña común para este lote<input type="password" autocomplete="new-password" [(ngModel)]="importPassword" [disabled]="importBusy"></label>}
+  }
+  <div class="actions"><button class="secondary" [disabled]="importBusy" (click)="closeUserImport()">Cancelar</button><button class="primary" [disabled]="importBusy||!importResult?.puedeImportar||!importPassword.trim()" (click)="importUsers()">Importar</button></div>
+ </section></div>
+}

@@ -10,10 +10,10 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(LlantasDbContext))]
-    partial class LlantasDbContextModelSnapshot : ModelSnapshot
+    
+    partial class AddDebeCambiarClave
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-export type UserRole='ADMINISTRADOR'|'SUPERVISOR_ADMINISTRADOR'|'SUPERVISOR'|'TECNICO';
-export interface AuthUser{name:string;username:string;role:UserRole;roleName:string;initials:string;permissions:string[];centerIds:string[];canViewAllCenters:boolean}
+export type UserRole=string;
+export interface AuthUser{name:string;username:string;role:UserRole;roleName:string;initials:string;permissions:string[];centerIds:string[];canViewAllCenters:boolean;requiereCambioClave?:boolean}
 interface LoginResponse extends AuthUser{accessToken:string;expiresAt:string}
 @Injectable({providedIn:'root'})
 export class AuthService {
@@ -23,6 +23,8 @@ export class AuthService {
  clearSession(){this.token='';this.expiresAt=0;this.user.set(null)}
  logout(){this.clearSession();}
  isLoggedIn(){return this.user()!==null&&Date.now()<this.expiresAt}
+ requiereCambioClave(){return this.user()?.requiereCambioClave===true}
+ async cambiarClave(actual:string,nueva:string,confirmacion:string){await firstValueFrom(this.http.post('/api/auth/cambiar-clave',{actual,nueva,confirmacion}));this.user.set(await firstValueFrom(this.http.get<AuthUser>('/api/auth/me')))}
  isAdmin(){return this.user()?.role==='ADMINISTRADOR'}
  canSupervise(){return ['ADMINISTRADOR','SUPERVISOR_ADMINISTRADOR','SUPERVISOR'].includes(this.user()?.role??'')}
  has(permission:string){return this.user()?.permissions.includes(permission)??false}

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth/auth.guard';
+import { authGuard, pendingPasswordGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
 
 const demo=(title:string,eyebrow:string,description:string,action:string,kind:string)=>({title,eyebrow,description,action,kind});
@@ -24,7 +24,8 @@ const protectedRoutes:Routes=[
  {path:'auditoria',data:demo('Auditoría','Gobierno de datos','Quién cambió qué, cuándo, desde dónde y con qué resultado.','Exportar auditoría','auditoria'),loadComponent:page},
 ];
 export const routes:Routes=[
- {path:'sin-acceso',data:{title:'Sin permisos para este módulo'},loadComponent:page},
+ {path:'cambiar-clave',canActivate:[authGuard],loadComponent:()=>import('./features/auth/change-password').then(m=>m.ChangePassword)},
+ {path:'sin-acceso',canActivate:[pendingPasswordGuard],data:{title:'Sin permisos para este módulo'},loadComponent:page},
  {path:'acceso',loadComponent:()=>import('./features/auth/login').then(m=>m.Login)},
  ...protectedRoutes.map(route=>({...route,canActivate:[authGuard,roleGuard]})),
  {path:'**',redirectTo:''}

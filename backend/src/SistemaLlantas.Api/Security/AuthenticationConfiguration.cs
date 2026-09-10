@@ -45,13 +45,13 @@ public static class AuthenticationConfiguration
                         .Include(x => x.Rol).ThenInclude(x => x.Permisos).ThenInclude(x => x.Permiso)
                         .SingleOrDefaultAsync(x => x.Id == id && x.Activo && x.Rol.Activo, context.HttpContext.RequestAborted);
                     if (user is null) { context.Fail("Usuario interno no habilitado."); return; }
-                    context.Principal = CreatePrincipal(user);
+                    context.Principal = CreatePrincipal(user, LocalPasswordChangeMiddleware.EsLocal(config));
                 }
             };
         });
     }
 
-    public static ClaimsPrincipal CreatePrincipal(UsuarioSistema user)
+    public static ClaimsPrincipal CreatePrincipal(UsuarioSistema user, bool local = false)
     {
         var claims = new List<Claim>
         {
@@ -60,6 +60,7 @@ public static class AuthenticationConfiguration
         };
         claims.AddRange(user.Centros.Where(x => x.Activo && x.Centro.Activo).Select(x => new Claim("centro_id", x.CentroId.ToString())));
         claims.AddRange(user.Rol.Permisos.Where(x => x.Permiso.Activo).Select(x => new Claim("permiso", x.Permiso.Codigo)));
+        if (local && user.DebeCambiarClave) claims.Add(new("requiere_cambio_clave", "true"));
         return new(new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme));
     }
 }

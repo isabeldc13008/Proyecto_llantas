@@ -892,6 +892,7 @@ internal static class ExistingDatabaseSchemaConfiguration
         }
         {
             var b = modelBuilder.Entity<UsuarioSistema>();
+            b.Property(x => x.DebeCambiarClave).HasColumnName("BDebeCambiarClave").HasDefaultValue(false);
             b.ToTable("TBL_Usuario", "dbo");
             b.Property(x => x.Id).HasColumnName("GId");
             b.Property(x => x.Activo).HasColumnName("BActivo");

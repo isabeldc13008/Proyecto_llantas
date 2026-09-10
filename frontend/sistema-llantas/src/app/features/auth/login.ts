@@ -7,7 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class Login{
  private fb=inject(FormBuilder);readonly auth=inject(AuthService);private router=inject(Router);error='';showPassword=false;
  form=this.fb.group({username:['',Validators.required],password:['',Validators.required]});
- ngOnInit(){if(this.auth.isLoggedIn())void this.router.navigateByUrl('/');}
- async submit(){const v=this.form.getRawValue();if(await this.auth.login(v.username!,v.password!))await this.router.navigateByUrl('/');else this.error=this.auth.loginError();}
+ ngOnInit(){if(this.auth.isLoggedIn())void this.router.navigateByUrl(this.auth.requiereCambioClave()?'/cambiar-clave':'/');}
+ async submit(){const v=this.form.getRawValue();if(await this.auth.login(v.username!,v.password!))await this.router.navigateByUrl(this.auth.requiereCambioClave()?'/cambiar-clave':'/');else this.error=this.auth.loginError();}
  use(username:string,password:string){this.form.setValue({username,password});this.error='';}
 }

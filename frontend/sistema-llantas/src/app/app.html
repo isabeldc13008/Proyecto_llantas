@@ -1,4 +1,4 @@
-@if (!auth.isLoggedIn()) {
+@if (!auth.isLoggedIn() || auth.requiereCambioClave()) {
   <router-outlet />
 } @else {
 <div class="shell" [class.sidebar-collapsed]="sidebarCollapsed">

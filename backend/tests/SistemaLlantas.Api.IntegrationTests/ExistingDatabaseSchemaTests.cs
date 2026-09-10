@@ -12,6 +12,8 @@ public sealed class ExistingDatabaseSchemaTests
         var columns = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory,"Schema","GDLLSQLDLLO.columns.tsv"))
             .Skip(1).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Split('\t'))
             .ToDictionary(x => (Schema:x[0],Table:x[1],Column:x[3]));
+        // La captura base precede la migración AddDebeCambiarClave; esta es su única columna adicional.
+        columns.Add(("dbo", "TBL_Usuario", "BDebeCambiarClave"), new[] { "dbo", "TBL_Usuario", "13", "BDebeCambiarClave", "bit", "1", "1", "0", "0" });
         var count = 0;
         foreach (var entity in db.Model.GetEntityTypes())
         {
@@ -32,7 +34,7 @@ public sealed class ExistingDatabaseSchemaTests
                 count++;
             }
         }
-        Assert.Equal(574,count);
+        Assert.Equal(575,count);
         Assert.False(db.Database.HasPendingModelChanges());
     }
 }

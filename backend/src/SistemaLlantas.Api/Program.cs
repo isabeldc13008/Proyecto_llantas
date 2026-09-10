@@ -49,7 +49,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseDefaultFiles();
 app.UseStaticFiles();
-app.UseCors("Angular"); app.UseAuthentication(); app.UseAuthorization(); app.MapControllers();
+app.UseCors("Angular"); app.UseAuthentication(); app.UseMiddleware<LocalPasswordChangeMiddleware>(); app.UseAuthorization(); app.MapControllers();
 // Unknown API paths must remain 404 instead of returning the Angular page.
 app.MapFallback("/api/{**path}", () => Results.NotFound());
 app.MapFallbackToFile("index.html");
