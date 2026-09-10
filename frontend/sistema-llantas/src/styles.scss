@@ -1,12 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
 :root {
-  --ed-blue:#00c0fd; --ed-green:#24d30b; --ed-yellow:#fde01a; --ed-red:#ff0000;
+  --ed-blue:#0c5d0c; --ed-green:#0c5d0c; --ed-yellow:#ffd33c; --ed-orange:#f2904a; --ed-red:#c83c3c;
   --ed-black:#000; --ed-gray:#8c8c8c; --ed-white:#fff;
   --edinsa-blue:var(--ed-blue); --edinsa-green:var(--ed-green); --edinsa-gray:var(--ed-gray);
   --ink:#101820; --ink-soft:#48545d; --surface:#fff; --canvas:#f5f7f8; --line:#dce3e7;
-  --info-gradient:linear-gradient(118deg,var(--ed-blue),var(--ed-green));
-  --alert-gradient:linear-gradient(118deg,var(--ed-yellow),#ff962e,var(--ed-red));
+  --info-gradient:linear-gradient(118deg,var(--ed-blue),#2f8b2f);
+  --alert-gradient:linear-gradient(118deg,var(--ed-yellow),var(--ed-orange),var(--ed-red));
   --shadow:0 14px 38px rgb(0 0 0 / .055); --radius:18px; --radius-sm:10px;
-  --font-display:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif;
+  --font-title:"DM Serif Display","Times New Roman",serif; --font-display:Bahnschrift,"Arial Narrow",Arial,sans-serif;
   --font-body:Bahnschrift,"Arial Narrow",Arial,sans-serif;
   font-family:var(--font-body);color:var(--ink);background:var(--canvas);font-synthesis:none;
 }
@@ -63,3 +64,5 @@ app-vehicles-page>.configuration-catalog,app-vehicles-page>.layout .detail{borde
 @media(max-width:900px){app-vehicles-page,app-alerts-page,app-scheduling-page .schedule-page,app-movements-page .ops,app-bulk-import .bulk{padding:1.25rem}app-alerts-page>header,app-scheduling-page .hero,app-movements-page .ops>header,app-bulk-import .bulk>header,app-vehicles-page>.hero{display:grid;align-items:start}app-scheduling-page .hero-actions,app-vehicles-page .hero-actions{width:100%;justify-content:stretch}app-scheduling-page .hero-actions button,app-vehicles-page .hero-actions button{flex:1 1 200px}app-scheduling-page .table-card,app-movements-page .queue{max-width:100%}}
 @media(max-width:650px){app-vehicles-page,app-alerts-page,app-scheduling-page .schedule-page,app-movements-page .ops,app-bulk-import .bulk{padding:1rem}app-alerts-page>header h1,app-scheduling-page .hero h1,app-movements-page .ops>header h1,app-bulk-import .bulk>header h1,app-vehicles-page>.hero h1{font-size:2.35rem}app-alerts-page>.filters label{display:grid;gap:.4rem}app-alerts-page>.filters select{width:100%;margin:0}app-alerts-page>main article{grid-template-columns:1fr}app-alerts-page>main article aside{display:flex;align-items:center;justify-content:space-between}app-bulk-import .steps article{min-height:0}app-movements-page .queue{padding:.8rem}}
 @media(max-width:650px){app-bulk-import .bulk{overflow:hidden}}
+
+h1{font-family:var(--font-title)!important;font-weight:400!important;letter-spacing:-.02em}
