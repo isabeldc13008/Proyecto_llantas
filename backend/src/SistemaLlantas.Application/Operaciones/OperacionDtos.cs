@@ -42,3 +42,5 @@ public interface IOperacionService
     Task<MovimientoDto> MoverAsync(EjecutarMovimientoDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<MovimientoDto> DesmontarAsync(DesmontarLlantaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
 }
+
+public sealed class SolicitudNoEncontradaException() : Exception("La solicitud no existe o fue desactivada. Actualiza Autorizaciones.");

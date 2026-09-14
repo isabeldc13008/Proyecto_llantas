@@ -14,6 +14,7 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
             {
                 ValidacionException v => (400, "VALIDATION_ERROR", v.Message, v.Errores),
                 UnauthorizedAccessException => (403, "FORBIDDEN", "No tiene acceso al recurso solicitado.", null),
+                SistemaLlantas.Application.Operaciones.SolicitudNoEncontradaException => (404, "SOLICITUD_NO_ENCONTRADA", ex.Message, null),
                 KeyNotFoundException => (404, "NOT_FOUND", "El recurso solicitado no existe.", null),
                 ConflictoException => (409, "CONFLICT", ex.Message, null),
                 DbUpdateConcurrencyException => (409, "CONCURRENCY_CONFLICT", "El registro fue modificado por otro usuario. Recargue e intente de nuevo.", null),

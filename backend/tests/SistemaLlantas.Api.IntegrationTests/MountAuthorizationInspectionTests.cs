@@ -19,7 +19,7 @@ public sealed class MountAuthorizationInspectionTests(TestApplicationFactory fac
  private static readonly CancellationToken Ct=CancellationToken.None;
  private static ControllerContext Context(string user,string role,Guid? center=null,bool own=false)=>new(){HttpContext=new DefaultHttpContext{User=new ClaimsPrincipal(new ClaimsIdentity(new[]{new Claim("username",user),new Claim(ClaimTypes.Role,role),new Claim("permiso","operaciones.montar"),new Claim("permiso","operaciones.solicitar"),new Claim("permiso","inspecciones.crear"),new Claim("permiso","operaciones.aprobar")}.Concat(center.HasValue?new[]{new Claim("centro_id",center.Value.ToString())}:Array.Empty<Claim>()).Concat(own?new[]{new Claim("permiso","operaciones.aprobar_propia")}:Array.Empty<Claim>()),"test"))}};
  private static OperacionesController Operations(IServiceProvider sp,LlantasDbContext db,Guid center,string user=Technician,bool own=false)=>new(sp.GetRequiredService<IOperacionService>(),sp.GetRequiredService<ICicloVidaLlantaService>(),db){ControllerContext=Context(user,user==Technician?"TECNICO":"ADMINISTRADOR",center,own)};
- private static InspeccionesController Inspections(IServiceProvider sp,LlantasDbContext db,string user=Technician,string role="TECNICO")=>new(sp.GetRequiredService<IInspeccionService>(),db,sp.GetRequiredService<IWebHostEnvironment>()){ControllerContext=Context(user,role)};
+ private static InspeccionesController Inspections(IServiceProvider sp,LlantasDbContext db,string user=Technician,string role="TECNICO",Guid? center=null)=>new(sp.GetRequiredService<IInspeccionService>(),db,sp.GetRequiredService<IWebHostEnvironment>()){ControllerContext=Context(user,role,center)};
  private static async Task<(Llanta tire,Vehiculo vehicle,PosicionVehiculo position)> Setup(LlantasDbContext db,bool otherCenter=false)
  {
   var centers=await db.Centros.Where(x=>x.Activo).Take(2).ToListAsync();var sample=await db.Llantas.AsNoTracking().FirstAsync();
@@ -64,21 +64,23 @@ public sealed class MountAuthorizationInspectionTests(TestApplicationFactory fac
   await sp.GetRequiredService<IOperacionService>().MoverAsync(new(){LlantaId=occupiedPosition?other.Id:t.Id,PosicionDestinoId=occupiedPosition?p.Id:otherPosition.Id,TipoDestino="Posicion",Motivo="Otra operación",KilometrajeVehiculo=1000},"qa-other",new(true,[]),Ct);
   await Assert.ThrowsAsync<ConflictoException>(()=>Operations(sp,db,v.CentroId,"qa-admin").Resolver(request.Id,new(true,null),Ct));db.ChangeTracker.Clear();Assert.Equal(EstadoSolicitudOperacion.PENDIENTE_APROBACION,(await db.SolicitudesOperacion.SingleAsync(x=>x.Id==request.Id)).Estado);
  }
- [Theory][InlineData(false)][InlineData(true)]public async Task Inspeccion_AsignaLlantaGlobal_ConservaCentroYSoloRegistraMontaje(bool otherCenter)
+ [Theory][InlineData(false)][InlineData(true)]public async Task Inspeccion_AsignaLlantaGlobal_TrasladaYRegistraMontaje(bool otherCenter)
  {
-  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db,otherCenter);var originalCenter=t.CentroId;var controller=Inspections(sp,db);
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db,otherCenter);var originalCenter=t.CentroId;var controller=Inspections(sp,db,center:v.CentroId);
   var created=Assert.IsType<InspeccionDto>(Assert.IsType<CreatedAtActionResult>((await controller.Crear(new(){VehiculoId=v.Id,Kilometraje=1000},Ct)).Result).Value);
   var found=Assert.IsType<OkObjectResult>(await controller.BuscarLlanta(t.Codigo,Ct,created.Id));Assert.Contains(t.Id.ToString(),JsonSerializer.Serialize(found.Value));
-  await controller.Asignar(created.Id,p.Id,new(t.Id,"Posición vacía"),sp.GetRequiredService<IOperacionService>(),Ct);
+  await controller.Asignar(created.Id,p.Id,new(t.Id,"Posición vacía"),sp.GetRequiredService<IOperacionService>(),Ct,sp.GetRequiredService<ICicloVidaLlantaService>());
   await controller.Detalle(created.Id,p.Id,new(){ProfundidadExterior=10,ProfundidadCentro=10,ProfundidadInterior=10},Ct);db.ChangeTracker.Clear();
-  Assert.Equal(originalCenter,(await db.Llantas.SingleAsync(x=>x.Id==t.Id)).CentroId);var movement=Assert.Single(await db.Movimientos.Where(x=>x.InspeccionId==created.Id).ToListAsync());Assert.Equal("MONTAJE",movement.Tipo);Assert.Equal(v.CentroId,movement.CentroId);
+  Assert.Equal(v.CentroId,(await db.Llantas.SingleAsync(x=>x.Id==t.Id)).CentroId);
+  var movements=await db.Movimientos.Include(x=>x.Detalles).Where(x=>x.InspeccionId==created.Id).ToListAsync();Assert.Equal(otherCenter?3:1,movements.Count);var movement=Assert.Single(movements,x=>x.Tipo=="MONTAJE");Assert.Equal(v.CentroId,movement.CentroId);
+  if(otherCenter){var transfer=Assert.Single(movements,x=>x.Tipo=="Traslado centro");Assert.Equal(originalCenter,transfer.CentroId);Assert.Equal(v.CentroId,Assert.Single(transfer.Detalles).CentroDestinoId);Assert.Single(movements,x=>x.Tipo=="Recepción traslado");}
   var detail=await db.InspeccionesDetalle.SingleAsync(x=>x.InspeccionId==created.Id&&x.PosicionVehiculoId==p.Id);Assert.Equal(t.Id,detail.LlantaId);Assert.Equal(10,detail.ProfundidadExterior);
-  await Assert.ThrowsAsync<ConflictoException>(()=>controller.Asignar(created.Id,p.Id,new(t.Id,"Duplicado"),sp.GetRequiredService<IOperacionService>(),Ct));
+  await Assert.ThrowsAsync<ConflictoException>(()=>controller.Asignar(created.Id,p.Id,new(t.Id,"Duplicado"),sp.GetRequiredService<IOperacionService>(),Ct,sp.GetRequiredService<ICicloVidaLlantaService>()));
  }
  [Fact]public async Task InspeccionAjena_NoPermiteAsignacion()
  {
-  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db,true);var owner=Inspections(sp,db);var created=Assert.IsType<InspeccionDto>(Assert.IsType<CreatedAtActionResult>((await owner.Crear(new(){VehiculoId=v.Id,Kilometraje=1000},Ct)).Result).Value);
-  await Assert.ThrowsAsync<UnauthorizedAccessException>(()=>Inspections(sp,db,"otro-tecnico").Asignar(created.Id,p.Id,new(t.Id,"Ajena"),sp.GetRequiredService<IOperacionService>(),Ct));
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db,true);var owner=Inspections(sp,db,center:v.CentroId);var created=Assert.IsType<InspeccionDto>(Assert.IsType<CreatedAtActionResult>((await owner.Crear(new(){VehiculoId=v.Id,Kilometraje=1000},Ct)).Result).Value);
+  await Assert.ThrowsAsync<UnauthorizedAccessException>(()=>Inspections(sp,db,"otro-tecnico",center:v.CentroId).Asignar(created.Id,p.Id,new(t.Id,"Ajena"),sp.GetRequiredService<IOperacionService>(),Ct,sp.GetRequiredService<ICicloVidaLlantaService>()));
  }
  [Fact]public async Task ProgramacionCancelada_NoCreaSolicitudNiMontaje()
  {
@@ -88,10 +90,10 @@ public sealed class MountAuthorizationInspectionTests(TestApplicationFactory fac
  }
  [Fact]public async Task Inspeccion_RechazaLlantaQueFueMontadaDespuesDeBuscar()
  {
-  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);var controller=Inspections(sp,db);
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);var controller=Inspections(sp,db,center:v.CentroId);
   var created=Assert.IsType<InspeccionDto>(Assert.IsType<CreatedAtActionResult>((await controller.Crear(new(){VehiculoId=v.Id,Kilometraje=1000},Ct)).Result).Value);
   var(_,_,otherPosition)=await Setup(db);await sp.GetRequiredService<IOperacionService>().MoverAsync(new(){LlantaId=t.Id,PosicionDestinoId=otherPosition.Id,TipoDestino="Posicion",Motivo="Otro montaje",KilometrajeVehiculo=1000},"otro",new(true,[]),Ct);
-  await Assert.ThrowsAsync<ConflictoException>(()=>controller.Asignar(created.Id,p.Id,new(t.Id,"Posición vacía"),sp.GetRequiredService<IOperacionService>(),Ct));db.ChangeTracker.Clear();Assert.Null((await db.PosicionesVehiculo.SingleAsync(x=>x.Id==p.Id)).LlantaActualId);
+  await Assert.ThrowsAsync<ConflictoException>(()=>controller.Asignar(created.Id,p.Id,new(t.Id,"Posición vacía"),sp.GetRequiredService<IOperacionService>(),Ct,sp.GetRequiredService<ICicloVidaLlantaService>()));db.ChangeTracker.Clear();Assert.Null((await db.PosicionesVehiculo.SingleAsync(x=>x.Id==p.Id)).LlantaActualId);
  }
  [Fact]public async Task Alertas_SoloEvaluaReglasActivasDelCentroOGlobales()
  {
@@ -101,6 +103,30 @@ public sealed class MountAuthorizationInspectionTests(TestApplicationFactory fac
   var service=sp.GetRequiredService<IInspeccionService>();var inspection=await service.CrearAsync(new(){VehiculoId=v.Id,Kilometraje=1000},Technician,new(true,[]),Ct);
   await service.GuardarDetalleAsync(inspection.Id,p.Id,new(){ProfundidadExterior=2,ProfundidadCentro=2,ProfundidadInterior=2},Technician,Ct);
   var alerts=await db.AlertasInspeccion.Where(x=>x.InspeccionId==inspection.Id&&x.Tipo.StartsWith(prefix)).ToListAsync();Assert.Equal(prefix,Assert.Single(alerts).Tipo);
+ }
+ [Fact]public async Task SolicitudProcesada_DevuelveConflictoExplicito()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);var request=Created(await Operations(sp,db,v.CentroId).Solicitar(Request(t,p),Ct));var approver=Operations(sp,db,v.CentroId,"qa-admin");
+  Assert.Equal("EJECUTADO",(await approver.Resolver(request.Id,new(true,null),Ct)).Estado);
+  var error=await Assert.ThrowsAsync<ConflictoException>(()=>approver.Resolver(request.Id,new(true,null),Ct));Assert.Contains("ya fue procesada",error.Message);
+ }
+ [Fact]public async Task RechazoConLlantaInactiva_DevuelveSolicitudSinFiltroGlobal()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);var request=Created(await Operations(sp,db,v.CentroId).Solicitar(Request(t,p),Ct));
+  var tire=await db.Llantas.SingleAsync(x=>x.Id==t.Id);tire.Activo=false;await db.SaveChangesAsync();var approver=Operations(sp,db,v.CentroId,"qa-admin");
+  await Assert.ThrowsAsync<ConflictoException>(()=>approver.Resolver(request.Id,new(true,null),Ct));
+  Assert.Equal("RECHAZADO",(await approver.Resolver(request.Id,new(false,"Llanta inactiva"),Ct)).Estado);
+ }
+ [Fact]public async Task Tecnico_NoVeCreaNiContinuaFueraDeSuCentro()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db,true);
+  var denied=Inspections(sp,db,center:t.CentroId);
+  Assert.DoesNotContain(await denied.Vehiculos(v.Placa,Ct),x=>x.Id==v.Id);
+  await Assert.ThrowsAsync<KeyNotFoundException>(()=>denied.Crear(new(){VehiculoId=v.Id,Kilometraje=1000},Ct));
+  var allowed=Inspections(sp,db,center:v.CentroId);var created=Assert.IsType<InspeccionDto>(Assert.IsType<CreatedAtActionResult>((await allowed.Crear(new(){VehiculoId=v.Id,Kilometraje=1000},Ct)).Result).Value);
+  await Assert.ThrowsAsync<UnauthorizedAccessException>(()=>denied.Detalle(created.Id,p.Id,new(){ProfundidadExterior=10},Ct));
+  await Assert.ThrowsAsync<UnauthorizedAccessException>(()=>denied.Finalizar(created.Id,Ct));
+  await Assert.ThrowsAsync<UnauthorizedAccessException>(()=>denied.BuscarLlanta(t.Codigo,Ct,created.Id));
  }
  [Fact]public async Task Montajes_BusquedaEncuentraMasAllaPrimeraPagina()
  {

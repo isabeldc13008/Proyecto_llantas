@@ -23,6 +23,7 @@ public interface ICicloVidaLlantaService
 {
     Task<LlantaDetalleDto?> ObtenerDetalleAsync(Guid id,Common.AlcanceCentros alcance,CancellationToken ct);
     Task TrasladarCentroAsync(Guid id,TrasladarLlantaDto dto,string usuario,Common.AlcanceCentros alcance,CancellationToken ct);
+    Task TrasladarParaInspeccionAsync(Guid id,Guid inspeccionId,string motivo,string usuario,Common.AlcanceCentros alcance,CancellationToken ct);
     Task ConciliarMontajeAsync(Guid id,string usuario,Common.AlcanceCentros alcance,CancellationToken ct);
 }
 

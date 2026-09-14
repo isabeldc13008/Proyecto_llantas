@@ -97,19 +97,32 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
     public async Task<SolicitudOperacionDto> Resolver(Guid id,ResolverSolicitudDto dto,CancellationToken ct)
     {
         var a=User.AlcanceCentros();
-        var strategy=db.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async()=>
+        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>
         {
             db.ChangeTracker.Clear();
             await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
-            var item=await db.SolicitudesOperacion.SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Solicitud pendiente no encontrada.");if(item.Solicitante==Usuario()&&!User.HasClaim("permiso","operaciones.aprobar_propia"))throw new UnauthorizedAccessException("No puede aprobar su propia solicitud.");
+            // Query the request itself: tire filters must not hide its existence or decision.
+            var item=await db.SolicitudesOperacion.SingleOrDefaultAsync(x=>x.Id==id,ct);
+            if(item is null||!item.Activo)throw new SolicitudNoEncontradaException();
+            if(!a.Autoriza(item.CentroId))throw new UnauthorizedAccessException("La solicitud está fuera de tus centros autorizados.");
+            if(item.Estado!=EstadoSolicitudOperacion.PENDIENTE_APROBACION)throw new ConflictoException($"La solicitud ya fue procesada: {item.Estado}. Actualiza Autorizaciones.");
+            if(item.Solicitante==Usuario()&&!User.HasClaim("permiso","operaciones.aprobar_propia"))throw new UnauthorizedAccessException("No puede resolver su propia solicitud.");
             item.Aprobador=Usuario();item.FechaDecision=DateTimeOffset.UtcNow;
-            if(!dto.Aprobar){if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new Application.Common.ValidacionException("El motivo de rechazo es obligatorio (máximo 500 caracteres).");item.Estado=EstadoSolicitudOperacion.RECHAZADO;item.MotivoRechazo=dto.Motivo.Trim();await db.SaveChangesAsync(ct);}
-            else{item.Estado=EstadoSolicitudOperacion.APROBADO;await db.SaveChangesAsync(ct);await Ejecutar(item,a,ct);}
+            if(!dto.Aprobar)
+            {
+                if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new ValidacionException("El motivo de rechazo es obligatorio (máximo 500 caracteres).");
+                item.Estado=EstadoSolicitudOperacion.RECHAZADO;item.MotivoRechazo=dto.Motivo.Trim();await db.SaveChangesAsync(ct);
+            }
+            else
+            {
+                item.Estado=EstadoSolicitudOperacion.APROBADO;
+                try{await Ejecutar(item,a,ct);}
+                catch(KeyNotFoundException ex){throw new ConflictoException($"La operación ya no puede ejecutarse: {ex.Message} Actualiza la llanta y la posición.");}
+            }
+            var response=await MapSolicitudAsync(item,ct);
             await tx.CommitAsync(ct);
+            return response;
         });
-        db.ChangeTracker.Clear();
-        return await ObtenerSolicitud(id,a,ct);
     }
     [HttpPost("api/operaciones/solicitudes/{id:guid}/recibir"),Authorize(Policy="Operaciones.Aprobar")]
     public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct){var a=User.AlcanceCentros();var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepciÃ³n no encontrado.");if(item.FechaRecepcionDestino.HasValue)throw new Application.Common.ConflictoException("El traslado ya fue recibido.");item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";var state=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(state.HasValue)item.Llanta.EstadoLlantaId=state.Value;item.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return await ObtenerSolicitud(id,a,ct);}
@@ -170,5 +183,20 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
         }
         x.Estado=EstadoSolicitudOperacion.EJECUTADO;x.UsuarioModificacion=Usuario();x.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);
     }
-    private async Task<SolicitudOperacionDto> ObtenerSolicitud(Guid id,Application.Common.AlcanceCentros a,CancellationToken ct)=>await db.SolicitudesOperacion.AsNoTracking().Where(x=>x.Id==id&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)||(x.CentroDestinoId.HasValue&&a.CentroIds.Contains(x.CentroDestinoId.Value)))).Select(x=>new SolicitudOperacionDto(x.Id,x.Tipo,x.Estado.ToString(),x.CentroId,x.Centro.Nombre,x.LlantaId,x.Llanta.Codigo,x.PosicionOrigenId,x.PosicionDestinoId,x.TipoDestino,x.CentroDestinoId,x.Motivo,x.Observaciones,x.Solicitante,x.Aprobador,x.MotivoRechazo,x.FechaCreacion,x.FechaRecepcionDestino,Convert.ToBase64String(x.RowVersion))).SingleAsync(ct);
+    private async Task<SolicitudOperacionDto> ObtenerSolicitud(Guid id,AlcanceCentros alcance,CancellationToken ct)
+    {
+        var item=await db.SolicitudesOperacion.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct);
+        if(item is null||!item.Activo)throw new SolicitudNoEncontradaException();
+        if(!alcance.Autoriza(item.CentroId)&&!(item.CentroDestinoId.HasValue&&alcance.Autoriza(item.CentroDestinoId.Value)))throw new UnauthorizedAccessException();
+        return await MapSolicitudAsync(item,ct);
+    }
+    private async Task<SolicitudOperacionDto> MapSolicitudAsync(SolicitudOperacion x,CancellationToken ct)
+    {
+        var centro=await db.Centros.AsNoTracking().Where(c=>c.Id==x.CentroId).Select(c=>c.Nombre).SingleOrDefaultAsync(ct)
+            ??throw new ConflictoException("El centro de la solicitud ya no existe.");
+        // Historical label only, after authorizing the request; never used to validate availability.
+        var codigo=await db.Llantas.IgnoreQueryFilters().AsNoTracking().Where(t=>t.Id==x.LlantaId).Select(t=>t.Codigo).SingleOrDefaultAsync(ct)
+            ??throw new ConflictoException("La llanta de la solicitud ya no existe.");
+        return new(x.Id,x.Tipo,x.Estado.ToString(),x.CentroId,centro,x.LlantaId,codigo,x.PosicionOrigenId,x.PosicionDestinoId,x.TipoDestino,x.CentroDestinoId,x.Motivo,x.Observaciones,x.Solicitante,x.Aprobador,x.MotivoRechazo,x.FechaCreacion,x.FechaRecepcionDestino,Convert.ToBase64String(x.RowVersion));
+    }
 }

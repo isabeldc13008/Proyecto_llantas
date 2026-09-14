@@ -44,6 +44,25 @@ public sealed class CicloVidaLlantaService(LlantasDbContext db,ILlantaService ll
   await using var tx=db.Database.CurrentTransaction is null?await db.Database.BeginTransactionAsync(ct):null;var tire=await db.Llantas.SingleOrDefaultAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Llanta no encontrada.");if(tire.CentroId==dto.CentroDestinoId)throw new ValidacionException("El centro destino debe ser diferente.");if(await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==id&&x.EsActiva,ct))throw new ConflictoException("Debe desmontar la llanta antes de trasladarla entre centros.");if(!await db.Centros.AnyAsync(x=>x.Id==dto.CentroDestinoId,ct))throw new ValidacionException("El centro destino no existe o está inactivo.");
   var movement=new Movimiento{Numero=$"TRS-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}"[..28],Tipo="Traslado centro",Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones?.Trim(),CentroId=tire.CentroId,Usuario=usuario,UsuarioCreacion=usuario};movement.Detalles.Add(new(){LlantaId=tire.Id,TipoDestino=TipoDestinoLlanta.Traslado,CentroDestinoId=dto.CentroDestinoId,DestinoDescripcion="Traslado entre centros",UsuarioCreacion=usuario});db.Movimientos.Add(movement);tire.CentroId=dto.CentroDestinoId;tire.UbicacionActual="En traslado";tire.EstadoLlantaId=await db.EstadosLlanta.Where(x=>x.Codigo=="EN_TRASLADO").Select(x=>x.Id).SingleAsync(ct);tire.FechaModificacion=DateTimeOffset.UtcNow;tire.UsuarioModificacion=usuario;await db.SaveChangesAsync(ct);if(tx is not null)await tx.CommitAsync(ct);
  }
+ public async Task TrasladarParaInspeccionAsync(Guid id,Guid inspeccionId,string motivo,string usuario,AlcanceCentros alcance,CancellationToken ct)
+ {
+  if(db.Database.CurrentTransaction is null)throw new InvalidOperationException("El traslado de inspección requiere una transacción.");
+  var inspection=await db.Inspecciones.Include(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==inspeccionId&&x.Activo&&x.Estado==EstadoInspeccion.Borrador&&x.TecnicoId==usuario,ct)??throw new UnauthorizedAccessException();
+  var destination=inspection.Vehiculo.CentroId;
+  if(!alcance.Autoriza(destination))throw new UnauthorizedAccessException("Vehículo fuera de los centros autorizados.");
+  var tire=await LlantasDisponibles.Consulta(db).SingleOrDefaultAsync(x=>x.Id==id,ct)??throw new ConflictoException("La llanta ya no está disponible para la inspección.");
+  if(tire.CentroId==destination)return;
+  var scope=new AlcanceCentros(false,new[]{tire.CentroId,destination});
+  await TrasladarCentroAsync(id,new(destination,motivo,$"Inspección {inspeccionId}"),usuario,scope,ct);
+  var tracked=await db.Llantas.SingleAsync(x=>x.Id==id,ct);
+  var state=await db.EstadosLlanta.Where(x=>x.Activo&&(x.Codigo=="DISPONIBLE"||x.Codigo=="DIS")).OrderByDescending(x=>x.Codigo=="DISPONIBLE").FirstOrDefaultAsync(ct)??throw new ValidacionException("No está configurado el estado disponible para recibir la llanta.");
+  tracked.EstadoLlanta=state;tracked.EstadoLlantaId=state.Id;tracked.UbicacionActual="Inventario";
+  var receipt=new Movimiento{Numero=$"REC-{Guid.NewGuid():N}"[..28],Tipo="Recepción traslado",CentroId=destination,InspeccionId=inspeccionId,Motivo=motivo,Usuario=usuario,UsuarioCreacion=usuario};
+  receipt.Detalles.Add(new(){LlantaId=id,TipoDestino=TipoDestinoLlanta.Inventario,CentroDestinoId=destination,DestinoDescripcion="Recepción para inspección",UsuarioCreacion=usuario});
+  db.Movimientos.Add(receipt);
+  foreach(var entry in db.ChangeTracker.Entries<Movimiento>().Where(x=>x.Entity.Tipo=="Traslado centro"&&x.Entity.Detalles.Any(d=>d.LlantaId==id)))entry.Entity.InspeccionId=inspeccionId;
+  await db.SaveChangesAsync(ct);
+ }
  public async Task ConciliarMontajeAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct)
  {
   if(!await db.Llantas.AnyAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct))throw new KeyNotFoundException("Llanta no encontrada.");var activePosition=await db.AsignacionesLlantaPosicion.Where(x=>x.LlantaId==id&&x.EsActiva).Select(x=>(Guid?)x.PosicionVehiculoId).SingleOrDefaultAsync(ct);var positions=await db.PosicionesVehiculo.Where(x=>x.LlantaActualId==id||x.Id==activePosition).ToListAsync(ct);foreach(var position in positions){position.LlantaActualId=position.Id==activePosition?id:null;position.FechaModificacion=DateTimeOffset.UtcNow;position.UsuarioModificacion=usuario;}await db.SaveChangesAsync(ct);
