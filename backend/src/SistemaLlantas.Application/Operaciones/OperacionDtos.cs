@@ -37,6 +37,8 @@ public interface IOperacionService
     Task<IReadOnlyList<ActividadDto>> MisActividadesAsync(string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<ActividadDto> IniciarActividadAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<ActividadDto> CompletarActividadAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct);
+    Task<MovimientoDto> MontarEnInspeccionAsync(EjecutarMovimientoDto dto, Guid inspeccionId, string usuario, AlcanceCentros alcance, CancellationToken ct);
+    Task ValidarMontajeAsync(Guid llantaId, Guid posicionId, decimal? kilometraje, AlcanceCentros alcance, CancellationToken ct);
     Task<MovimientoDto> MoverAsync(EjecutarMovimientoDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<MovimientoDto> DesmontarAsync(DesmontarLlantaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
 }

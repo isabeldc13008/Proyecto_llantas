@@ -25,7 +25,50 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
     [HttpGet("historial")]
     public Task<IReadOnlyList<HistorialInspeccionDto>> Historial(CancellationToken ct)=>service.HistorialAsync(Usuario(),User.IsInRole("TECNICO"),User.AlcanceCentros(),ct);
     [HttpGet("llantas/buscar")]
-    public Task<IReadOnlyList<LlantaBusquedaInspeccionDto>> BuscarLlanta([FromQuery]string termino,CancellationToken ct)=>service.BuscarLlantaExactaAsync(termino,ct);
+    public async Task<IActionResult> BuscarLlanta([FromQuery]string termino,CancellationToken ct,[FromQuery]Guid? inspeccionId=null,[FromQuery]string? modo=null)
+    {
+        // Identification of inconsistencies must still find an already mounted tire.
+        if(modo=="identificacion")return Ok(await service.BuscarLlantaExactaAsync(termino,ct));
+        if(!User.HasClaim("permiso","inspecciones.crear"))return Forbid();
+        if(!inspeccionId.HasValue || !await InspeccionAsignable(inspeccionId.Value).AnyAsync(ct))return NotFound();
+        if(string.IsNullOrWhiteSpace(termino)||termino.Trim().Length<2)return Ok(Array.Empty<object>());
+        var term=termino.Trim();
+        return Ok(await SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db)
+            .Where(x=>x.Codigo.Contains(term)||x.Serial.Contains(term)).OrderBy(x=>x.Codigo).Take(30)
+            .Select(x=>new{x.Id,x.Codigo,x.Serial,Marca=x.Marca.Nombre,Referencia=x.Referencia.Nombre,Dimension=x.Dimension.Nombre,Estado=x.EstadoLlanta.Nombre,x.CentroId,Centro=x.Centro.Nombre}).ToListAsync(ct));
+    }
+    private IQueryable<Inspeccion> InspeccionAsignable(Guid id)
+    {
+        var a=User.AlcanceCentros();var global=User.IsInRole("TECNICO");var usuario=Usuario();
+        return db.Inspecciones.Where(x=>x.Id==id&&x.Activo&&x.TecnicoId==usuario&&x.Estado==EstadoInspeccion.Borrador&&x.Vehiculo.Activo
+            &&(global||a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)));
+    }
+    public sealed record AsignarLlantaDto(Guid LlantaId,string Motivo);
+    [HttpPost("{id:guid}/posiciones/{posicionId:guid}/asignar"),Authorize(Policy="Inspecciones.Crear")]
+    public async Task<ActionResult<ContextoInspeccionDto>> Asignar(Guid id,Guid posicionId,AsignarLlantaDto dto,
+        [FromServices]SistemaLlantas.Application.Operaciones.IOperacionService operaciones,CancellationToken ct)
+    {
+        if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>400)throw new SistemaLlantas.Application.Common.ValidacionException("Indica el motivo de asignación (máximo 400 caracteres).");
+        Guid vehicleId=Guid.Empty;
+        await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
+            db.ChangeTracker.Clear();
+            await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
+            var inspection=await InspeccionAsignable(id).Include(x=>x.Vehiculo).SingleOrDefaultAsync(ct)??throw new UnauthorizedAccessException("La inspección no está autorizada, no te pertenece o ya está finalizada.");
+            vehicleId=inspection.VehiculoId;
+            var detail=await db.InspeccionesDetalle.Include(x=>x.PosicionVehiculo).ThenInclude(x=>x.EjeVehiculo).SingleOrDefaultAsync(x=>x.InspeccionId==id&&x.PosicionVehiculoId==posicionId,ct)
+                ??throw new KeyNotFoundException("Posición no perteneciente a la inspección.");
+            if(detail.LlantaId.HasValue||detail.PosicionVehiculo.EjeVehiculo.VehiculoId!=vehicleId)throw new SistemaLlantas.Application.Common.ConflictoException("La posición de inspección ya tiene llanta.");
+            var tire=await SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db).SingleOrDefaultAsync(x=>x.Id==dto.LlantaId,ct)
+                ??throw new SistemaLlantas.Application.Common.ConflictoException("La llanta ya no está disponible. Actualiza la búsqueda.");
+            // This narrow scope is used only after validating ownership of the inspection.
+            var scope=new SistemaLlantas.Application.Common.AlcanceCentros(false,new[]{tire.CentroId,inspection.Vehiculo.CentroId});
+            var reason="Inspección: "+dto.Motivo.Trim();
+            await operaciones.MontarEnInspeccionAsync(new(){LlantaId=tire.Id,PosicionDestinoId=posicionId,TipoDestino="Posicion",Motivo=reason,KilometrajeVehiculo=inspection.Kilometraje,Observaciones=$"Inspección {id}; centro de inventario conservado: {tire.CentroId}"},id,Usuario(),scope,ct);
+            detail.LlantaId=tire.Id;detail.UsuarioModificacion=Usuario();detail.FechaModificacion=DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
+        });
+        return Ok(await service.ObtenerContextoAsync(vehicleId,User.AlcanceCentros(),ct,User.IsInRole("TECNICO")));
+    }
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<InspeccionDto>> Obtener(Guid id, CancellationToken ct) => await service.ObtenerAsync(id, User.AlcanceCentros(), ct,Usuario(),User.IsInRole("TECNICO")) is { } x ? Ok(x) : NotFound();
     [HttpPost, Authorize(Policy = "Inspecciones.Crear")]

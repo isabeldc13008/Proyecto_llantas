@@ -22,7 +22,11 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
     [HttpPost("api/actividades/{id:guid}/completar"),Authorize(Policy="Actividades.ConsultarPropias")]
     public Task<ActividadDto> Completar(Guid id,CancellationToken ct)=>service.CompletarActividadAsync(id,Usuario(),User.AlcanceCentros(),ct);
     [HttpPost("api/movimientos"),Authorize(Policy="Operaciones.Ejecutar")]
-    public Task<MovimientoDto> Mover(EjecutarMovimientoDto dto,CancellationToken ct)=>service.MoverAsync(dto,Usuario(),User.AlcanceCentros(),ct);
+    public Task<MovimientoDto> Mover(EjecutarMovimientoDto dto,CancellationToken ct)
+    {
+        if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) throw new ValidacionException("EnvÃ­a el montaje mediante una solicitud de operaciÃ³n.");
+        return service.MoverAsync(dto,Usuario(),User.AlcanceCentros(),ct);
+    }
     [HttpPost("api/desmontajes"),Authorize(Policy="Operaciones.Ejecutar")]
     public Task<MovimientoDto> Desmontar(DesmontarLlantaDto dto,CancellationToken ct)=>service.DesmontarAsync(dto,Usuario(),User.AlcanceCentros(),ct);
     [HttpGet("api/operaciones/solicitudes"),Authorize(Policy="Operaciones.Solicitar")]
@@ -45,16 +49,50 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
         var total=await q.CountAsync(ct);
         var items=await q.OrderByDescending(x=>x.Movimiento.FechaCreacion).ThenBy(x=>x.Movimiento.Numero).Skip((page-1)*size).Take(size)
             .Select(x=>new MovimientoTrazabilidadDto(x.MovimientoId,x.Movimiento.Numero,x.Movimiento.FechaCreacion,x.Movimiento.Tipo,x.LlantaId,x.Llanta.Codigo,x.Llanta.Serial,
-                x.PosicionOrigenId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"—":"—",
+                x.PosicionOrigenId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"â€”":"â€”",
                 x.PosicionDestinoId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??x.TipoDestino.ToString():x.DestinoDescripcion??x.TipoDestino.ToString(),
-                db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId||p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno+" · "+p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"—",x.Movimiento.Centro.Nombre,
+                db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId||p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno+" Â· "+p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"â€”",x.Movimiento.Centro.Nombre,
                 db.AsignacionesLlantaPosicion.Where(s=>s.MovimientoOrigenId==x.MovimientoId&&s.LlantaId==x.LlantaId).Select(s=>s.KilometrajeMontaje).FirstOrDefault(),
                 db.AsignacionesLlantaPosicion.Where(s=>s.MovimientoOrigenId==x.MovimientoId&&s.LlantaId==x.LlantaId).Select(s=>s.KilometrajeRecorrido).FirstOrDefault(),x.Movimiento.Usuario,
                 db.SolicitudesOperacion.Where(s=>s.MovimientoEjecutadoId==x.MovimientoId).Select(s=>s.ActividadProgramadaId).FirstOrDefault(),x.Movimiento.Motivo,x.Movimiento.Observaciones,"EJECUTADO")).ToListAsync(ct);
         return new(items,page,size,total);
     }
     [HttpPost("api/operaciones/solicitudes"),Authorize(Policy="Operaciones.Solicitar")]
-    public async Task<ActionResult<SolicitudOperacionDto>> Solicitar(CrearSolicitudOperacionDto dto,CancellationToken ct){if(string.IsNullOrWhiteSpace(dto.Motivo))throw new Application.Common.ValidacionException("El motivo es obligatorio.");if((dto.PosicionOrigenId.HasValue||dto.PosicionDestinoId.HasValue)&&!dto.KilometrajeVehiculo.HasValue)throw new Application.Common.ValidacionException("Ingresa el kilometraje actual para continuar.");if(dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase)&&!User.HasClaim("permiso","operaciones.montar"))return Forbid();var a=User.AlcanceCentros();var tire=await db.Llantas.SingleOrDefaultAsync(x=>x.Id==dto.LlantaId&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Llanta no encontrada.");if(dto.CentroDestinoId.HasValue&&(!a.Autoriza(dto.CentroDestinoId.Value)||dto.CentroDestinoId==tire.CentroId))throw new UnauthorizedAccessException("Centro destino no autorizado o inválido.");var scheduled=dto.ActividadProgramadaId.HasValue&&await db.ActividadesProgramadas.AnyAsync(x=>x.Id==dto.ActividadProgramadaId&&x.Activo&&x.CentroId==tire.CentroId&&x.Estado!=EstadoActividad.Cancelada&&(x.TecnicoUsuario!.Username==Usuario()||x.TecnicoId==Usuario()||User.HasClaim("permiso","operaciones.aprobar")),ct);var item=new SolicitudOperacion{Tipo=dto.Tipo,Estado=scheduled?EstadoSolicitudOperacion.APROBADO:EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=tire.CentroId,LlantaId=tire.Id,PosicionOrigenId=dto.PosicionOrigenId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=dto.CentroDestinoId.HasValue?"Traslado":dto.TipoDestino,CentroDestinoId=dto.CentroDestinoId,LlantaDesplazadaId=dto.LlantaDesplazadaId,PosicionDestinoDesplazadaId=dto.PosicionDestinoDesplazadaId,DestinoDesplazada=dto.DestinoDesplazada,Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,ActividadProgramadaId=dto.ActividadProgramadaId,Solicitante=Usuario(),Aprobador=scheduled?"Programación autorizada":null,UsuarioCreacion=Usuario()};db.SolicitudesOperacion.Add(item);await db.SaveChangesAsync(ct);if(scheduled)await Ejecutar(item,a,ct);return Created(string.Empty,await ObtenerSolicitud(item.Id,a,ct));}
+    public async Task<ActionResult<SolicitudOperacionDto>> Solicitar(CrearSolicitudOperacionDto dto,CancellationToken ct)
+    {
+        if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new ValidacionException("El motivo es obligatorio y admite máximo 500 caracteres.");
+        var mounting=dto.PosicionDestinoId.HasValue&&!dto.PosicionOrigenId.HasValue;
+        if((mounting||dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase))&&!User.HasClaim("permiso","operaciones.montar"))return Forbid();
+        if((dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase)&&!mounting)||(mounting&&(dto.CentroDestinoId.HasValue||dto.LlantaDesplazadaId.HasValue)))throw new ValidacionException("El montaje requiere una posición libre y no permite desplazamientos.");
+        if((dto.PosicionOrigenId.HasValue||dto.PosicionDestinoId.HasValue)&&!dto.KilometrajeVehiculo.HasValue)throw new ValidacionException("Ingresa el kilometraje actual.");
+        var a=User.AlcanceCentros();Guid id=Guid.Empty;
+        await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
+            db.ChangeTracker.Clear();
+            await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
+            var tire=await db.Llantas.SingleOrDefaultAsync(x=>x.Id==dto.LlantaId&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Llanta no encontrada.");
+            if(dto.CentroDestinoId.HasValue&&(!a.Autoriza(dto.CentroDestinoId.Value)||dto.CentroDestinoId==tire.CentroId))throw new UnauthorizedAccessException("Centro destino no autorizado o inválido.");
+            if(mounting)await service.ValidarMontajeAsync(dto.LlantaId,dto.PosicionDestinoId!.Value,dto.KilometrajeVehiculo,a,ct);
+            var scheduled=false;
+            if(dto.ActividadProgramadaId.HasValue)
+            {
+                var activity=await db.ActividadesProgramadas.Include(x=>x.TecnicoUsuario).SingleOrDefaultAsync(x=>x.Id==dto.ActividadProgramadaId&&x.Activo,ct);
+                var vehicleId=await db.PosicionesVehiculo.Where(x=>x.Id==(dto.PosicionDestinoId??dto.PosicionOrigenId)).Select(x=>(Guid?)x.EjeVehiculo.VehiculoId).SingleOrDefaultAsync(ct);
+                scheduled=activity is not null && activity.CentroId==tire.CentroId && activity.VehiculoId==vehicleId && vehicleId.HasValue
+                    && activity.Estado is EstadoActividad.Pendiente or EstadoActividad.EnEjecucion
+                    && string.Equals(activity.TipoActividad,dto.Tipo,StringComparison.OrdinalIgnoreCase)
+                    && (!activity.LlantaId.HasValue||activity.LlantaId==dto.LlantaId)
+                    && (!activity.PosicionVehiculoId.HasValue||activity.PosicionVehiculoId==(dto.PosicionDestinoId??dto.PosicionOrigenId))
+                    && (activity.TecnicoId==Usuario()||activity.TecnicoId==Usuario()+".local"||activity.TecnicoUsuario?.Username==Usuario());
+                if(!scheduled)throw new ValidacionException("La programación no es válida para esta operación, vehículo, posición o técnico.");
+                if(await db.SolicitudesOperacion.AnyAsync(x=>x.ActividadProgramadaId==dto.ActividadProgramadaId&&x.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("La programación ya fue ejecutada.");
+            }
+            var item=new SolicitudOperacion{Tipo=mounting?"Montaje":dto.Tipo,Estado=scheduled?EstadoSolicitudOperacion.APROBADO:EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=tire.CentroId,LlantaId=tire.Id,PosicionOrigenId=dto.PosicionOrigenId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=mounting?"Posicion":dto.CentroDestinoId.HasValue?"Traslado":dto.TipoDestino,CentroDestinoId=dto.CentroDestinoId,LlantaDesplazadaId=dto.LlantaDesplazadaId,PosicionDestinoDesplazadaId=dto.PosicionDestinoDesplazadaId,DestinoDesplazada=dto.DestinoDesplazada,Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,ActividadProgramadaId=dto.ActividadProgramadaId,Solicitante=Usuario(),Aprobador=scheduled?"Programación autorizada":null,FechaDecision=scheduled?DateTimeOffset.UtcNow:null,UsuarioCreacion=Usuario()};
+            db.SolicitudesOperacion.Add(item);await db.SaveChangesAsync(ct);
+            if(scheduled)await Ejecutar(item,a,ct);
+            await tx.CommitAsync(ct);id=item.Id;
+        });
+        return Created(string.Empty,await ObtenerSolicitud(id,a,ct));
+    }
     [HttpPost("api/operaciones/solicitudes/{id:guid}/resolver"),Authorize(Policy="Operaciones.Aprobar")]
     public async Task<SolicitudOperacionDto> Resolver(Guid id,ResolverSolicitudDto dto,CancellationToken ct)
     {
@@ -62,10 +100,11 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
         var strategy=db.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async()=>
         {
-            await using var tx=await db.Database.BeginTransactionAsync(ct);
+            db.ChangeTracker.Clear();
+            await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
             var item=await db.SolicitudesOperacion.SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Solicitud pendiente no encontrada.");if(item.Solicitante==Usuario()&&!User.HasClaim("permiso","operaciones.aprobar_propia"))throw new UnauthorizedAccessException("No puede aprobar su propia solicitud.");
             item.Aprobador=Usuario();item.FechaDecision=DateTimeOffset.UtcNow;
-            if(!dto.Aprobar){if(string.IsNullOrWhiteSpace(dto.Motivo))throw new Application.Common.ValidacionException("El motivo de rechazo es obligatorio.");item.Estado=EstadoSolicitudOperacion.RECHAZADO;item.MotivoRechazo=dto.Motivo;await db.SaveChangesAsync(ct);}
+            if(!dto.Aprobar){if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new Application.Common.ValidacionException("El motivo de rechazo es obligatorio (máximo 500 caracteres).");item.Estado=EstadoSolicitudOperacion.RECHAZADO;item.MotivoRechazo=dto.Motivo.Trim();await db.SaveChangesAsync(ct);}
             else{item.Estado=EstadoSolicitudOperacion.APROBADO;await db.SaveChangesAsync(ct);await Ejecutar(item,a,ct);}
             await tx.CommitAsync(ct);
         });
@@ -73,10 +112,52 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
         return await ObtenerSolicitud(id,a,ct);
     }
     [HttpPost("api/operaciones/solicitudes/{id:guid}/recibir"),Authorize(Policy="Operaciones.Aprobar")]
-    public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct){var a=User.AlcanceCentros();var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepción no encontrado.");if(item.FechaRecepcionDestino.HasValue)throw new Application.Common.ConflictoException("El traslado ya fue recibido.");item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";var state=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(state.HasValue)item.Llanta.EstadoLlantaId=state.Value;item.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return await ObtenerSolicitud(id,a,ct);}
+    public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct){var a=User.AlcanceCentros();var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepciÃ³n no encontrado.");if(item.FechaRecepcionDestino.HasValue)throw new Application.Common.ConflictoException("El traslado ya fue recibido.");item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";var state=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(state.HasValue)item.Llanta.EstadoLlantaId=state.Value;item.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return await ObtenerSolicitud(id,a,ct);}
+    [HttpGet("api/operaciones/vehiculos"),Authorize(Policy="Operaciones.Montar")]
+    public Task<Pagina<SistemaLlantas.Application.Vehiculos.VehiculoResumenDto>> VehiculosMontaje([FromQuery]ConsultaPaginada consulta,[FromServices]SistemaLlantas.Application.Vehiculos.IVehiculoService vehiculos,CancellationToken ct)=>vehiculos.ConsultarAsync(consulta,User.AlcanceCentros(),ct);
+    [HttpGet("api/operaciones/vehiculos/{id:guid}"),Authorize(Policy="Operaciones.Montar")]
+    public async Task<IActionResult> VehiculoMontaje(Guid id,[FromServices]SistemaLlantas.Application.Vehiculos.IVehiculoService vehiculos,CancellationToken ct)
+        =>await vehiculos.ObtenerAsync(id,User.AlcanceCentros(),ct) is {} vehicle?Ok(vehicle):NotFound();
+    [HttpGet("api/operaciones/llantas-disponibles"),Authorize(Policy="Operaciones.Solicitar")]
+    public async Task<IActionResult> Disponibles([FromQuery]Guid vehiculoId,[FromQuery]string? buscar,CancellationToken ct)
+    {
+        if(!User.HasClaim("permiso","operaciones.montar"))return Forbid();
+        var a=User.AlcanceCentros();
+        var centro=await db.Vehiculos.Where(x=>x.Id==vehiculoId&&x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.CentroId))).Select(x=>(Guid?)x.CentroId).SingleOrDefaultAsync(ct);
+        if(!centro.HasValue)return NotFound();
+        var q=SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db).Where(x=>x.CentroId==centro);
+        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(x=>x.Codigo.Contains(term)||x.Serial.Contains(term));}
+        return Ok(await q.OrderBy(x=>x.Codigo).Take(50).Select(x=>new{x.Id,x.Codigo,x.Serial,Dimension=x.Dimension.Nombre,Estado=x.EstadoLlanta.Nombre,Centro=x.Centro.Nombre}).ToListAsync(ct));
+    }
+    [HttpGet("api/operaciones/autorizaciones"),Authorize(Policy="Operaciones.Aprobar")]
+    public async Task<IActionResult> Autorizaciones([FromQuery]string? estado,[FromQuery]Guid? centroId,[FromQuery]string? tipo,[FromQuery]string? solicitante,[FromQuery]string? vehiculo,[FromQuery]DateTimeOffset? desde,[FromQuery]DateTimeOffset? hasta,[FromQuery]int pagina=1,CancellationToken ct=default)
+    {
+        var a=User.AlcanceCentros();
+        var q=db.SolicitudesOperacion.AsNoTracking().Where(x=>x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)));
+        if(estado!="TODOS"){if(!Enum.TryParse<EstadoSolicitudOperacion>(estado??"PENDIENTE_APROBACION",out var state))throw new ValidacionException("Estado inválido.");q=q.Where(x=>x.Estado==state);}
+        if(centroId.HasValue)q=q.Where(x=>x.CentroId==centroId);
+        if(!string.IsNullOrWhiteSpace(tipo))q=q.Where(x=>x.Tipo==tipo);
+        if(!string.IsNullOrWhiteSpace(solicitante))q=q.Where(x=>x.Solicitante.Contains(solicitante.Trim()));
+        if(desde.HasValue)q=q.Where(x=>x.FechaCreacion>=desde);
+        if(hasta.HasValue){var end=hasta.Value.AddDays(1);q=q.Where(x=>x.FechaCreacion<end);}
+        if(!string.IsNullOrWhiteSpace(vehiculo)){var term=vehiculo.Trim();q=q.Where(x=>db.PosicionesVehiculo.Any(p=>(p.Id==x.PosicionDestinoId||p.Id==x.PosicionOrigenId)&&(p.EjeVehiculo.Vehiculo.Placa.Contains(term)||p.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        var total=await q.CountAsync(ct);
+        var items=await q.OrderByDescending(x=>x.FechaCreacion).ThenBy(x=>x.Id).Skip((Math.Max(1,pagina)-1)*30).Take(30).Select(x=>new{
+            x.Id,x.Tipo,Estado=x.Estado.ToString(),Fecha=x.FechaCreacion,x.CentroId,Centro=x.Centro.Nombre,x.Solicitante,x.LlantaId,Llanta=x.Llanta.Codigo,x.Llanta.Serial,
+            Vehiculo=db.PosicionesVehiculo.Where(p=>p.Id==(x.PosicionDestinoId??x.PosicionOrigenId)).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno+" / "+p.EjeVehiculo.Vehiculo.Placa).FirstOrDefault(),
+            PosicionOrigen=db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.Codigo).FirstOrDefault(),
+            PosicionDestino=db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.Codigo).FirstOrDefault(),
+            x.KilometrajeVehiculo,x.Motivo,x.Observaciones,x.ActividadProgramadaId,x.Aprobador,x.FechaDecision,x.MotivoRechazo}).ToListAsync(ct);
+        return Ok(new{items,total,pagina=Math.Max(1,pagina),tamano=30});
+    }
     private string Usuario()=>User.Username();
     private async Task Ejecutar(SolicitudOperacion x,Application.Common.AlcanceCentros a,CancellationToken ct)
     {
+        if(x.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase))
+        {
+            if(!x.PosicionDestinoId.HasValue||x.PosicionOrigenId.HasValue||x.CentroDestinoId.HasValue||x.LlantaDesplazadaId.HasValue)throw new ValidacionException("Solicitud de montaje inválida; requiere una posición libre.");
+            await service.ValidarMontajeAsync(x.LlantaId,x.PosicionDestinoId.Value,x.KilometrajeVehiculo,a,ct);
+        }
         if(x.CentroDestinoId.HasValue) await ciclo.TrasladarCentroAsync(x.LlantaId,new(x.CentroDestinoId.Value,x.Motivo,x.Observaciones),Usuario(),a,ct);
         else
         {

@@ -8,6 +8,7 @@ export const roleGuard: CanActivateFn = route => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const path = route.routeConfig?.path ?? '';
+  if(path==='autorizaciones')return auth.has('operaciones.aprobar')&&['ADMINISTRADOR','SUPERVISOR_ADMINISTRADOR'].includes(auth.user()?.role??'')?true:router.createUrlTree(['/sin-acceso']);
   const module=modules[path];
   if(module&&auth.canModule(module)) return true;
   return router.createUrlTree(['/sin-acceso']);

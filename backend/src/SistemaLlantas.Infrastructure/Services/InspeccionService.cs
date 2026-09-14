@@ -44,7 +44,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
             TecnicoId = usuario, Observaciones = dto.Observaciones, UsuarioCreacion = usuario };
         var positions=vehiculo.Ejes.SelectMany(x=>x.Posiciones).ToList();var ids=positions.Select(x=>x.Id).ToArray();var mounted=await db.AsignacionesLlantaPosicion.Where(x=>ids.Contains(x.PosicionVehiculoId)&&x.EsActiva).ToDictionaryAsync(x=>x.PosicionVehiculoId,x=>x.LlantaId,ct);foreach (var posicion in positions){var hasTire=mounted.TryGetValue(posicion.Id,out var tireId);inspeccion.Detalles.Add(new InspeccionDetalle { PosicionVehiculoId = posicion.Id, LlantaId = hasTire?tireId:null, UsuarioCreacion = usuario });}
         db.Inspecciones.Add(inspeccion); await db.SaveChangesAsync(ct);
-        return (await ObtenerAsync(inspeccion.Id, alcance, ct))!;
+        return (await ObtenerAsync(inspeccion.Id, alcance, ct, usuario, permitirVehiculoGlobal))!;
     }
 
     public async Task<InspeccionDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken ct, string? usuario = null, bool permitirPropia = false)
@@ -61,7 +61,16 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
         detalle.ProfundidadExterior = dto.ProfundidadExterior; detalle.ProfundidadCentro = dto.ProfundidadCentro; detalle.ProfundidadInterior = dto.ProfundidadInterior;
         detalle.CondicionLlantaId = dto.CondicionId; detalle.CausaLlantaId = dto.CausaId; detalle.RecomendacionId = dto.RecomendacionId;
         detalle.Observaciones = dto.Observaciones; detalle.UsuarioModificacion = usuario; detalle.FechaModificacion = DateTimeOffset.UtcNow;
-        var values=new[]{dto.ProfundidadExterior,dto.ProfundidadCentro,dto.ProfundidadInterior}.Where(x=>x.HasValue).Select(x=>x!.Value).ToArray();var threshold=await db.ParametrosAlerta.Where(x=>x.Codigo=="DIFERENCIA_HOMBROS_MM").Select(x=>(decimal?)x.Valor).SingleOrDefaultAsync(ct);if(threshold.HasValue&&values.Length>=2&&values.Max()-values.Min()>=threshold.Value&&!await db.AlertasInspeccion.AnyAsync(x=>x.InspeccionDetalleId==detalle.Id&&x.Tipo=="DIFERENCIA_HOMBROS",ct)){var alert=new AlertaInspeccion{Tipo="DIFERENCIA_HOMBROS",Descripcion=$"Diferencia de {values.Max()-values.Min():0.##} mm entre mediciones de la llanta.",InspeccionId=id,InspeccionDetalleId=detalle.Id,VehiculoId=detalle.Inspeccion.VehiculoId,CentroId=detalle.Inspeccion.CentroId,PosicionVehiculoId=posicionId,LlantaId=detalle.LlantaId,UsuarioCreacion=usuario};alert.Historial.Add(new(){EstadoAnterior=EstadoAlerta.ABIERTA,EstadoNuevo=EstadoAlerta.ABIERTA,Observacion="Generada automáticamente por regla parametrizada.",UsuarioCreacion=usuario});db.AlertasInspeccion.Add(alert);}
+        var values=new[]{dto.ProfundidadExterior,dto.ProfundidadCentro,dto.ProfundidadInterior}.Where(x=>x.HasValue).Select(x=>x!.Value).ToArray();
+        var rules=await db.ParametrosAlerta.AsNoTracking().Where(x=>x.Activo&&(!x.CentroId.HasValue||x.CentroId==detalle.Inspeccion.CentroId)).ToListAsync(ct);
+        foreach(var rule in rules.Where(x=>x.Cumple(values)))
+        {
+            var alertType=rule.Codigo=="DIFERENCIA_HOMBROS_MM"?"DIFERENCIA_HOMBROS":rule.Codigo;
+            if(await db.AlertasInspeccion.AnyAsync(x=>x.InspeccionDetalleId==detalle.Id&&x.Tipo==alertType,ct))continue;
+            var alert=new AlertaInspeccion{Tipo=alertType,Descripcion=$"{rule.Nombre} · Prioridad {rule.Prioridad}. {rule.Tipo}: {rule.Operador} {rule.Valor:0.##} {rule.Unidad}. {rule.Descripcion}",InspeccionId=id,InspeccionDetalleId=detalle.Id,VehiculoId=detalle.Inspeccion.VehiculoId,CentroId=detalle.Inspeccion.CentroId,PosicionVehiculoId=posicionId,LlantaId=detalle.LlantaId,UsuarioCreacion=usuario};
+            if(alert.Descripcion.Length>1000)alert.Descripcion=alert.Descripcion[..1000];
+            alert.Historial.Add(new(){EstadoAnterior=EstadoAlerta.ABIERTA,EstadoNuevo=EstadoAlerta.ABIERTA,Observacion=$"Generada por regla {rule.Codigo}; lecturas {string.Join(", ",values)} mm.",UsuarioCreacion=usuario});db.AlertasInspeccion.Add(alert);
+        }
         await db.SaveChangesAsync(ct); return await ObtenerAsync(id, new(true, []), ct);
     }
 

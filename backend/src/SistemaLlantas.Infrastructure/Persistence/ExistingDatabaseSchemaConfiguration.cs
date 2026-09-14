@@ -663,6 +663,7 @@ internal static class ExistingDatabaseSchemaConfiguration
         {
             var b = modelBuilder.Entity<ParametroAlerta>();
             b.ToTable("TBL_ParametroAlerta", "dbo");
+            b.Property(x=>x.Nombre).HasColumnName("SNombre");b.Property(x=>x.Tipo).HasColumnName("STipo");b.Property(x=>x.Descripcion).HasColumnName("SDescripcion");b.Property(x=>x.Operador).HasColumnName("SOperador");b.Property(x=>x.Prioridad).HasColumnName("SPrioridad");b.Property(x=>x.CentroId).HasColumnName("GCentroId");
             b.Property(x => x.Id).HasColumnName("GId");
             b.Property(x => x.Activo).HasColumnName("BActivo");
             b.Property(x => x.Codigo).HasColumnName("SCodigo");

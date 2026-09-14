@@ -166,7 +166,25 @@ public sealed class EvidenciaInspeccion : EntidadAuditable
 }
 
 public enum EstadoAlerta { ABIERTA, EN_PROCESO, GESTIONADA, DESCARTADA }
-public sealed class ParametroAlerta : EntidadAuditable { public string Codigo {get;set;}=string.Empty; public decimal Valor {get;set;} public string Unidad {get;set;}=string.Empty; }
+public sealed class ParametroAlerta : EntidadAuditable
+{
+ public string Codigo {get;set;}=string.Empty;
+ public string Nombre {get;set;}="Diferencia entre mediciones";
+ public string Tipo {get;set;}="DIFERENCIA_HOMBROS";
+ public string Descripcion {get;set;}=string.Empty;
+ public string Operador {get;set;}=">=";
+ public string Prioridad {get;set;}="Media";
+ public Guid? CentroId {get;set;}
+ public decimal Valor {get;set;}
+ public string Unidad {get;set;}="mm";
+ public bool Cumple(decimal[] lecturas)
+ {
+  if(!Activo || lecturas.Length<3)return false;
+  var value=Tipo switch{"DIFERENCIA_HOMBROS"=>lecturas.Max()-lecturas.Min(),"PROFUNDIDAD_MINIMA"=>lecturas.Min(),_=>decimal.MinValue};
+  if(value==decimal.MinValue)return false;
+  return Operador switch{">="=>value>=Valor,">"=>value>Valor,"<="=>value<=Valor,"<"=>value<Valor,"="=>value==Valor,"!="=>value!=Valor,_=>false};
+ }
+}
 public sealed class AlertaInspeccion : EntidadAuditable
 {
  public string Tipo {get;set;}=string.Empty;public string Descripcion {get;set;}=string.Empty;public EstadoAlerta Estado {get;set;}=EstadoAlerta.ABIERTA;public Guid InspeccionId {get;set;}public Inspeccion Inspeccion {get;set;}=null!;public Guid InspeccionDetalleId {get;set;}public InspeccionDetalle InspeccionDetalle {get;set;}=null!;public Guid VehiculoId {get;set;}public Guid CentroId {get;set;}public Guid PosicionVehiculoId {get;set;}public Guid? LlantaId {get;set;}public ICollection<AlertaHistorial> Historial {get;set;}=[];

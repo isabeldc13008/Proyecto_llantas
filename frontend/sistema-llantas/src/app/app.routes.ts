@@ -12,6 +12,7 @@ const protectedRoutes:Routes=[
  {path:'inspecciones',loadComponent:()=>import('./features/inspection/inspection-page').then(m=>m.InspectionPage)},
  {path:'alertas',loadComponent:()=>import('./features/alerts/alerts-page').then(m=>m.AlertsPage)},
  {path:'programacion',loadComponent:()=>import('./features/scheduling/scheduling-page').then(m=>m.SchedulingPage)},
+ {path:'autorizaciones',loadComponent:()=>import('./features/authorizations/authorizations-page').then(m=>m.AuthorizationsPage)},
  {path:'montajes',loadComponent:()=>import('./features/movements/movements-page').then(m=>m.MovementsPage)},
  {path:'movimientos',loadComponent:()=>import('./features/movements/movement-ledger-page').then(m=>m.MovementLedgerPage)},
  {path:'reparaciones',loadComponent:()=>import('./features/services/repairs-page').then(m=>m.RepairsPage)},
