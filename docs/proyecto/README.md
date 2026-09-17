@@ -14,7 +14,7 @@ Este directorio concentra la información funcional, técnica, operativa y de se
 | [06 Compromisos y pendientes](06-compromisos-y-pendientes.md) | Responsables, estados, reglas y temas por validar |
 | [07 Guía de operación y QA](07-guia-operacion-y-qa.md) | Perfiles, flujo operativo, pruebas y salida a producción |
 | [08 Inventario de la implementación](08-inventario-implementacion.md) | Relación entre módulos documentados y código actual |
-| [Diagramas](diagramas/) | Arquitectura actual y arquitectura esperada |
+| [Diagramas](diagramas/) | Arquitectura actual y arquitectura esperada ([actual](diagramas/01-arquitectura-actual.png), [esperada](diagramas/02-arquitectura-esperada.png)) |
 
 ## Módulos del sistema
 
