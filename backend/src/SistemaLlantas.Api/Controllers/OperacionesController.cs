@@ -24,7 +24,7 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
     [HttpPost("api/movimientos"),Authorize(Policy="Operaciones.Ejecutar")]
     public Task<MovimientoDto> Mover(EjecutarMovimientoDto dto,CancellationToken ct)
     {
-        if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) throw new ValidacionException("EnvÃ­a el montaje mediante una solicitud de operaciÃ³n.");
+        if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) throw new ValidacionException("Envía el montaje mediante una solicitud de operación.");
         return service.MoverAsync(dto,Usuario(),User.AlcanceCentros(),ct);
     }
     [HttpPost("api/desmontajes"),Authorize(Policy="Operaciones.Ejecutar")]
@@ -49,12 +49,19 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
         var total=await q.CountAsync(ct);
         var items=await q.OrderByDescending(x=>x.Movimiento.FechaCreacion).ThenBy(x=>x.Movimiento.Numero).Skip((page-1)*size).Take(size)
             .Select(x=>new MovimientoTrazabilidadDto(x.MovimientoId,x.Movimiento.Numero,x.Movimiento.FechaCreacion,x.Movimiento.Tipo,x.LlantaId,x.Llanta.Codigo,x.Llanta.Serial,
-                x.PosicionOrigenId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"â€”":"â€”",
-                x.PosicionDestinoId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??x.TipoDestino.ToString():x.DestinoDescripcion??x.TipoDestino.ToString(),
-                db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId||p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno+" Â· "+p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"â€”",x.Movimiento.Centro.Nombre,
-                db.AsignacionesLlantaPosicion.Where(s=>s.MovimientoOrigenId==x.MovimientoId&&s.LlantaId==x.LlantaId).Select(s=>s.KilometrajeMontaje).FirstOrDefault(),
+                x.PosicionOrigenId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"—":x.CentroDestinoId.HasValue?x.Movimiento.Centro.Nombre:x.PosicionDestinoId.HasValue?"Inventario":"—",
+                x.PosicionDestinoId.HasValue?db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??x.TipoDestino.ToString():x.CentroDestinoId.HasValue?db.Centros.Where(c=>c.Id==x.CentroDestinoId).Select(c=>c.Nombre).FirstOrDefault()??x.TipoDestino.ToString():x.DestinoDescripcion??x.TipoDestino.ToString(),
+                db.PosicionesVehiculo.Where(p=>p.Id==(x.PosicionDestinoId??x.PosicionOrigenId)).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno+" · "+p.EjeVehiculo.Vehiculo.Placa+" / "+p.Codigo).FirstOrDefault()??"—",x.Movimiento.Centro.Nombre,
+                db.SolicitudesOperacion.Where(s=>s.MovimientoEjecutadoId==x.MovimientoId).Select(s=>s.KilometrajeVehiculo).FirstOrDefault()??db.AsignacionesLlantaPosicion.Where(s=>s.MovimientoOrigenId==x.MovimientoId&&s.LlantaId==x.LlantaId).Select(s=>s.KilometrajeMontaje).FirstOrDefault(),
                 db.AsignacionesLlantaPosicion.Where(s=>s.MovimientoOrigenId==x.MovimientoId&&s.LlantaId==x.LlantaId).Select(s=>s.KilometrajeRecorrido).FirstOrDefault(),x.Movimiento.Usuario,
-                db.SolicitudesOperacion.Where(s=>s.MovimientoEjecutadoId==x.MovimientoId).Select(s=>s.ActividadProgramadaId).FirstOrDefault(),x.Movimiento.Motivo,x.Movimiento.Observaciones,"EJECUTADO")).ToListAsync(ct);
+                db.SolicitudesOperacion.Where(s=>s.MovimientoEjecutadoId==x.MovimientoId).Select(s=>s.ActividadProgramadaId).FirstOrDefault(),x.Movimiento.Motivo,x.Movimiento.Observaciones,"EJECUTADO",
+                db.PosicionesVehiculo.Where(p=>p.Id==(x.PosicionDestinoId??x.PosicionOrigenId)).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno).FirstOrDefault(),
+                db.PosicionesVehiculo.Where(p=>p.Id==(x.PosicionDestinoId??x.PosicionOrigenId)).Select(p=>p.EjeVehiculo.Vehiculo.Placa).FirstOrDefault(),
+                db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.Codigo).FirstOrDefault(),
+                db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.Codigo).FirstOrDefault(),
+                x.Movimiento.Centro.Nombre,
+                x.CentroDestinoId.HasValue?db.Centros.Where(c=>c.Id==x.CentroDestinoId).Select(c=>c.Nombre).FirstOrDefault():x.Movimiento.Centro.Nombre,
+                db.SolicitudesOperacion.Where(s=>s.MovimientoEjecutadoId==x.MovimientoId).Select(s=>(Guid?)s.Id).FirstOrDefault())).ToListAsync(ct);
         return new(items,page,size,total);
     }
     [HttpPost("api/operaciones/solicitudes"),Authorize(Policy="Operaciones.Solicitar")]
@@ -125,7 +132,7 @@ public sealed class OperacionesController(IOperacionService service,ICicloVidaLl
         });
     }
     [HttpPost("api/operaciones/solicitudes/{id:guid}/recibir"),Authorize(Policy="Operaciones.Aprobar")]
-    public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct){var a=User.AlcanceCentros();var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepciÃ³n no encontrado.");if(item.FechaRecepcionDestino.HasValue)throw new Application.Common.ConflictoException("El traslado ya fue recibido.");item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";var state=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(state.HasValue)item.Llanta.EstadoLlantaId=state.Value;item.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return await ObtenerSolicitud(id,a,ct);}
+    public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct){var a=User.AlcanceCentros();var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepción no encontrado.");if(item.FechaRecepcionDestino.HasValue)throw new Application.Common.ConflictoException("El traslado ya fue recibido.");item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";var state=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(state.HasValue)item.Llanta.EstadoLlantaId=state.Value;item.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return await ObtenerSolicitud(id,a,ct);}
     [HttpGet("api/operaciones/vehiculos"),Authorize(Policy="Operaciones.Montar")]
     public Task<Pagina<SistemaLlantas.Application.Vehiculos.VehiculoResumenDto>> VehiculosMontaje([FromQuery]ConsultaPaginada consulta,[FromServices]SistemaLlantas.Application.Vehiculos.IVehiculoService vehiculos,CancellationToken ct)=>vehiculos.ConsultarAsync(consulta,User.AlcanceCentros(),ct);
     [HttpGet("api/operaciones/vehiculos/{id:guid}"),Authorize(Policy="Operaciones.Montar")]

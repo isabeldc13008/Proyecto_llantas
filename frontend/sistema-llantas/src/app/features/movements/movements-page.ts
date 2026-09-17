@@ -16,6 +16,92 @@ interface RequestRow{id:string;tipo:string;estado:string;centro:string;llanta:st
 @if(type==='Montaje'){<label>Buscar llanta por código o serial<input [(ngModel)]="tireSearch" (keyup.enter)="loadAvailable()"><button (click)="loadAvailable()">Buscar</button></label><small>Hasta 50 disponibles del centro del vehículo. Busca por código o serial para precisar.</small><label>Llanta disponible<select [(ngModel)]="tireId"><option value="">Seleccionar</option>@for(t of available();track t.id){<option [value]="t.id">{{t.codigo}} · {{t.serial}} · {{t.dimension}} · {{t.estado}}</option>}</select></label><p class="selection">Destino: {{selectedPosition()?.code??'Selecciona una posición libre'}}</p>}@else{<p class="selection">Origen: {{selectedPosition()?.code??'Selecciona una posición ocupada'}} · {{selectedPosition()?.tire??'—'}}</p>}
 @if(type==='Rotación'){<label>Posición destino<select [(ngModel)]="destinationPositionId"><option value="">Seleccionar</option>@for(p of positions();track p.id){<option [value]="p.id">{{p.codigo}} · {{p.llantaCodigo??'Libre'}}</option>}</select></label>@if(destinationOccupant()){<div class="warning">La posición está ocupada por {{destinationOccupant()!.llantaCodigo}}.<label>Destino de la llanta ocupante<select [(ngModel)]="displacedDestination"><option value="">Obligatorio</option><option>Inventario</option><option>Reparacion</option><option>Reencauche</option><option>DisposicionFinal</option></select></label></div>}}
 @if(type==='Traslado'){<label>Centro destino<select [(ngModel)]="destinationCenterId"><option value="">Seleccionar</option>@for(c of centers();track c.id){<option [value]="c.id">{{c.codigo}} · {{c.nombre}}</option>}</select></label>}
-@if(detail()){<p class="selection">Último kilometraje: {{detail()!.kilometraje==null?'Sin registro':(detail()!.kilometraje|number)+' km'}}</p>}<label>Kilometraje actual obligatorio<input type="number" inputmode="numeric" min="0" [(ngModel)]="mileage"></label><label>Motivo<textarea rows="3" [(ngModel)]="reason"></textarea></label><label>Observaciones<textarea rows="2" [(ngModel)]="notes"></textarea></label><button class="primary" [disabled]="busy()" (click)="submit()">{{busy()?'Procesando…':'Enviar solicitud / ejecutar programación'}}</button>@if(message()){<p class="message" [class.error]="messageKind()==='error'" role="status">{{message()}}</p>}</article></section>
+@if(detail()){<p class="selection">Último kilometraje: {{detail()!.kilometraje==null?'Sin registro':(detail()!.kilometraje|number)+' km'}}</p>}<label>Kilometraje actual obligatorio<input type="number" inputmode="numeric" min="0" [(ngModel)]="mileage"></label><label>Motivo<textarea rows="3" [(ngModel)]="reason"></textarea></label><label>Observaciones<textarea rows="2" [(ngModel)]="notes"></textarea></label><button class="primary" [disabled]="busy()" (click)="submit()">{{busy()?'Procesando…':'Enviar solicitud / ejecutar programación'}}</button>@if(message()){<p class="message" [class.error]="messageKind()==='error'" role="status">{{message()}}</p>}@if(refreshWarning()){<p class="warning" role="alert">{{refreshWarning()}} <button [disabled]="busy()" (click)="refresh()">Reintentar actualización</button></p>}</article></section>
 </main>`,styles:[`.ops{display:grid;gap:1rem}.ops>header p{color:var(--edinsa-blue);font-weight:900}.ops>header span{color:#667b84}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem}.panel{background:#fff;border:1px solid #d9e4e8;border-radius:14px;padding:1rem}.panel label{display:grid;gap:.3rem;margin-bottom:.8rem;font-size:.72rem;font-weight:700;color:#526a75}select,input,textarea{max-width:100%;min-width:0;padding:.65rem;border:1px solid #cbd9de;border-radius:8px;background:#fff}.selection{background:#eaf5f8;padding:.75rem;border-radius:8px}.warning{padding:.8rem;background:#fff1d9;border-left:4px solid #ff962e}.primary{width:100%;padding:.75rem;border:0;border-radius:9px;color:#fff;font-weight:800;background:linear-gradient(110deg,var(--edinsa-blue),var(--edinsa-green))}.message{padding:.7rem;background:#eef7e9}@media(max-width:850px){.grid{grid-template-columns:1fr}}`]} )
-export class MovementsPage implements OnInit{private http=inject(HttpClient);private catalogs=inject(CatalogsApi);private route=inject(ActivatedRoute);readonly auth=inject(AuthService);vehicles=signal<VehicleSummary[]>([]);detail=signal<VehicleDetail|null>(null);available=signal<any[]>([]);centers=signal<any[]>([]);requests=signal<RequestRow[]>([]);vehicleSearch='';tireSearch='';busy=signal(false);vehicleId='';type='Montaje';tireId='';destinationPositionId='';destinationCenterId='';displacedDestination='';reason='';notes='';mileage:number|null=null;selectedPosition=signal<DiagramPosition|null>(null);positions=computed(()=>this.detail()?.ejes.flatMap(e=>e.posiciones)??[]);axles=computed<DiagramAxle[]>(()=>this.detail()?.ejes.map(e=>({id:e.id,name:e.nombre,type:e.tipoEje,positions:e.posiciones.map(p=>({id:p.id,code:p.codigo,side:`${p.lado} ${p.ubicacion}`,tire:p.llantaCodigo??'LIBRE',state:p.llantaId?'normal':'empty'}))}))??[]);destinationOccupant=computed(()=>this.positions().find(p=>p.id===this.destinationPositionId&&p.llantaId)??null);async ngOnInit(){try{const [v,c,r]=await Promise.all([firstValueFrom(this.http.get<{items:VehicleSummary[]}>('/api/operaciones/vehiculos',{params:{tamano:100}})),firstValueFrom(this.catalogs.all('centros',true)),firstValueFrom(this.http.get<RequestRow[]>('/api/operaciones/solicitudes'))]);this.vehicles.set(v.items);this.centers.set(c);this.requests.set(r);this.vehicleId=this.route.snapshot.queryParamMap.get('vehiculoId')??v.items[0]?.id??'';if(this.vehicleId)await this.loadVehicle()}catch{this.message.set('No fue posible cargar la operación desde SQL Server.')}}messageKind=signal('info');message=signal('');async searchVehicles(){try{const page=await firstValueFrom(this.http.get<{items:VehicleSummary[]}>('/api/operaciones/vehiculos',{params:{buscar:this.vehicleSearch,tamano:100}}));this.vehicles.set(page.items)}catch(e:any){this.messageKind.set('error');this.message.set(e?.userMessage??'No fue posible buscar vehículos.')}}async loadVehicle(){if(!this.vehicleId)return;this.detail.set(await firstValueFrom(this.http.get<VehicleDetail>(`/api/operaciones/vehiculos/${this.vehicleId}`)));this.resetSelection();this.tireId='';await this.loadAvailable()}async loadAvailable(){this.available.set([]);if(!this.vehicleId)return;try{this.available.set(await firstValueFrom(this.http.get<any[]>('/api/operaciones/llantas-disponibles',{params:{vehiculoId:this.vehicleId,buscar:this.tireSearch}})))}catch(e:any){this.messageKind.set('error');this.message.set(e?.userMessage??'No se pudieron consultar las llantas disponibles.')}}select(p:DiagramPosition){const raw=this.positions().find(x=>x.id===p.id);if(this.type==='Montaje'&&raw?.llantaId){this.message.set('Para montar, selecciona una posición libre.');return}if(this.type!=='Montaje'&&!raw?.llantaId){this.message.set('Selecciona una posición que tenga llanta.');return}this.selectedPosition.set(p);this.tireId=raw?.llantaId??this.tireId}resetSelection(){this.selectedPosition.set(null);this.destinationPositionId='';this.displacedDestination='';this.message.set('')}async submit(){if(this.busy())return;const source=this.selectedPosition();if(!this.tireId||this.type!=='Montaje'&&!source)return this.message.set('Selecciona la llanta o posición origen.');if(this.type==='Montaje'&&!source)return this.message.set('Selecciona la posición destino libre.');if(this.mileage===null||this.mileage<0)return this.message.set('Ingresa el kilometraje actual.');if(!this.reason.trim())return this.message.set('El motivo es obligatorio.');const destination=this.type==='Montaje'?source?.id:this.type==='Rotación'?this.destinationPositionId:null;const occupied=this.destinationOccupant();if(occupied&&!this.displacedDestination)return this.message.set('Indica el destino de la llanta ocupante.');const body={tipo:this.type,llantaId:this.tireId,posicionOrigenId:this.type==='Montaje'?null:source?.id,posicionDestinoId:destination,tipoDestino:this.destinationType(),centroDestinoId:this.type==='Traslado'?this.destinationCenterId:null,llantaDesplazadaId:occupied?.llantaId??null,posicionDestinoDesplazadaId:null,destinoDesplazada:this.displacedDestination||null,motivo:this.reason,observaciones:this.notes||null,kilometrajeVehiculo:this.mileage,actividadProgramadaId:this.route.snapshot.queryParamMap.get('actividadId')};this.busy.set(true);try{const result=await firstValueFrom(this.http.post<RequestRow>('/api/operaciones/solicitudes',body));let refreshed=true;try{await this.refresh()}catch{refreshed=false}this.messageKind.set('success');this.message.set((result.estado==='EJECUTADO'?'Operación ejecutada.':'Solicitud enviada para autorización. No se ha modificado el inventario.')+(refreshed?(result.estado==='EJECUTADO'?' Vehículo e inventario actualizados.':''):' Actualiza la pantalla para consultar el resultado.'))}catch(e:any){this.messageKind.set('error');this.message.set(e?.userMessage??'No fue posible registrar la solicitud.')}finally{this.busy.set(false)}}destinationType(){return this.type==='Montaje'||this.type==='Rotación'?'Posicion':this.type==='Reparación'?'Reparacion':this.type==='Disposición final'?'DisposicionFinal':this.type}async refresh(){this.requests.set(await firstValueFrom(this.http.get<RequestRow[]>('/api/operaciones/solicitudes')));if(this.vehicleId)await this.loadVehicle()}async resolve(r:RequestRow,approve:boolean){const motivo=approve?null:prompt('Motivo obligatorio del rechazo:');if(!approve&&!motivo)return;await firstValueFrom(this.http.post(`/api/operaciones/solicitudes/${r.id}/resolver`,{aprobar:approve,motivo}));await this.refresh()}async receive(r:RequestRow){await firstValueFrom(this.http.post(`/api/operaciones/solicitudes/${r.id}/recibir`,{}));await this.refresh()}}
+export class MovementsPage implements OnInit {
+ private http=inject(HttpClient);private catalogs=inject(CatalogsApi);private route=inject(ActivatedRoute);
+ readonly auth=inject(AuthService);
+ vehicles=signal<VehicleSummary[]>([]);detail=signal<VehicleDetail|null>(null);available=signal<any[]>([]);
+ centers=signal<any[]>([]);requests=signal<RequestRow[]>([]);
+ busy=signal(false);messageKind=signal('info');message=signal('');refreshWarning=signal('');
+ vehicleSearch='';tireSearch='';vehicleId='';type='Montaje';tireId='';destinationPositionId='';
+ destinationCenterId='';displacedDestination='';reason='';notes='';mileage:number|null=null;
+ selectedPosition=signal<DiagramPosition|null>(null);
+ private refreshVersion=0;private availableVersion=0;
+ positions=computed(()=>this.detail()?.ejes.flatMap(e=>e.posiciones)??[]);
+ axles=computed<DiagramAxle[]>(()=>this.detail()?.ejes.map(e=>({id:e.id,name:e.nombre,type:e.tipoEje,positions:e.posiciones.map(p=>({id:p.id,code:p.codigo,side:p.lado+' '+p.ubicacion,tire:p.llantaCodigo??'LIBRE',state:p.llantaId?'normal':'empty'}))}))??[]);
+ destinationOccupant(){return this.type==='Rotación'?this.positions().find(p=>p.id===this.destinationPositionId&&p.llantaId)??null:null;}
+ async ngOnInit(){this.vehicleId=this.route.snapshot.queryParamMap.get('vehiculoId')??'';await this.refresh();}
+ async searchVehicles(){
+  try{const page=await firstValueFrom(this.http.get<{items:VehicleSummary[]}>('/api/operaciones/vehiculos',{params:{buscar:this.vehicleSearch,tamano:100}}));this.vehicles.set(page.items);}
+  catch(e:any){this.refreshWarning.set(e?.userMessage??'No fue posible buscar vehículos.');}
+ }
+ async loadVehicle(){this.resetSelection();this.detail.set(null);this.available.set([]);this.mileage=null;await this.refresh();}
+ private async updateAvailable(vehicleId:string){
+  const version=++this.availableVersion;
+  const tires=await firstValueFrom(this.http.get<any[]>('/api/operaciones/llantas-disponibles',{params:{vehiculoId:vehicleId,buscar:this.tireSearch}}));
+  if(version===this.availableVersion&&vehicleId===this.vehicleId)this.available.set(tires);
+ }
+ async loadAvailable(){
+  if(!this.vehicleId)return;
+  try{await this.updateAvailable(this.vehicleId)}catch(e:any){this.refreshWarning.set(e?.userMessage??'No se pudieron consultar las llantas disponibles.');}
+ }
+ select(p:DiagramPosition){
+  const raw=this.positions().find(x=>x.id===p.id);
+  if(this.type==='Montaje'&&raw?.llantaId){this.message.set('Para montar, selecciona una posición libre.');return;}
+  if(this.type!=='Montaje'&&!raw?.llantaId){this.message.set('Selecciona una posición que tenga llanta.');return;}
+  this.selectedPosition.set(p);this.tireId=raw?.llantaId??this.tireId;
+ }
+ resetSelection(){this.selectedPosition.set(null);this.tireId='';this.destinationPositionId='';this.destinationCenterId='';this.displacedDestination='';}
+ private resetForm(){this.resetSelection();this.reason='';this.notes='';this.mileage=null;}
+ async submit(){
+  if(this.busy())return;
+  const source=this.selectedPosition();
+  if(!this.tireId||this.type!=='Montaje'&&!source)return this.message.set('Selecciona la llanta o posición origen.');
+  if(this.type==='Montaje'&&!source)return this.message.set('Selecciona la posición destino libre.');
+  if(this.mileage===null||!Number.isFinite(this.mileage)||this.mileage<0)return this.message.set('Ingresa el kilometraje actual.');
+  if(!this.reason.trim())return this.message.set('El motivo es obligatorio.');
+  const destination=this.type==='Montaje'?source?.id:this.type==='Rotación'?this.destinationPositionId:null;
+  const occupied=this.destinationOccupant();
+  if(occupied&&!this.displacedDestination)return this.message.set('Indica el destino de la llanta ocupante.');
+  const body={tipo:this.type,llantaId:this.tireId,posicionOrigenId:this.type==='Montaje'?null:source?.id,posicionDestinoId:destination,tipoDestino:this.destinationType(),centroDestinoId:this.type==='Traslado'?this.destinationCenterId:null,llantaDesplazadaId:occupied?.llantaId??null,posicionDestinoDesplazadaId:null,destinoDesplazada:this.displacedDestination||null,motivo:this.reason,observaciones:this.notes||null,kilometrajeVehiculo:this.mileage,actividadProgramadaId:this.route.snapshot.queryParamMap.get('actividadId')};
+  this.busy.set(true);
+  try{
+   const result=await firstValueFrom(this.http.post<RequestRow>('/api/operaciones/solicitudes',body));
+   this.messageKind.set('success');
+   this.message.set(result.estado==='EJECUTADO'?'Operación ejecutada.':'Solicitud enviada para autorización. No se ha modificado el inventario.');
+   this.resetForm();await this.refresh();
+  }catch(e:any){this.messageKind.set('error');this.message.set(e?.userMessage??'No fue posible registrar la solicitud.');}
+  finally{this.busy.set(false);}
+ }
+ destinationType(){return this.type==='Montaje'||this.type==='Rotación'?'Posicion':this.type==='Reparación'?'Reparacion':this.type==='Disposición final'?'DisposicionFinal':this.type;}
+ async refresh(){
+  const version=++this.refreshVersion;const vehicleId=this.vehicleId;
+  const current=()=>version===this.refreshVersion&&vehicleId===this.vehicleId;
+  const tasks:{name:string;run:()=>Promise<void>}[]=[
+   {name:'lista de vehículos',run:async()=>{const page=await firstValueFrom(this.http.get<{items:VehicleSummary[]}>('/api/operaciones/vehiculos',{params:{buscar:this.vehicleSearch,tamano:100}}));if(current())this.vehicles.set(page.items);}},
+   {name:'solicitudes',run:async()=>{const rows=await firstValueFrom(this.http.get<RequestRow[]>('/api/operaciones/solicitudes'));if(current())this.requests.set(rows);}},
+  ];
+  if(!this.centers().length)tasks.push({name:'centros',run:async()=>{const centers=await firstValueFrom(this.catalogs.all('centros',true));if(current())this.centers.set(centers);}});
+  if(vehicleId)tasks.push(
+   {name:'vehículo, diagrama y trazabilidad',run:async()=>{const detail=await firstValueFrom(this.http.get<VehicleDetail>('/api/operaciones/vehiculos/'+vehicleId));if(current())this.detail.set(detail);}},
+   {name:'llantas disponibles',run:()=>this.updateAvailable(vehicleId)}
+  );
+  const results=await Promise.allSettled(tasks.map(task=>task.run()));
+  if(!current())return;
+  const failed=tasks.filter((_,index)=>results[index].status==='rejected').map(task=>task.name);
+  this.refreshWarning.set(failed.length?'No se pudo actualizar: '+failed.join('; ')+'. Los datos de esas secciones pueden estar desactualizados. Puedes reintentar sin repetir la operación.':'');
+  if(!vehicleId&&this.vehicles().length){this.vehicleId=this.vehicles()[0].id;await this.refresh();}
+ }
+ async resolve(r:RequestRow,approve:boolean){
+  const motivo=approve?null:prompt('Motivo obligatorio del rechazo:');if(!approve&&!motivo)return;
+  await this.perform('/api/operaciones/solicitudes/'+r.id+'/resolver',{aprobar:approve,motivo},'Solicitud procesada.');
+ }
+ async receive(r:RequestRow){await this.perform('/api/operaciones/solicitudes/'+r.id+'/recibir',{},'Traslado recibido.');}
+ private async perform(url:string,body:unknown,success:string){
+  if(this.busy())return;this.busy.set(true);
+  try{await firstValueFrom(this.http.post(url,body));this.messageKind.set('success');this.message.set(success);this.resetForm();await this.refresh();}
+  catch(e:any){this.messageKind.set('error');this.message.set(e?.userMessage??'No fue posible procesar la operación.');}
+  finally{this.busy.set(false);}
+ }
+}
