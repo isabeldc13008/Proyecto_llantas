@@ -52,5 +52,25 @@ public sealed class AuthenticationTests(TestApplicationFactory factory) : IClass
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/api/usuarios")).StatusCode);
     }
 
+    [Theory]
+    [InlineData("administrador", "admin123", "ADMINISTRADOR")]
+    [InlineData("supervisoradmin", "supadmin123", "SUPERVISOR_ADMINISTRADOR")]
+    [InlineData("supervisor", "super123", "SUPERVISOR")]
+    [InlineData("tecnico", "tec123", "TECNICO")]
+    public async Task Login_ReturnsRoleAndOperationalContextForEverySeededProfile(string username, string password, string expectedRole)
+    {
+        var client = factory.CreateClient();
+        var response = await client.PostAsJsonAsync("/api/auth/login", new { username, password });
+        response.EnsureSuccessStatusCode();
+        var login = await response.Content.ReadFromJsonAsync<LoginContext>();
+
+        Assert.NotNull(login);
+        Assert.Equal(expectedRole, login!.Role);
+        Assert.False(string.IsNullOrWhiteSpace(login.AccessToken));
+        Assert.NotNull(login.Permissions);
+        Assert.NotNull(login.CenterIds);
+    }
+
     private sealed record Token(string AccessToken);
+    private sealed record LoginContext(string AccessToken, string Role, string[] Permissions, Guid[] CenterIds);
 }
