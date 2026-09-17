@@ -227,9 +227,11 @@ public sealed class CargaMasivaTests(TestApplicationFactory factory) : IClassFix
     public async Task Vehicles_StillPreviewAndConfirm()
     {
         await using var s = await Setup();
-        var config = await s.Db.ConfiguracionesVehiculo.FirstAsync(x => x.Activo);
+        var config = new ConfiguracionVehiculo { Codigo = "CV" + s.Suffix, Nombre = "Configuración " + s.Suffix, TipoVehiculo = "Camión" };
+        s.Db.ConfiguracionesVehiculo.Add(config);
+        await s.Db.SaveChangesAsync();
         var csv = "Interno,Placa,Centro,TipoVehiculo,ConfiguracionEjes,Kilometraje,Estado\n"
-            + $"V{s.Suffix},QA123,{s.Center.Codigo},Camión,{config.Codigo},100,Activo";
+            + $"V{s.Suffix},QA123,{s.Center.Codigo},{config.TipoVehiculo},{config.Codigo},100,Activo";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
         var file = new FormFile(stream, 0, stream.Length, "archivo", "vehicles.csv");
         var preview = (await s.Controller.Preview("vehiculos", file, default)).Value!;
