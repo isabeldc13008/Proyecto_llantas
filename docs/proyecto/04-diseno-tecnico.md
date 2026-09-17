@@ -16,6 +16,26 @@ flowchart TB
   APP --> INFRA --> DB
 ```
 
+## Arquitectura de alto nivel
+
+La siguiente vista resume la interrelación entre la aplicación web, los servicios web, la lógica de negocio, la persistencia, la identidad y el ciclo de entrega. El archivo fuente UML [03-arquitectura-alto-nivel.puml](diagramas/03-arquitectura-alto-nivel.puml) permite recrear el modelo como un diagrama de componentes en Enterprise Architect.
+
+```mermaid
+flowchart TB
+  U[Usuarios operativos] --> WEB[Aplicación web Angular]
+  WEB --> API[API REST ASP.NET Core]
+  API --> APP[Application y controladores]
+  APP --> DOM[Domain y reglas de negocio]
+  APP --> INFRA[Infrastructure y EF Core]
+  INFRA --> DB[(SQL Server o Azure SQL)]
+  API --> ID[JWT / Microsoft Entra ID según ambiente]
+  API --> EV[Almacenamiento de evidencias]
+  CI[GitHub Actions] -. build y pruebas .-> WEB
+  CI -. build, pruebas y migraciones .-> API
+```
+
+La API concentra los servicios web de autenticación, autorización, catálogos, llantas, inventario, inspecciones, alertas, programación, operaciones, servicios y reportes. La base de datos conserva la información transaccional, la seguridad y la auditoría; las evidencias se almacenan según la configuración del ambiente.
+
 ## Tecnologías observables
 
 | Componente | Tecnología |
