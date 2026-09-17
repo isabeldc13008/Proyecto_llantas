@@ -7,36 +7,31 @@ skinparam defaultFontName Arial
 skinparam packageStyle rectangle
 
 actor "Usuarios operativos\nTecnicos, supervisores, administradores" as Users
-package "Capa de presentacion" as Presentation {
-  component "Aplicacion web\nAngular 20" as Angular
-  component "Guards e interceptores\npermisos y token" as Guards
-}
-package "Servicios web" as Web {
-  component "API REST\nASP.NET Core .NET 10" as Api
-  component "Autenticacion y autorizacion\nJWT / Entra ID segun ambiente" as Auth
-  component "Controladores\nDashboard, inventario, inspecciones,\noperaciones, servicios y reportes" as Controllers
-  component "Application\ncasos de uso, DTO y validaciones" as Application
-  component "Domain\nreglas y estados de negocio" as Domain
-  component "Infrastructure\nEF Core, migraciones y servicios" as Infrastructure
-}
-database "SQL Server / Azure SQL\nTBL_* del sistema" as Sql
-component "Almacenamiento de evidencias\nfilesystem o almacenamiento del ambiente" as Evidence
-cloud "Microsoft Entra ID\ncuando el ambiente lo requiere" as Entra
-component "GitHub Actions\nconstruccion y pruebas" as Ci
+component "Aplicacion web\nAngular 20\nHTTPS" as Angular
+component "API REST\nASP.NET Core .NET 10" as Api
+component "Logica de negocio\nApplication + Domain\ncasos de uso y reglas" as Business
+component "Persistencia\nEF Core y migraciones" as Persistence
+component "Controladores\nDashboard, inventario, inspecciones,\noperaciones, servicios y reportes" as Controllers
+component "Autenticacion y autorizacion\nJWT, permisos y alcance por centro" as Auth
+component "Almacenamiento de evidencias\nfilesystem o servicio del ambiente" as Evidence
+database "SQL Server / Azure SQL\nTBL_* del sistema, seguridad y auditoria" as Sql
+cloud "Microsoft Entra ID\nsegun configuracion del ambiente" as Entra
+component "Modulos funcionales\nllantas, inspecciones, alertas,\nprogramacion y operaciones" as Modules
+component "GitHub Actions\nbuild, pruebas y migraciones" as Ci
 
 Users --> Angular : HTTPS
-Angular --> Guards : navega y valida modulo
-Angular --> Api : HTTPS / JSON
-Api --> Auth : valida identidad y permisos
+Angular --> Api : REST / JSON
+Api --> Business : DTO y reglas
+Business --> Persistence : consultas y comandos
+Persistence --> Sql : SQL
+Api --> Auth : identidad y permisos
 Auth --> Entra : OpenID Connect / JWT
-Api --> Controllers
-Controllers --> Application
-Application --> Domain
-Application --> Infrastructure
-Infrastructure --> Sql : EF Core / SQL
-Controllers --> Evidence : carga y consulta de archivos
+Api --> Controllers : endpoints
+Controllers --> Modules : casos funcionales
+Business --> Evidence : archivos de inspeccion
 Ci ..> Angular : build y pruebas
-Ci ..> Api : build, pruebas y migraciones
+Ci ..> Api : build y pruebas
+Ci ..> Sql : migraciones
 
 note right of Sql
   Inventario, llantas, vehiculos,
