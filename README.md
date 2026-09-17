@@ -19,3 +19,10 @@ Frontend: `pnpm test --watch=false --browsers=ChromeHeadless` y `pnpm build`.
 GitHub Actions ejecuta ambas suites y genera artefactos; no despliega.
 
 Autenticación propia con usuario/contraseña y JWT en desarrollo y producción. Ver [configuración y arranque](docs/mvp-operacion.md).
+
+
+## Documentación integral del proyecto
+
+La documentación funcional, técnica, operativa, de QA, convenciones de base de datos y compromisos se encuentra en [docs/proyecto](docs/proyecto/README.md).
+
+Incluye el alcance por módulos, requerimientos funcionales y no funcionales, arquitectura, reglas de negocio, responsables, pendientes y guía de pruebas.
