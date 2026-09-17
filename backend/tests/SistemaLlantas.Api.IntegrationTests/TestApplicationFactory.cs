@@ -18,7 +18,11 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>
     private readonly string database = "SistemaLlantas_Test_" + Guid.NewGuid().ToString("N");
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var connection = new SqlConnectionStringBuilder(Environment.GetEnvironmentVariable("TEST_SQL_CONNECTION")
+        var configuredConnection = Environment.GetEnvironmentVariable("TEST_SQL_CONNECTION");
+        if (string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(configuredConnection))
+            throw new InvalidOperationException("TEST_SQL_CONNECTION is required in CI.");
+        var connection = new SqlConnectionStringBuilder(configuredConnection
             ?? @"Server=(localdb)\MSSQLLocalDB;Integrated Security=True;TrustServerCertificate=True") { InitialCatalog = database };
         builder.UseEnvironment("Development");
         builder.ConfigureServices(services =>
