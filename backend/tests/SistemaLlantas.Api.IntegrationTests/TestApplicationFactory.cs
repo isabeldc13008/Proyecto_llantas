@@ -67,7 +67,11 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>
             {
                 var column = property.GetColumnName(table)!;
                 if (column == property.Name) continue;
-                renames.Add($"IF COL_LENGTH({Literal(tableName)}, {Literal(column)}) IS NULL AND COL_LENGTH({Literal(tableName)}, {Literal(property.Name)}) IS NOT NULL " +
+                // COL_LENGTH receives an object name, not a bracketed SQL identifier.
+                // Keeping brackets only in sp_rename prevents the prefixed schema
+                // columns (SCodigo, GId, ...) from being missed in LocalDB.
+                var tableLookup = $"{table.Schema}.{table.Name}";
+                renames.Add($"IF COL_LENGTH({Literal(tableLookup)}, {Literal(column)}) IS NULL AND COL_LENGTH({Literal(tableLookup)}, {Literal(property.Name)}) IS NOT NULL " +
                     $"EXEC sys.sp_rename {Literal(tableName + "." + Identifier(property.Name))}, {Literal(column)}, N'COLUMN';");
             }
         }
@@ -84,5 +88,4 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>
         await base.DisposeAsync();
     }
 }
-
 
