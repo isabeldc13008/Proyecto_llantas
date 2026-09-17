@@ -15,6 +15,7 @@ Este directorio concentra la información funcional, técnica, operativa y de se
 | [07 Guía de operación y QA](07-guia-operacion-y-qa.md) | Perfiles, flujo operativo, pruebas y salida a producción |
 | [08 Inventario de la implementación](08-inventario-implementacion.md) | Relación entre módulos documentados y código actual |
 | [Diagramas](diagramas/) | Arquitectura actual y arquitectura esperada ([actual](diagramas/01-arquitectura-actual.png), [esperada](diagramas/02-arquitectura-esperada.png)) |
+| [Documento AE-038 completo](AE-038_Diseno_Tecnico_GLLD_Completo.docx) | Documento Word diligenciado para revisión técnica y entrega |
 
 ## Módulos del sistema
 
