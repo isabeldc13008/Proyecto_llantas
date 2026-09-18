@@ -5,6 +5,7 @@ using SistemaLlantas.Api.Security;
 using SistemaLlantas.Application.Common;
 using SistemaLlantas.Application.Operaciones;
 using SistemaLlantas.Domain.Entities;
+using SistemaLlantas.Infrastructure.Services;
 namespace SistemaLlantas.Api.Controllers;
 public sealed partial class OperacionesController
 {
@@ -19,7 +20,8 @@ public sealed partial class OperacionesController
    db.ChangeTracker.Clear();first=Guid.Empty;await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
    await service.ValidarAsignacionesAsync(dto.VehiculoId??Guid.Empty,dto.Asignaciones!,a,null,ct);
    var vehicle=await db.Vehiculos.SingleAsync(v=>v.Id==dto.VehiculoId,ct);
-   if(vehicle.Kilometraje>dto.KilometrajeVehiculo)throw new ValidacionException("El kilometraje no puede ser menor al odómetro.");
+   var positions=dto.Asignaciones!.Select(f=>f.PosicionId).ToArray();var outgoing=await db.AsignacionesLlantaPosicion.Where(x=>x.EsActiva&&positions.Contains(x.PosicionVehiculoId)).Select(x=>new SalidaKilometraje(x.Llanta.Codigo,x.PosicionVehiculo.Codigo,x.KilometrajeMontaje)).ToListAsync(ct);
+   KilometrajeOperacion.Validar(dto.KilometrajeVehiculo,vehicle.Kilometraje,outgoing);
    var group=Guid.NewGuid();
    foreach(var f in dto.Asignaciones!){var s=new SolicitudOperacion{GrupoOperacionId=group,Tipo="Cambio de juego",Estado=EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=vehicle.CentroId,LlantaId=f.LlantaId,LlantaDesplazadaId=f.LlantaActualId,PosicionDestinoId=f.PosicionId,TipoDestino="Posicion",DestinoDesplazada="Inventario",Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,Solicitante=Usuario(),UsuarioCreacion=Usuario()};db.SolicitudesOperacion.Add(s);if(first==Guid.Empty)first=s.Id;}
    await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);

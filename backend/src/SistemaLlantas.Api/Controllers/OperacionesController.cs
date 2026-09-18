@@ -93,11 +93,11 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
                     && activity.LlantaId==dto.LlantaId
                     && activity.PosicionVehiculoId==(dto.PosicionDestinoId??dto.PosicionOrigenId)
                     && (activity.TecnicoId==Usuario()||activity.TecnicoId==Usuario()+".local"||activity.TecnicoUsuario?.Username==Usuario());
-                if(scheduled){activity!.Estado=EstadoActividad.Cumplida;activity.FechaFinReal=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);}
+
                 if(!scheduled)throw new ValidacionException("La programación no es válida para esta operación, vehículo, posición o técnico.");
                 if(await db.SolicitudesOperacion.AnyAsync(x=>x.ActividadProgramadaId==dto.ActividadProgramadaId&&x.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("La programación ya fue ejecutada.");
             }
-            if(mounting)await service.ValidarMontajeAsync(dto.LlantaId,dto.PosicionDestinoId!.Value,dto.KilometrajeVehiculo,a,ct);
+            if(mounting&&!scheduled)await service.ValidarMontajeAsync(dto.LlantaId,dto.PosicionDestinoId!.Value,dto.KilometrajeVehiculo,a,ct);
             var item=new SolicitudOperacion{Tipo=mounting?"Montaje":dto.Tipo,Estado=scheduled?EstadoSolicitudOperacion.APROBADO:EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=tire.CentroId,LlantaId=tire.Id,PosicionOrigenId=dto.PosicionOrigenId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=mounting?"Posicion":dto.CentroDestinoId.HasValue?"Traslado":dto.TipoDestino,CentroDestinoId=dto.CentroDestinoId,LlantaDesplazadaId=dto.LlantaDesplazadaId,PosicionDestinoDesplazadaId=dto.PosicionDestinoDesplazadaId,DestinoDesplazada=dto.DestinoDesplazada,Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,ActividadProgramadaId=dto.ActividadProgramadaId,Solicitante=Usuario(),Aprobador=scheduled?"Programación autorizada":null,FechaDecision=scheduled?DateTimeOffset.UtcNow:null,UsuarioCreacion=Usuario()};
             db.SolicitudesOperacion.Add(item);await db.SaveChangesAsync(ct);
             if(scheduled)await Ejecutar(item,a,ct);
@@ -184,9 +184,9 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
     {
         if(x.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase))
         {
-            x.Estado=EstadoSolicitudOperacion.EJECUTADO;await db.SaveChangesAsync(ct);
             if(!x.PosicionDestinoId.HasValue||x.PosicionOrigenId.HasValue||x.CentroDestinoId.HasValue||x.LlantaDesplazadaId.HasValue)throw new ValidacionException("Solicitud de montaje inválida; requiere una posición libre.");
-            await service.ValidarMontajeAsync(x.LlantaId,x.PosicionDestinoId.Value,x.KilometrajeVehiculo,a,ct);
+            await service.EjecutarReemplazosAsync([x],x.KilometrajeVehiculo??throw new ValidacionException("Ingresa un kilometraje válido."),Usuario(),a,ct);
+            return;
         }
         if(x.CentroDestinoId.HasValue) await ciclo.TrasladarCentroAsync(x.LlantaId,new(x.CentroDestinoId.Value,x.Motivo,x.Observaciones),Usuario(),a,ct);
         else

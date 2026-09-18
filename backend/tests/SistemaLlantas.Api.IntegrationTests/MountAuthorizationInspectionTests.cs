@@ -134,4 +134,36 @@ public sealed class MountAuthorizationInspectionTests(TestApplicationFactory fac
   for(var n=0;n<55;n++)db.Llantas.Add(new Llanta("AAA-"+Guid.NewGuid().ToString("N")[..16],"PAGE-"+Guid.NewGuid().ToString("N")){CentroId=t.CentroId,MarcaId=t.MarcaId,ReferenciaId=t.ReferenciaId,DimensionId=t.DimensionId,TipoLlantaId=t.TipoLlantaId,EstadoLlantaId=t.EstadoLlantaId});await db.SaveChangesAsync();
   var found=Assert.IsType<OkObjectResult>(await Operations(sp,db,v.CentroId).Disponibles(v.Id,t.Codigo,Ct));Assert.Contains(t.Id.ToString(),JsonSerializer.Serialize(found.Value));
  }
+ [Theory][InlineData(false,99999)][InlineData(false,100000)][InlineData(false,105000)][InlineData(true,99999)][InlineData(true,100000)][InlineData(true,105000)]
+ public async Task MontajeIndividual_OdometroYEstadoCompleto(bool programmed,decimal km)
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);v.Kilometraje=100000;await db.SaveChangesAsync();
+  Guid? activityId=null;if(programmed){var activity=new ActividadProgramada{TipoActividad="Montaje",CentroId=v.CentroId,VehiculoId=v.Id,PosicionVehiculoId=p.Id,LlantaId=t.Id,TecnicoId=Technician,Estado=EstadoActividad.Pendiente,FechaProgramada=DateTimeOffset.UtcNow};db.ActividadesProgramadas.Add(activity);await db.SaveChangesAsync();activityId=activity.Id;}
+  var body=new CrearSolicitudOperacionDto{Tipo="Montaje",LlantaId=t.Id,PosicionDestinoId=p.Id,TipoDestino="Posicion",Motivo="Prueba odómetro",KilometrajeVehiculo=km,ActividadProgramadaId=activityId};
+  var controller=Operations(sp,db,v.CentroId);
+  if(km<100000){await Assert.ThrowsAsync<ValidacionException>(()=>controller.Solicitar(body,Ct));db.ChangeTracker.Clear();Assert.Null((await db.PosicionesVehiculo.SingleAsync(x=>x.Id==p.Id)).LlantaActualId);Assert.Equal(100000,(await db.Vehiculos.SingleAsync(x=>x.Id==v.Id)).Kilometraje);Assert.False(await db.Movimientos.AnyAsync(m=>m.Detalles.Any(d=>d.LlantaId==t.Id)));return;}
+  var result=Created(await controller.Solicitar(body,Ct));if(!programmed)result=await Operations(sp,db,v.CentroId,"qa-admin").Resolver(result.Id,new(true,null),Ct);
+  db.ChangeTracker.Clear();Assert.Equal("EJECUTADO",result.Estado);var tire=await db.Llantas.Include(x=>x.EstadoLlanta).SingleAsync(x=>x.Id==t.Id);Assert.Contains(tire.EstadoLlanta.Codigo,new[]{"MONTADA","MON"});Assert.Contains(p.Codigo,tire.UbicacionActual);
+  Assert.Equal(t.Id,(await db.PosicionesVehiculo.SingleAsync(x=>x.Id==p.Id)).LlantaActualId);Assert.Equal(km,(await db.Vehiculos.SingleAsync(x=>x.Id==v.Id)).Kilometraje);
+  var active=Assert.Single(await db.AsignacionesLlantaPosicion.Where(x=>x.EsActiva&&x.PosicionVehiculoId==p.Id).ToListAsync());Assert.Equal(t.Id,active.LlantaId);Assert.Equal(km,active.KilometrajeMontaje);Assert.True(await db.Movimientos.AnyAsync(m=>m.Id==active.MovimientoOrigenId));Assert.Equal(active.MovimientoOrigenId,(await db.SolicitudesOperacion.SingleAsync(x=>x.Id==result.Id)).MovimientoEjecutadoId);
+ }
+ [Fact]public async Task LlantaReservadaNoPuedeMontarseManualmente()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);
+  db.ActividadesProgramadas.Add(new(){TipoActividad="Montaje",CentroId=v.CentroId,VehiculoId=v.Id,PosicionVehiculoId=p.Id,LlantaId=t.Id,TecnicoId=Technician,Estado=EstadoActividad.Pendiente,FechaProgramada=DateTimeOffset.UtcNow});await db.SaveChangesAsync();
+  await Assert.ThrowsAsync<ConflictoException>(()=>Operations(sp,db,v.CentroId).Solicitar(Request(t,p),Ct));Assert.False(await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.EsActiva&&x.LlantaId==t.Id));
+ }
+
+ [Fact]public async Task CambioJuegoManual_AprobacionEjecutaTodasLasPosiciones()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t1,v,p1)=await Setup(db);var(t2,_,_)=await Setup(db);v.Kilometraje=100000;
+  var p2=new PosicionVehiculo{Codigo="P2",Lado="Derecha",Ubicacion="Externa",Orden=2,EjeVehiculoId=p1.EjeVehiculoId};db.PosicionesVehiculo.Add(p2);await db.SaveChangesAsync();
+  var request=Created(await Operations(sp,db,v.CentroId).Solicitar(new(){Tipo="Cambio de juego",VehiculoId=v.Id,Asignaciones=[new(p1.Id,t1.Id,null),new(p2.Id,t2.Id,null)],Motivo="Montaje conjunto",KilometrajeVehiculo=105000},Ct));
+  Assert.Equal("PENDIENTE_APROBACION",request.Estado);var group=await db.SolicitudesOperacion.Where(s=>s.Id==request.Id).Select(s=>s.GrupoOperacionId).SingleAsync();Assert.NotNull(group);
+  await Operations(sp,db,v.CentroId,"qa-admin").Resolver(request.Id,new(true,null),Ct);db.ChangeTracker.Clear();
+  var requests=await db.SolicitudesOperacion.Where(s=>s.GrupoOperacionId==group).ToListAsync();Assert.Equal(2,requests.Count);Assert.All(requests,s=>Assert.Equal(EstadoSolicitudOperacion.EJECUTADO,s.Estado));
+  Assert.Equal(105000,(await db.Vehiculos.SingleAsync(x=>x.Id==v.Id)).Kilometraje);Assert.Equal(t1.Id,(await db.PosicionesVehiculo.SingleAsync(x=>x.Id==p1.Id)).LlantaActualId);Assert.Equal(t2.Id,(await db.PosicionesVehiculo.SingleAsync(x=>x.Id==p2.Id)).LlantaActualId);
+  Assert.Equal(2,await db.AsignacionesLlantaPosicion.CountAsync(a=>a.EsActiva&&(a.PosicionVehiculoId==p1.Id||a.PosicionVehiculoId==p2.Id)));Assert.All(requests,s=>Assert.NotNull(s.MovimientoEjecutadoId));
+ }
+
 }

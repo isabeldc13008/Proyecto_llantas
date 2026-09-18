@@ -46,7 +46,7 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
     }
     private async Task ValidarMontajeCoreAsync(Guid llantaId, Guid posicionId, decimal? kilometraje, AlcanceCentros alcance, CancellationToken ct)
     {
-        if (!kilometraje.HasValue || kilometraje < 0) throw new ValidacionException("Ingresa un kilometraje válido.");
+        KilometrajeOperacion.Validar(kilometraje,null);
         var tire = await db.Llantas.Include(x=>x.EstadoLlanta).SingleOrDefaultAsync(x=>x.Id==llantaId && x.Activo && x.Centro.Activo && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)),ct)
             ?? throw new ConflictoException("La llanta ya no está activa o disponible en los centros autorizados.");
         var position = await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==posicionId && x.Activo && x.EjeVehiculo.Activo && x.EjeVehiculo.Vehiculo.Activo && x.EjeVehiculo.Vehiculo.Centro.Activo && (alcance.VerTodos || alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)
@@ -56,7 +56,7 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
         if (tire.CentroId != position.EjeVehiculo.Vehiculo.CentroId) throw new ValidacionException("La llanta debe estar recibida en el centro del vehículo.");
         if (await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==llantaId && x.EsActiva,ct) || await db.PosicionesVehiculo.AnyAsync(x=>x.LlantaActualId==llantaId,ct)) throw new ConflictoException("La llanta ya está montada. Actualiza la selección.");
         if (position.LlantaActualId.HasValue || await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.PosicionVehiculoId==posicionId && x.EsActiva,ct)) throw new ConflictoException("La posición ya está ocupada. Actualiza el vehículo.");
-        if (position.EjeVehiculo.Vehiculo.Kilometraje > kilometraje) throw new ValidacionException("El kilometraje no puede ser menor al odómetro del vehículo.");
+        KilometrajeOperacion.Validar(kilometraje,position.EjeVehiculo.Vehiculo.Kilometraje);
     }
 
     private async Task<MovimientoDto> MoverCoreAsync(EjecutarMovimientoDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct,bool inspeccion=false)
@@ -65,37 +65,80 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
         await using var tx=db.Database.CurrentTransaction is null?await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct):null;
         if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) await ValidarMontajeCoreAsync(dto.LlantaId,dto.PosicionDestinoId.Value,dto.KilometrajeVehiculo,alcance,ct);
         var llanta=await db.Llantas.Include(x=>x.EstadoLlanta).SingleOrDefaultAsync(x=>x.Id==dto.LlantaId && (alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct)??throw new ConflictoException("La llanta cambió o ya no está disponible en los centros autorizados.");
-        if(!llanta.EstadoLlanta.PermiteMontaje && dto.PosicionDestinoId.HasValue) throw new InvalidOperationException($"La llanta está en estado {llanta.EstadoLlanta.Nombre} y no permite montaje.");
-        var actual=await db.AsignacionesLlantaPosicion.Include(x=>x.PosicionVehiculo).ThenInclude(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.LlantaId==dto.LlantaId&&x.EsActiva,ct);
+        if(!llanta.EstadoLlanta.PermiteMontaje && dto.PosicionDestinoId.HasValue) throw new ConflictoException($"La llanta está en estado {llanta.EstadoLlanta.Nombre} y no permite montaje.");
+        var actual=await AsignacionActiva(db.AsignacionesLlantaPosicion.Where(x=>x.LlantaId==dto.LlantaId&&x.EsActiva),$"llanta {llanta.Codigo}",ct);
         if(dto.PosicionOrigenId.HasValue && actual?.PosicionVehiculoId!=dto.PosicionOrigenId) throw new ConflictoException("La posición origen ya no coincide con la asignación activa.");
         AsignacionLlantaPosicion? ocupante=null;
         PosicionVehiculo? posicionDestino=null;
-        if(dto.PosicionDestinoId.HasValue){posicionDestino=await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==dto.PosicionDestinoId&&(alcance.VerTodos||alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)??throw new UnauthorizedAccessException("La posición destino no pertenece a los centros autorizados.");ocupante=await db.AsignacionesLlantaPosicion.Include(x=>x.PosicionVehiculo).ThenInclude(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.PosicionVehiculoId==dto.PosicionDestinoId&&x.EsActiva,ct);}
-        if(ocupante is not null && ocupante.LlantaId!=dto.LlantaId && !dto.LlantaDesplazadaId.HasValue) throw new InvalidOperationException("POSICION_DESTINO_OCUPADA: debe indicar el destino de la llanta instalada.");
+        if(dto.PosicionDestinoId.HasValue){posicionDestino=await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==dto.PosicionDestinoId&&(alcance.VerTodos||alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)??throw new UnauthorizedAccessException("La posición destino no pertenece a los centros autorizados.");ocupante=await AsignacionActiva(db.AsignacionesLlantaPosicion.Where(x=>x.PosicionVehiculoId==dto.PosicionDestinoId&&x.EsActiva),$"posición {posicionDestino.Codigo}",ct);}
+        if(ocupante is not null && ocupante.LlantaId!=dto.LlantaId && !dto.LlantaDesplazadaId.HasValue) throw new ConflictoException("POSICION_DESTINO_OCUPADA: debe indicar el destino de la llanta instalada.");
+        // Validate every affected odometer and outgoing assignment before mutating entities.
+        PosicionVehiculo? displacedDestination=null;
+        if(ocupante is not null&&dto.PosicionDestinoDesplazadaId.HasValue)displacedDestination=await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==dto.PosicionDestinoDesplazadaId&&(alcance.VerTodos||alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)??throw new ConflictoException("La posición de la llanta desplazada ya no está disponible.");
+        if(actual is not null)AsignacionConsistente(actual.PosicionVehiculo,llanta.Id,[actual]);
+        if(posicionDestino is not null)AsignacionConsistente(posicionDestino,posicionDestino.LlantaActualId,ocupante is null?[]:[ocupante]);
+        var assignments=new[]{actual,ocupante}.Where(x=>x is not null).Cast<AsignacionLlantaPosicion>().DistinctBy(x=>x.Id).ToList();
+        var vehicles=assignments.Select(x=>x.PosicionVehiculo.EjeVehiculo.Vehiculo).Concat(new[]{posicionDestino?.EjeVehiculo.Vehiculo,displacedDestination?.EjeVehiculo.Vehiculo}.Where(x=>x is not null).Cast<Vehiculo>()).DistinctBy(x=>x.Id).ToList();
+        foreach(var v in vehicles)KilometrajeOperacion.Validar(dto.KilometrajeVehiculo,v.Kilometraje,assignments.Where(a=>a.PosicionVehiculo.EjeVehiculo.VehiculoId==v.Id).Select(a=>new SalidaKilometraje(a.Llanta.Codigo,a.PosicionVehiculo.Codigo,a.KilometrajeMontaje)));
+        var destinationState=await ObtenerEstadoAsync(dto.PosicionDestinoId.HasValue?"MONTADA":EstadoDestino(ParseDestino(dto.TipoDestino)),ct);
         var operationType=actual is null&&dto.PosicionDestinoId.HasValue?"MONTAJE":actual is not null&&dto.PosicionDestinoId.HasValue?"ROTACION":dto.TipoDestino.ToUpperInvariant() switch{"REPARACION"=>"ENVIO_REPARACION","REENCAUCHE"=>"ENVIO_REENCAUCHE","DISPOSICIONFINAL"=>"DISPOSICION_FINAL",_=>"DESMONTAJE"};
         var mov=new Movimiento{Numero=$"MOV-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}"[..28],Tipo=operationType,Motivo=dto.Motivo,Observaciones=dto.Observaciones,CentroId=inspeccion?posicionDestino!.EjeVehiculo.Vehiculo.CentroId:llanta.CentroId,Usuario=usuario,UsuarioCreacion=usuario};
         if(actual is not null){CerrarAsignacion(actual,dto.KilometrajeVehiculo,llanta,usuario);actual.PosicionVehiculo.LlantaActualId=null;}
-        if(ocupante is not null && ocupante.LlantaId!=dto.LlantaId){ if(ocupante.LlantaId!=dto.LlantaDesplazadaId) throw new InvalidOperationException("La llanta desplazada no coincide.");var displaced=await db.Llantas.SingleAsync(x=>x.Id==ocupante.LlantaId,ct);CerrarAsignacion(ocupante,dto.KilometrajeVehiculo,displaced,usuario);ocupante.PosicionVehiculo.LlantaActualId=null;mov.Detalles.Add(new(){LlantaId=ocupante.LlantaId,PosicionOrigenId=ocupante.PosicionVehiculoId,PosicionDestinoId=dto.PosicionDestinoDesplazadaId,TipoDestino=ParseDestino(dto.DestinoDesplazada),DestinoDescripcion=dto.DestinoDesplazada,UsuarioCreacion=usuario}); }
+        if(ocupante is not null && ocupante.LlantaId!=dto.LlantaId){ if(ocupante.LlantaId!=dto.LlantaDesplazadaId) throw new ConflictoException("La llanta desplazada no coincide.");var displaced=ocupante.Llanta;CerrarAsignacion(ocupante,dto.KilometrajeVehiculo,displaced,usuario);ocupante.PosicionVehiculo.LlantaActualId=null;mov.Detalles.Add(new(){LlantaId=ocupante.LlantaId,PosicionOrigenId=ocupante.PosicionVehiculoId,PosicionDestinoId=dto.PosicionDestinoDesplazadaId,TipoDestino=ParseDestino(dto.DestinoDesplazada),DestinoDescripcion=dto.DestinoDesplazada,UsuarioCreacion=usuario}); }
         var destino=ParseDestino(dto.TipoDestino); mov.Detalles.Add(new(){LlantaId=llanta.Id,PosicionOrigenId=actual?.PosicionVehiculoId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=destino,DestinoDescripcion=dto.TipoDestino,UsuarioCreacion=usuario});
-        await CambiarEstadoAsync(llanta,dto.PosicionDestinoId.HasValue?"MONTADA":EstadoDestino(destino),ct);
+        llanta.EstadoLlanta=destinationState;llanta.EstadoLlantaId=destinationState.Id;
         db.Movimientos.Add(mov); await db.SaveChangesAsync(ct);
-        if(dto.PosicionDestinoId.HasValue){var km=dto.KilometrajeVehiculo??posicionDestino!.EjeVehiculo.Vehiculo.Kilometraje;db.AsignacionesLlantaPosicion.Add(new(){LlantaId=llanta.Id,PosicionVehiculoId=dto.PosicionDestinoId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=km,UsuarioCreacion=usuario});posicionDestino!.LlantaActualId=llanta.Id;llanta.UbicacionActual=$"{posicionDestino.EjeVehiculo.Vehiculo.Placa} / {posicionDestino.Codigo}";ActualizarOdometro(posicionDestino.EjeVehiculo.Vehiculo,dto.KilometrajeVehiculo);}
-        if(ocupante is not null&&dto.PosicionDestinoDesplazadaId.HasValue){var displacedDestination=await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleAsync(x=>x.Id==dto.PosicionDestinoDesplazadaId,ct);db.AsignacionesLlantaPosicion.Add(new(){LlantaId=ocupante.LlantaId,PosicionVehiculoId=dto.PosicionDestinoDesplazadaId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=dto.KilometrajeVehiculo??displacedDestination.EjeVehiculo.Vehiculo.Kilometraje,UsuarioCreacion=usuario});displacedDestination.LlantaActualId=ocupante.LlantaId;}
+        if(dto.PosicionDestinoId.HasValue){var km=dto.KilometrajeVehiculo??posicionDestino!.EjeVehiculo.Vehiculo.Kilometraje;db.AsignacionesLlantaPosicion.Add(new(){LlantaId=llanta.Id,PosicionVehiculoId=dto.PosicionDestinoId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=km,UsuarioCreacion=usuario});posicionDestino!.LlantaActualId=llanta.Id;llanta.UbicacionActual=$"{posicionDestino.EjeVehiculo.Vehiculo.Placa} / {posicionDestino.Codigo}";}
+        if(ocupante is not null&&dto.PosicionDestinoDesplazadaId.HasValue){db.AsignacionesLlantaPosicion.Add(new(){LlantaId=ocupante.LlantaId,PosicionVehiculoId=dto.PosicionDestinoDesplazadaId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=dto.KilometrajeVehiculo??displacedDestination!.EjeVehiculo.Vehiculo.Kilometraje,UsuarioCreacion=usuario});displacedDestination!.LlantaActualId=ocupante.LlantaId;}
+        foreach(var v in vehicles)ActualizarOdometro(v,dto.KilometrajeVehiculo);
         await db.SaveChangesAsync(ct); if(tx is not null)await tx.CommitAsync(ct); return Map(mov);
     }
 
     public async Task<MovimientoDto> DesmontarAsync(DesmontarLlantaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct)
-    { var a=await db.AsignacionesLlantaPosicion.AsNoTracking().Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.PosicionVehiculoId==dto.PosicionId&&x.EsActiva&&(alcance.VerTodos||alcance.CentroIds.Contains(x.Llanta.CentroId)),ct)??throw new InvalidOperationException("La posición no tiene una llanta activa o no pertenece a tus centros autorizados."); return await MoverAsync(new(){LlantaId=a.LlantaId,PosicionOrigenId=dto.PosicionId,TipoDestino=dto.Destino,Motivo=dto.Motivo,KilometrajeVehiculo=dto.KilometrajeVehiculo,Observaciones=dto.Observaciones},usuario,alcance,ct); }
-    private static void CerrarAsignacion(AsignacionLlantaPosicion assignment,decimal? odometer,Llanta tire,string usuario){var end=odometer??assignment.PosicionVehiculo.EjeVehiculo.Vehiculo.Kilometraje;if(end.HasValue&&assignment.KilometrajeMontaje.HasValue&&end<assignment.KilometrajeMontaje)throw new ValidacionException("El kilometraje de desmontaje no puede ser menor al de montaje.");assignment.EsActiva=false;assignment.FechaFin=DateTimeOffset.UtcNow;assignment.KilometrajeDesmontaje=end;assignment.KilometrajeRecorrido=end.HasValue&&assignment.KilometrajeMontaje.HasValue?end-assignment.KilometrajeMontaje:null;assignment.UsuarioModificacion=usuario;if(assignment.KilometrajeRecorrido.HasValue)tire.KilometrajeAcumulado+=assignment.KilometrajeRecorrido.Value;ActualizarOdometro(assignment.PosicionVehiculo.EjeVehiculo.Vehiculo,odometer);}
-    private static void ActualizarOdometro(Vehiculo vehicle,decimal? odometer){if(!odometer.HasValue)return;if(vehicle.Kilometraje.HasValue&&odometer<vehicle.Kilometraje)throw new ValidacionException("El kilometraje no puede ser menor al odómetro registrado del vehículo.");vehicle.Kilometraje=odometer;}
+    { var a=await AsignacionActiva(db.AsignacionesLlantaPosicion.Where(x=>x.PosicionVehiculoId==dto.PosicionId&&x.EsActiva&&(alcance.VerTodos||alcance.CentroIds.Contains(x.Llanta.CentroId))),"posición solicitada",ct)??throw new ConflictoException("La posición no tiene una llanta activa o no pertenece a tus centros autorizados."); return await MoverAsync(new(){LlantaId=a.LlantaId,PosicionOrigenId=dto.PosicionId,TipoDestino=dto.Destino,Motivo=dto.Motivo,KilometrajeVehiculo=dto.KilometrajeVehiculo,Observaciones=dto.Observaciones},usuario,alcance,ct); }
+    private static void CerrarAsignacion(AsignacionLlantaPosicion assignment,decimal? odometer,Llanta tire,string usuario)
+    {
+        var end=KilometrajeOperacion.Validar(odometer,assignment.PosicionVehiculo.EjeVehiculo.Vehiculo.Kilometraje,[new(tire.Codigo,assignment.PosicionVehiculo.Codigo,assignment.KilometrajeMontaje)]);
+        assignment.EsActiva=false;assignment.FechaFin=DateTimeOffset.UtcNow;assignment.KilometrajeDesmontaje=end;assignment.KilometrajeRecorrido=assignment.KilometrajeMontaje.HasValue?end-assignment.KilometrajeMontaje:null;assignment.UsuarioModificacion=usuario;
+        if(assignment.KilometrajeRecorrido.HasValue)tire.KilometrajeAcumulado+=assignment.KilometrajeRecorrido.Value;
+    }
+    private static void ActualizarOdometro(Vehiculo vehicle,decimal? odometer)=>vehicle.Kilometraje=KilometrajeOperacion.Validar(odometer,vehicle.Kilometraje);
+    public static AsignacionLlantaPosicion? AsignacionConsistente(PosicionVehiculo posicion,Guid? esperada,IEnumerable<AsignacionLlantaPosicion> asignaciones)
+    {
+        var rows=asignaciones.Take(2).ToList();
+        if(rows.Count>1)throw new ConflictoException($"La posición {posicion.Codigo} tiene más de una asignación activa. Requiere corrección de datos.");
+        if(posicion.LlantaActualId!=esperada)throw new ConflictoException($"La posición {posicion.Codigo} cambió desde que se realizó la programación.");
+        if(rows.FirstOrDefault()?.LlantaId!=esperada)throw new ConflictoException($"La posición {posicion.Codigo} no tiene una asignación activa consistente.");
+        return rows.FirstOrDefault();
+    }
+    private static async Task<AsignacionLlantaPosicion?> AsignacionActiva(IQueryable<AsignacionLlantaPosicion> query,string referencia,CancellationToken ct)
+    {
+        var rows=await query.Include(a=>a.Llanta).Include(a=>a.PosicionVehiculo).ThenInclude(p=>p.EjeVehiculo).ThenInclude(e=>e.Vehiculo).Take(2).ToListAsync(ct);
+        if(rows.Count>1)throw new ConflictoException($"Hay más de una asignación activa para {referencia}. Corrige la inconsistencia antes de montar.");
+        return rows.FirstOrDefault();
+    }
     private static TipoDestinoLlanta ParseDestino(string? value)=>Enum.TryParse<TipoDestinoLlanta>((value??"Otro").Replace("ó","o"),true,out var x)?x:TipoDestinoLlanta.Otro;
     private static string EstadoDestino(TipoDestinoLlanta destino)=>destino switch{TipoDestinoLlanta.Reparacion=>"EN_REPARACION",TipoDestinoLlanta.Reencauche=>"EN_REENCAUCHE",TipoDestinoLlanta.DisposicionFinal=>"PEND_DISPOSICION",TipoDestinoLlanta.Traslado=>"EN_TRASLADO",_=>"DISPONIBLE"};
-    private async Task CambiarEstadoAsync(Llanta tire,string code,CancellationToken ct)
+    private async Task<EstadoLlanta> ObtenerEstadoAsync(string code,CancellationToken ct)
     {
         var legacy=code switch{"MONTADA"=>"MON","DISPONIBLE"=>"DIS","EN_REPARACION"=>"REP","EN_REENCAUCHE"=>"REE",_=>code};
         var state=await db.EstadosLlanta.Where(x=>x.Activo&&(x.Codigo==code||x.Codigo==legacy)).OrderByDescending(x=>x.Codigo==code).FirstOrDefaultAsync(ct);
         if(state is null)throw new ValidacionException($"No está configurado el estado {code}.");
-        tire.EstadoLlanta=state;tire.EstadoLlantaId=state.Id;
+        return state;
     }
     private static MovimientoDto Map(Movimiento x)=>new(x.Id,x.Numero,x.Tipo,x.Motivo,x.FechaCreacion,x.Detalles.Select(d=>new MovimientoDetalleDto(d.LlantaId,d.Llanta?.Codigo??d.LlantaId.ToString(),d.PosicionOrigenId?.ToString(),d.PosicionDestinoId?.ToString()??d.DestinoDescripcion??d.TipoDestino.ToString())).ToList());
+}
+
+public sealed record SalidaKilometraje(string Llanta,string Posicion,decimal? KilometrajeMontaje);
+public static class KilometrajeOperacion
+{
+ public static decimal Validar(decimal? ingresado,decimal? odometro,IEnumerable<SalidaKilometraje>? salientes=null)
+ {
+  if(!ingresado.HasValue||ingresado.Value<0)throw new ValidacionException("Ingresa un kilometraje válido mayor o igual a cero.");
+  if(odometro.HasValue&&ingresado.Value<odometro.Value)throw new ValidacionException($"El kilometraje ingresado no puede ser menor al odómetro actual del vehículo ({Formato(odometro.Value)} km).");
+  foreach(var s in salientes??[])
+   if(s.KilometrajeMontaje.HasValue&&ingresado.Value<s.KilometrajeMontaje.Value)throw new ValidacionException($"La llanta {s.Llanta} de la posición {s.Posicion} fue montada en {Formato(s.KilometrajeMontaje.Value)} km. El kilometraje actual ingresado ({Formato(ingresado.Value)} km) no es válido.");
+  return ingresado.Value;
+ }
+ private static string Formato(decimal valor)=>valor.ToString("#,0.##",System.Globalization.CultureInfo.GetCultureInfo("es-CO"));
 }
