@@ -40,7 +40,7 @@ internal static class ExistingDatabaseSchemaConfiguration
             b.Property(x => x.VehiculoId).HasColumnName("GVehiculoId");
             b.HasIndex(x => x.CentroId).HasDatabaseName("IX_ActividadProgramada_GCentroId").HasFilter(null);
             b.HasIndex(x => new { x.TecnicoUsuarioId, x.FechaProgramada, x.FechaFinProgramada }).HasDatabaseName("IX_ActividadProgramada_GTecnicoUsuarioId_DFechaProgramada_DFechaFinProgramada").HasFilter(null);
-            b.HasIndex(x => new { x.TecnicoUsuarioId, x.VehiculoId, x.TipoActividad, x.FechaProgramada }).HasDatabaseName("IX_ActividadProgramada_GTecnicoUsuarioId_GVehiculoId_STipoActividad_DFechaProgramada").HasFilter("([BActivo]=(1) AND [NEstado]<>(4) AND [GTecnicoUsuarioId] IS NOT NULL)");
+            b.HasIndex(x => new { x.TecnicoUsuarioId, x.VehiculoId, x.TipoActividad, x.FechaProgramada, x.PosicionVehiculoId }).HasDatabaseName("IX_ActividadProgramada_TrabajoPosicion").HasFilter("([BActivo]=(1) AND [NEstado]<>(4) AND [GTecnicoUsuarioId] IS NOT NULL)");
             b.HasIndex(x => x.VehiculoId).HasDatabaseName("IX_ActividadProgramada_GVehiculoId").HasFilter(null);
             b.HasIndex(x => x.IdempotencyKey).HasDatabaseName("IX_ActividadProgramada_SIdempotencyKey").HasFilter("([SIdempotencyKey] IS NOT NULL)");
             b.HasIndex(x => new { x.Origen, x.OrigenEntidadId }).HasDatabaseName("IX_ActividadProgramada_SOrigen_GOrigenEntidadId").HasFilter(null);

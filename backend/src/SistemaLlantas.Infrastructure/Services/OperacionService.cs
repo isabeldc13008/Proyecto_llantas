@@ -6,10 +6,11 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Infrastructure.Services;
 
-public sealed class OperacionService(LlantasDbContext db) : IOperacionService
+public sealed partial class OperacionService(LlantasDbContext db) : IOperacionService
 {
     public async Task<IReadOnlyList<ActividadDto>> MisActividadesAsync(string usuario, AlcanceCentros alcance, CancellationToken ct) =>
         await db.ActividadesProgramadas.AsNoTracking().Where(x=>x.Activo&&(x.TecnicoId==usuario||x.TecnicoId==usuario+".local"||x.TecnicoUsuario!.Username==usuario) && x.Estado!=EstadoActividad.Cancelada && (alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)))
+        .Where(x=>x.TipoActividad!="Cambio de juego"||!x.GrupoProgramacionId.HasValue||x.Id==db.ActividadesProgramadas.Where(a=>a.Activo&&a.GrupoProgramacionId==x.GrupoProgramacionId).OrderBy(a=>a.Id).Select(a=>a.Id).FirstOrDefault())
         .OrderBy(x=>x.FechaProgramada).Select(x=>new ActividadDto(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,
             x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),
             x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal)).ToListAsync(ct);
@@ -25,7 +26,7 @@ public sealed class OperacionService(LlantasDbContext db) : IOperacionService
 
     public async Task<ActividadDto> CompletarActividadAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct)
     {
-        var x=await db.ActividadesProgramadas.Include(a=>a.Centro).Include(a=>a.Vehiculo).Include(a=>a.TecnicoUsuario).SingleOrDefaultAsync(a=>a.Id==id&&a.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(a.CentroId)),ct)??throw new KeyNotFoundException("Actividad no encontrada.");if(x.TecnicoId!=usuario&&x.TecnicoId!=usuario+".local"&&x.TecnicoUsuario?.Username!=usuario)throw new UnauthorizedAccessException("La actividad está asignada a otro técnico.");if(x.Estado!=EstadoActividad.EnEjecucion)throw new ConflictoException("Sólo una actividad en ejecución puede completarse.");x.Estado=EstadoActividad.Cumplida;x.FechaFinReal=DateTimeOffset.UtcNow;x.UsuarioModificacion=usuario;x.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return new(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal);
+        var x=await db.ActividadesProgramadas.Include(a=>a.Centro).Include(a=>a.Vehiculo).Include(a=>a.TecnicoUsuario).SingleOrDefaultAsync(a=>a.Id==id&&a.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(a.CentroId)),ct)??throw new KeyNotFoundException("Actividad no encontrada.");if(x.TecnicoId!=usuario&&x.TecnicoId!=usuario+".local"&&x.TecnicoUsuario?.Username!=usuario)throw new UnauthorizedAccessException("La actividad está asignada a otro técnico.");if(x.Estado!=EstadoActividad.EnEjecucion)throw new ConflictoException("Sólo una actividad en ejecución puede completarse.");if((x.TipoActividad=="Montaje"||x.TipoActividad=="Cambio de juego")&&!await db.SolicitudesOperacion.AnyAsync(s=>s.ActividadProgramadaId==x.Id&&s.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("Ejecuta primero el montaje asignado.");x.Estado=EstadoActividad.Cumplida;x.FechaFinReal=DateTimeOffset.UtcNow;x.UsuarioModificacion=usuario;x.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return new(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal);
     }
 
     public Task<MovimientoDto> MoverAsync(EjecutarMovimientoDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct)
@@ -51,6 +52,7 @@ public sealed class OperacionService(LlantasDbContext db) : IOperacionService
         var position = await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==posicionId && x.Activo && x.EjeVehiculo.Activo && x.EjeVehiculo.Vehiculo.Activo && x.EjeVehiculo.Vehiculo.Centro.Activo && (alcance.VerTodos || alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)
             ?? throw new ConflictoException("La posición o el vehículo cambió, está inactivo o está fuera de los centros autorizados.");
         if (tire.EstadoLlanta.EsDisposicionFinal || !tire.EstadoLlanta.Activo || !tire.EstadoLlanta.PermiteMontaje || tire.EstadoLlanta.Codigo=="EN_TRASLADO") throw new ConflictoException("La llanta no está disponible para montaje.");
+        if (!await LlantasDisponibles.Consulta(db).AnyAsync(x=>x.Id==llantaId,ct)) throw new ConflictoException("La llanta está comprometida o bloqueada por otro proceso.");
         if (tire.CentroId != position.EjeVehiculo.Vehiculo.CentroId) throw new ValidacionException("La llanta debe estar recibida en el centro del vehículo.");
         if (await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==llantaId && x.EsActiva,ct) || await db.PosicionesVehiculo.AnyAsync(x=>x.LlantaActualId==llantaId,ct)) throw new ConflictoException("La llanta ya está montada. Actualiza la selección.");
         if (position.LlantaActualId.HasValue || await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.PosicionVehiculoId==posicionId && x.EsActiva,ct)) throw new ConflictoException("La posición ya está ocupada. Actualiza el vehículo.");

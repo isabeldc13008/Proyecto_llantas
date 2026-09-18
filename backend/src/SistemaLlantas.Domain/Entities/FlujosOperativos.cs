@@ -5,6 +5,7 @@ namespace SistemaLlantas.Domain.Entities;
 public enum EstadoSolicitudOperacion { BORRADOR, PENDIENTE_APROBACION, APROBADO, RECHAZADO, EJECUTADO }
 public sealed class SolicitudOperacion : EntidadAuditable
 {
+    public Guid? GrupoOperacionId {get;set;}
     public string Tipo {get;set;}=string.Empty;
     public EstadoSolicitudOperacion Estado {get;set;}=EstadoSolicitudOperacion.BORRADOR;
     public Guid CentroId {get;set;} public Centro Centro {get;set;}=null!;

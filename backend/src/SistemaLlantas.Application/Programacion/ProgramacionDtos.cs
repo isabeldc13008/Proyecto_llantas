@@ -1,13 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 using SistemaLlantas.Application.Common;
+using SistemaLlantas.Application.Operaciones;
 
 namespace SistemaLlantas.Application.Programacion;
 
-public sealed record ProgramacionDto(Guid Id,string Tipo,DateTimeOffset Inicio,DateTimeOffset? Fin,Guid CentroId,string Centro,Guid? VehiculoId,string Vehiculo,Guid? TecnicoUsuarioId,string Tecnico,string TecnicoNombre,string Prioridad,string Estado,string RutaInicio,bool TieneSolapamiento,string? Observaciones,string? MotivoCancelacion,DateTimeOffset? FechaCumplimiento,string Origen,Guid? OrigenEntidadId,byte[] RowVersion);
+public sealed record ProgramacionDto(Guid Id,string Tipo,DateTimeOffset Inicio,DateTimeOffset? Fin,Guid CentroId,string Centro,Guid? VehiculoId,string Vehiculo,Guid? TecnicoUsuarioId,string Tecnico,string TecnicoNombre,string Prioridad,string Estado,string RutaInicio,bool TieneSolapamiento,string? Observaciones,string? MotivoCancelacion,DateTimeOffset? FechaCumplimiento,string Origen,Guid? OrigenEntidadId,byte[] RowVersion,Guid? GrupoProgramacionId=null,Guid? LlantaId=null,Guid? PosicionVehiculoId=null);
 public sealed record TecnicoProgramacionDto(Guid Id,string Username,string Nombre,IReadOnlyList<Guid> CentroIds);
 public sealed record ProgramacionFiltro(Guid? CentroId,Guid? VehiculoId,Guid? TecnicoUsuarioId,string? Tipo,string? Estado,DateTimeOffset? Desde,DateTimeOffset? Hasta,string? Prioridad);
 public sealed class GuardarProgramacionDto
 {
+    public IReadOnlyList<AsignacionMontajeDto>? Asignaciones {get;init;}
+    [StringLength(500)] public string? Motivo {get;init;}
     [Required,StringLength(50)] public string Tipo {get;init;}=string.Empty;
     public DateTimeOffset Inicio {get;init;}
     public DateTimeOffset Fin {get;init;}
