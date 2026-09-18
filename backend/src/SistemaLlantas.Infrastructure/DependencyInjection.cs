@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IVehiculoService, VehiculoService>();
         services.AddScoped<IProgramacionService, ProgramacionService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<SistemaLlantas.Application.Analitica.IAnaliticaService, AnaliticaService>();
 
         return services;
     }

@@ -1,0 +1,135 @@
+<main class="analytics">
+ <header class="heading">
+  <div><p class="eyebrow">EDINSA / GLLD · INTELIGENCIA OPERATIVA</p><h1>Analítica de Llantas</h1><p class="subtitle">{{subtitle()}}</p></div>
+  <button class="secondary" (click)="showMethod=!showMethod" [attr.aria-expanded]="showMethod">Cómo leer los datos</button>
+ </header>
+ <nav aria-label="Secciones de Analítica">
+  @for(tab of tabs;track tab.id){<button [class.active]="view()===tab.id" [attr.aria-pressed]="view()===tab.id" (click)="selectView(tab.id)">{{tab.label}}</button>}
+ </nav>
+ <section class="filter-summary">
+  <div><b>{{filterCount()===0?'Todos los datos autorizados':filterCount()+' filtros aplicados'}}</b><small>Centro y estado actuales · fechas de ingreso de la cohorte</small></div>
+  <button (click)="showFilters=!showFilters" [attr.aria-expanded]="showFilters" aria-controls="analytics-filters">Filtros <span>{{filterCount()}}</span></button>
+  <button class="primary" (click)="load(page())" [disabled]="loading()">Actualizar</button>
+ </section>
+ @if(optionsError()){<p class="notice" role="alert">{{optionsError()}} <button (click)="loadOptions()">Reintentar filtros</button></p>}
+ @if(showFilters){
+  <form id="analytics-filters" class="filters panel" (ngSubmit)="apply()">
+   <label>Centro<select name="centro" [(ngModel)]="filters.centroId"><option value="">Todos los autorizados</option>@for(o of options()?.centros??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+   <label>Marca<select name="marca" [(ngModel)]="filters.marcaId"><option value="">Todas</option>@for(o of options()?.marcas??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+   <label>Referencia<select name="referencia" [(ngModel)]="filters.referenciaId"><option value="">Todas</option>@for(o of options()?.referencias??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+   <label>Dimensión<select name="dimension" [(ngModel)]="filters.dimensionId"><option value="">Todas</option>@for(o of options()?.dimensiones??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+   <label>Tipo de vehículo asociado<select name="tipo" [(ngModel)]="filters.tipoVehiculo"><option value="">Todos</option>@for(tipo of options()?.tiposVehiculo??[];track tipo){<option [value]="tipo">{{tipo}}</option>}</select></label>
+   <label>Estado actual<select name="estado" [(ngModel)]="filters.estadoId"><option value="">Todos</option>@for(o of options()?.estados??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+   <label>Ingreso desde<input name="desde" type="date" [(ngModel)]="filters.ingresoDesde"></label>
+   <label>Ingreso hasta<input name="hasta" type="date" [(ngModel)]="filters.ingresoHasta"></label>
+   <label>Muestra mínima por comparativo<input name="muestra" type="number" min="1" max="1000" step="1" [(ngModel)]="filters.minimoMuestra"></label>
+   <footer><small>El mínimo es un filtro de presentación; no equivale a confianza estadística.</small><button type="button" (click)="clear()">Limpiar</button><button class="primary" type="submit">Aplicar filtros</button></footer>
+  </form>
+ }
+ @if(showMethod){
+  <aside class="method panel">
+   <h2>Qué estamos midiendo</h2>
+   <p><b>Recorrido observado:</b> suma de tramos cerrados con odómetros no negativos, fechas coherentes y recorrido igual a la diferencia entre montaje y desmontaje. Si algún tramo cerrado de la llanta está incompleto, su total se excluye de las estadísticas de kilometraje.</p>
+   <p>El tramo montado actualmente no se suma. Disposición final se identifica por la propiedad del catálogo de estado; desactivar un registro no significa retirar una llanta. No se presenta el historial parcial como vida completa.</p>
+   <p>Las fechas filtran la <b>fecha de ingreso de la llanta</b>, no la fecha del evento. Se considera su historial autorizado. Tipo de vehículo selecciona llantas con asignaciones autorizadas a ese tipo y restringe los tramos a ese tipo. Centros agrupa por centro actual; la configuración de ejes es la actual, no una versión histórica.</p>
+   <p>Profundidad: mínimo de las tres lecturas de la última inspección finalizada con mediciones completas. Reparaciones y reencauches: órdenes cerradas. Las alertas son abiertas o en proceso. La desviación describe la dispersión de la cohorte, no un intervalo de confianza.</p>
+   <p>Comparativos exactos hasta 5.000 llantas por cohorte; si se supera el límite, se solicita acotar filtros. No se recorta una muestra silenciosamente. Se excluyen registros desactivados y eventos fuera del alcance autorizado.</p>
+   <p><b>Fases siguientes:</b> desgaste, predicción interpretable, anomalías, ciclos de reencauche y rotaciones. Supervivencia y modelos avanzados requieren verificar integridad y volumen histórico. No hay porcentajes estimados de vida ni un índice compuesto de salud en esta fase.</p>
+  </aside>
+ }
+ @if(loading()){<section class="empty panel" role="status"><span class="loader"></span><h2>Consultando datos reales</h2><p>Aplicando filtros y alcance de centros…</p></section>}
+ @else if(error()){<section class="empty panel" role="alert"><h2>No se pudo completar la consulta</h2><p>{{error()}}</p><button class="primary" (click)="load(page())">Reintentar</button></section>}
+ @else if(summary();as s){
+  @if(s.total===0){<section class="empty panel"><h2>No hay llantas en esta cohorte</h2><p>Revisa los filtros o el alcance asignado a tu usuario.</p><button (click)="clear()">Limpiar filtros</button></section>}
+  @else{
+   <section class="kpis" aria-label="Resumen de llantas">
+    <article class="kpi principal"><span>Llantas analizadas</span><strong>{{s.total|number}}</strong><small>Cohorte autorizada</small></article>
+    <article class="kpi"><span>Montadas</span><strong>{{s.montadas|number}}</strong><small>Asignación activa</small></article>
+    <article class="kpi"><span>Disponibles</span><strong>{{s.disponibles|number}}</strong><small>Reglas reales de montaje</small></article>
+    <article class="kpi"><span>En reparación</span><strong>{{s.enReparacion|number}}</strong><small>Estado actual</small></article>
+    <article class="kpi"><span>En reencauche</span><strong>{{s.enReencauche|number}}</strong><small>Estado actual</small></article>
+    <article class="kpi"><span>Disposición final</span><strong>{{s.disposicionFinal|number}}</strong><small>Según catálogo de estados</small></article>
+   </section>
+   <section class="overview">
+    <article class="panel coverage"><div class="section-heading"><div><p class="eyebrow">CALIDAD DE MEDICIÓN</p><h2>Lo que sabemos del recorrido</h2></div></div>
+     <app-tire-metric [value]="s.enOperacion.promedio" [measured]="s.enOperacion.muestra+s.finalizadas.muestra" [total]="s.total"/>
+     <p class="footnote">Promedio de llantas que no están en disposición final. El anillo representa cobertura de datos, no vida consumida.</p>
+     <div class="quality"><span><b>{{s.sinKm|number}}</b> sin total verificable</span><span><b>{{s.conTramosIncompletos|number}}</b> con tramos incompletos</span></div>
+    </article>
+    <article class="panel"><div class="section-heading"><div><p class="eyebrow">SITUACIÓN ACTUAL</p><h2>Distribución por estado</h2></div><span class="pill">n = {{s.total}}</span></div>
+     <div class="bars">@for(state of s.estados;track state.nombre){<div class="bar-row"><div><span>{{state.nombre}}</span><b>{{state.cantidad|number}}</b></div><div class="track"><i [style.width.%]="100*state.cantidad/maxCount(s.estados)"></i></div></div>}</div>
+    </article>
+   </section>
+   <section class="kpis secondary-kpis">
+    <article class="kpi"><span>Llantas con alertas abiertas</span><strong>{{s.conAlertas|number}}</strong><small>No equivale a falla o retiro</small></article>
+    <article class="kpi"><span>Profundidad mínima promedio</span><strong>{{s.profundidadPromedio===null?'Sin dato':(s.profundidadPromedio|number:'1.1-2')+' mm'}}</strong><small>Última medición completa · n = {{s.muestraProfundidad}}</small></article>
+    <article class="kpi"><span>Movimientos por llanta</span><strong>{{s.movimientosPromedio===null?'Sin dato':(s.movimientosPromedio|number:'1.1-2')}}</strong><small>Movimientos distintos / {{s.total}} llantas</small></article>
+   </section>
+   <section class="cohort-panels">
+    @for(item of [{label:'En operación / otros estados',data:s.enOperacion},{label:'En disposición final',data:s.finalizadas}];track item.label){
+     <article class="panel"><div class="section-heading"><h2>{{item.label}}</h2><span class="pill">n = {{item.data.muestra}}</span></div><strong class="big-number">{{item.data.promedio===null?'Sin dato':(item.data.promedio|number:'1.0-0')+' km'}}</strong><p>Promedio de recorrido registrado en tramos cerrados.</p><small>Mediana: {{item.data.mediana===null?'Sin dato':(item.data.mediana|number:'1.0-0')+' km'}} · No garantiza vida completa.</small></article>
+    }
+   </section>
+  }
+ }
+ @else if(groups();as data){
+  <section class="panel">
+   <header class="comparison-tools"><div><p class="eyebrow">RECORRIDO OBSERVADO</p><h2>{{view()==='centros'?'Centros':view()==='vida-util'?'Vida útil observada':'Marcas y referencias'}}</h2><p>Ordenado por cobertura de muestra, no por un promedio aislado.</p></div>
+    @if(view()!=='centros'){<label>Agrupar por<select [(ngModel)]="group" (change)="load(1)"><option value="marca">Marca</option><option value="marca-referencia">Marca + referencia</option><option value="dimension">Dimensión</option><option value="centro">Centro</option></select></label>}
+    <label>Cohorte<select [(ngModel)]="cohort"><option value="enOperacion">En operación / otros estados</option><option value="finalizadas">Disposición final</option></select></label>
+   </header>
+   <p class="footnote">Cada promedio describe tramos registrados; no predice la vida completa. Mínimo visible: {{applied.minimoMuestra}} llantas con kilometraje.</p>
+   <div class="comparisons">
+    @for(item of data.items;track item.id){
+     <article class="comparison" [class.insufficient]="!sufficient(item)">
+      <header><h3>{{item.nombre}}</h3><span class="pill">n = {{stats(item).muestra}} / {{cohort==="enOperacion"?item.enOperacionTotal:item.finalizadasTotal}} llantas</span></header>
+      @if(sufficient(item)){
+       <div class="bar-row"><div><span>Km promedio</span><strong>{{stats(item).promedio|number:'1.0-0'}} km</strong></div><div class="track"><i [style.width.%]="bar(item)"></i></div></div>
+      }@else{<p class="no-sample">{{stats(item).muestra===0?'Sin datos de kilometraje':'Muestra insuficiente para comparar'}}</p>}
+      <details><summary>Ver métricas y muestra</summary><dl>
+       <div><dt>Llantas en operación / otros estados</dt><dd>{{item.enOperacionTotal}}</dd></div><div><dt>Llantas en disposición final</dt><dd>{{item.finalizadasTotal}}</dd></div><div><dt>Promedio observado</dt><dd>{{stats(item).promedio===null?'Sin dato':(stats(item).promedio|number:'1.0-0')+' km'}}</dd></div>
+       <div><dt>Mediana</dt><dd>{{stats(item).mediana===null?'Sin dato':(stats(item).mediana|number:'1.0-0')+' km'}}</dd></div>
+       <div><dt>Desviación poblacional</dt><dd>{{stats(item).desviacion===null?'Sin dato':(stats(item).desviacion|number:'1.0-0')+' km'}}</dd></div>
+       <div><dt>Rango observado</dt><dd>{{stats(item).minimo===null?'Sin dato':(stats(item).minimo|number:'1.0-0')+' – '+(stats(item).maximo|number:'1.0-0')+' km'}}</dd></div>
+       <div><dt>Reparaciones cerradas / llanta¹</dt><dd>{{item.reparacionesPromedio|number:'1.1-2'}}</dd></div>
+       <div><dt>Reencauches cerrados / llanta¹</dt><dd>{{item.reencauchesPromedio|number:'1.1-2'}}</dd></div>
+       <div><dt>Alertas abiertas¹</dt><dd>{{item.alertas|number}}</dd></div><div><dt>Movimientos por llanta sumados¹</dt><dd>{{item.movimientos|number}}</dd></div>
+      </dl><small>¹ Ambas cohortes del grupo ({{item.total}} llantas); solo eventos autorizados.</small></details>
+     </article>
+    }@empty{<div class="empty"><h2>No hay grupos para estos filtros</h2><p>Selecciona otra cohorte o limpia los filtros.</p></div>}
+   </div>
+  </section>
+ }
+ @else if(positions();as data){
+  <section class="panel">
+   <div class="section-heading"><div><p class="eyebrow">MAPA DE POSICIONES</p><h2>Recorrido por tramo cerrado</h2><p>Más intensidad = mayor kilometraje observado; no significa mayor desgaste.</p></div></div>
+   <p class="footnote">Configuración actual + eje + posición + lado. Sin configuración, cada vehículo se conserva separado. Escala relativa a esta página; gris = muestra insuficiente.</p>
+   <div class="heatmap">@for(p of data.items;track $index){
+    <article class="position" [style.background-color]="'rgba(0,166,204,'+heat(p)+')'">
+     <small>{{p.configuracion}} · {{p.tipoVehiculo}}</small><h3>{{p.posicion}}</h3><span>Eje {{p.eje}} · {{p.tipoEje}}</span>
+     <strong>{{!p.muestraSuficiente?'Muestra insuficiente':p.kmPromedio===null?'Sin dato':(p.kmPromedio|number:'1.0-0')+' km'}}</strong>
+     <p>{{p.muestraKm}} / {{p.llantas}} llantas con km · {{p.tramosValidos}} / {{p.tramos}} tramos con km válidos</p>
+     <details><summary>Detalle</summary><p>Promedio por tramo: {{p.kmPromedio===null?'Sin dato':(p.kmPromedio|number:'1.0-0')+' km'}}</p><p>Duración media de tramos con fechas válidas: {{p.diasPromedio===null?'Sin dato':(p.diasPromedio|number:'1.1-1')+' días'}}</p><p>El desgaste por 1.000 km requiere vincular inspecciones al mismo tramo y se analizará en Fase 2.</p></details>
+    </article>
+   }@empty{<div class="empty"><h2>No hay tramos cerrados</h2><p>Los montajes todavía abiertos no se consideran vida finalizada.</p></div>}</div>
+  </section>
+ }
+ @else if(movements();as data){
+  <section class="overview movements-overview">
+   <article class="panel"><p class="eyebrow">TIPOS REALES REGISTRADOS</p><h2>Movimientos distintos</h2><div class="bars">@for(t of data.tipos;track t.nombre){<div class="bar-row"><div><span>{{t.nombre}}</span><b>{{t.cantidad|number}}</b></div><div class="track"><i [style.width.%]="100*t.cantidad/maxCount(data.tipos)"></i></div></div>}@empty{<p>Sin movimientos registrados para esta cohorte.</p>}</div><p class="footnote">Un movimiento puede afectar varias llantas. El ranking cuenta cada movimiento una vez por llanta.</p></article>
+   <section class="ranking">
+    <div class="section-heading"><div><p class="eyebrow">TRAZABILIDAD</p><h2>Llantas con más movimientos</h2></div></div>
+    @for(tire of data.ranking.items;track tire.id){
+     <article class="panel ranking-row"><header><div><h3>{{tire.codigo}}</h3><small>{{tire.serial}} · {{tire.marca}} / {{tire.referencia}}</small></div><div class="count"><strong>{{tire.total|number}}</strong><span>movimientos</span></div></header>
+      <p class="pill">{{tire.estado}}</p><div class="mini-stats"><span><b>{{tire.vehiculos}}</b> vehículos</span><span><b>{{tire.centros}}</b> centros</span><span><b>{{tire.posiciones}}</b> posiciones</span></div>
+      <details><summary>Desglose por tipo</summary>@for(type of tire.tipos;track type.nombre){<div class="type-count"><span>{{type.nombre}}</span><b>{{type.cantidad}}</b></div>}</details>
+     </article>
+    }@empty{<div class="empty panel"><h2>Sin movimientos para mostrar</h2><p>No se crean eventos a partir del estado actual.</p></div>}
+   </section>
+  </section>
+ }
+ @if(!loading()&&!error()&&view()!=='resumen'&&totalItems()>0){
+  <footer class="pager"><span>{{totalItems()|number}} resultados · página {{page()}} de {{totalPages()}}</span><div><button [disabled]="page()<=1" (click)="load(page()-1)">← Anterior</button><button [disabled]="page()>=totalPages()" (click)="load(page()+1)">Siguiente →</button></div></footer>
+ }
+ <footer class="method-note">Fase 1 · Estadística descriptiva · Solo datos autorizados · Sin predicciones ni inferencias causales</footer>
+</main>

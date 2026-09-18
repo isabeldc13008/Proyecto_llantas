@@ -20,7 +20,7 @@ const protectedRoutes:Routes=[
  {path:'disposicion-final',data:{serviceType:'DisposicionFinal'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
  {path:'historial',data:demo('Historial de llantas','Línea de tiempo','Consulta cronológica de inspecciones, movimientos y servicios.','Buscar llanta','historial'),loadComponent:page},
  {path:'carga-masiva',loadComponent:()=>import('./features/bulk-import/bulk-import-page').then(m=>m.BulkImportPage)},
- {path:'analitica',data:demo('Analítica','Indicadores','Rendimiento, costos, desgaste y tendencias para la toma de decisiones.','Exportar reporte','analitica'),loadComponent:page},
+ {path:'analitica',loadComponent:()=>import('./features/analytics/analytics-page').then(m=>m.AnalyticsPageComponent)},
  {path:'administracion',loadComponent:()=>import('./features/admin/catalog-admin').then(m=>m.CatalogAdmin)},
  {path:'auditoria',data:demo('Auditoría','Gobierno de datos','Quién cambió qué, cuándo, desde dónde y con qué resultado.','Exportar auditoría','auditoria'),loadComponent:page},
 ];
