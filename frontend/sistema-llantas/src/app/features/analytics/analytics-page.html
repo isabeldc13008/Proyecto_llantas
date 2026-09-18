@@ -45,9 +45,9 @@
    <section class="kpis" aria-label="Resumen de llantas">
     <article class="kpi principal"><span>Llantas analizadas</span><strong>{{s.total|number}}</strong><small>Cohorte autorizada</small></article>
     <article class="kpi"><span>Montadas</span><strong>{{s.montadas|number}}</strong><small>Asignación activa</small></article>
-    <article class="kpi"><span>Disponibles</span><strong>{{s.disponibles|number}}</strong><small>Reglas reales de montaje</small></article>
-    <article class="kpi"><span>En reparación</span><strong>{{s.enReparacion|number}}</strong><small>Estado actual</small></article>
-    <article class="kpi"><span>En reencauche</span><strong>{{s.enReencauche|number}}</strong><small>Estado actual</small></article>
+    <article class="kpi available"><span>Disponibles</span><strong>{{s.disponibles|number}}</strong><small>Reglas reales de montaje</small></article>
+    <article class="kpi service"><span>En reparación</span><strong>{{s.enReparacion|number}}</strong><small>Estado actual</small></article>
+    <article class="kpi service"><span>En reencauche</span><strong>{{s.enReencauche|number}}</strong><small>Estado actual</small></article>
     <article class="kpi"><span>Disposición final</span><strong>{{s.disposicionFinal|number}}</strong><small>Según catálogo de estados</small></article>
    </section>
    <section class="overview">
@@ -61,7 +61,7 @@
     </article>
    </section>
    <section class="kpis secondary-kpis">
-    <article class="kpi"><span>Llantas con alertas abiertas</span><strong>{{s.conAlertas|number}}</strong><small>No equivale a falla o retiro</small></article>
+    <article class="kpi attention"><span>Llantas con alertas abiertas</span><strong>{{s.conAlertas|number}}</strong><small>No equivale a falla o retiro</small></article>
     <article class="kpi"><span>Profundidad mínima promedio</span><strong>{{s.profundidadPromedio===null?'Sin dato':(s.profundidadPromedio|number:'1.1-2')+' mm'}}</strong><small>Última medición completa · n = {{s.muestraProfundidad}}</small></article>
     <article class="kpi"><span>Movimientos por llanta</span><strong>{{s.movimientosPromedio===null?'Sin dato':(s.movimientosPromedio|number:'1.1-2')}}</strong><small>Movimientos distintos / {{s.total}} llantas</small></article>
    </section>

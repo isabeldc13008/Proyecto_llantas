@@ -85,7 +85,11 @@ describe('Analytics phase one',()=>{
   api.summary.and.returnValue(throwError(()=>({userMessage:'Cohorte demasiado grande; acote filtros.'})));
   await page.load();fixture.detectChanges();expect(page.summary()).toBeNull();expect(fixture.nativeElement.textContent).toContain('acote filtros');
  });
- it('renders six distinct navigation choices and a responsive grid',()=>{
+    for(const width of [1366,390])it('layout de Analítica sin overflow a '+width+'px',()=>{
+    const frame=document.createElement('iframe');frame.style.width=width+'px';frame.style.height='900px';document.body.appendChild(frame);
+    try{const doc=frame.contentDocument!;const styles=Array.from(document.querySelectorAll('style')).map(x=>x.textContent).join('\n');doc.open();doc.write('<style>body{margin:0}*{box-sizing:border-box}'+styles+'</style><div style="margin-left:'+(width>900?245:0)+'px">'+fixture.nativeElement.outerHTML+'</div>');doc.close();expect(doc.documentElement.scrollWidth).toBeLessThanOrEqual(width+1);const cols=frame.contentWindow!.getComputedStyle(doc.querySelector('.kpis')!).gridTemplateColumns.split(' ').length;expect(cols).toBeLessThanOrEqual(width<=650?2:3);}finally{frame.remove();}
+   });
+it('renders six distinct navigation choices and a responsive grid',()=>{
   expect(fixture.nativeElement.querySelectorAll('nav button').length).toBe(6);
   const columns=getComputedStyle(fixture.nativeElement.querySelector('.kpis')).gridTemplateColumns.split(' ').length;
   expect(columns).toBeLessThanOrEqual(window.innerWidth<=650?2:6);
