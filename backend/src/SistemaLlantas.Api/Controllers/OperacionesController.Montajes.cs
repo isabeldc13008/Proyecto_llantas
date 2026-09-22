@@ -13,7 +13,8 @@ public sealed partial class OperacionesController
  {
   if(!User.HasClaim("permiso","operaciones.montar"))return Forbid();
   if(dto.ActividadProgramadaId.HasValue)throw new ValidacionException("Ejecuta la asignación guardada desde su programación.");
-  AsignacionesMontaje.Validar(dto.Asignaciones);
+  if(!dto.Tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)&&!dto.Tipo.Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("Usa Montaje para una posición libre o Reemplazar llanta para una ocupada.");
+  AsignacionesMontaje.ValidarNueva(dto.Tipo,dto.Asignaciones);
   if(!dto.KilometrajeVehiculo.HasValue||dto.KilometrajeVehiculo<0||string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500||(dto.Observaciones?.Length??0)>1000)throw new ValidacionException("Ingresa kilometraje, motivo (máximo 500 caracteres) y observaciones válidas.");
   var a=User.AlcanceCentros();Guid first=Guid.Empty;
   await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
@@ -23,7 +24,7 @@ public sealed partial class OperacionesController
    var positions=dto.Asignaciones!.Select(f=>f.PosicionId).ToArray();var outgoing=await db.AsignacionesLlantaPosicion.Where(x=>x.EsActiva&&positions.Contains(x.PosicionVehiculoId)).Select(x=>new SalidaKilometraje(x.Llanta.Codigo,x.PosicionVehiculo.Codigo,x.KilometrajeMontaje)).ToListAsync(ct);
    KilometrajeOperacion.Validar(dto.KilometrajeVehiculo,vehicle.Kilometraje,outgoing);
    var group=Guid.NewGuid();
-   foreach(var f in dto.Asignaciones!){var s=new SolicitudOperacion{GrupoOperacionId=group,Tipo="Cambio de juego",Estado=EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=vehicle.CentroId,LlantaId=f.LlantaId,LlantaDesplazadaId=f.LlantaActualId,PosicionDestinoId=f.PosicionId,TipoDestino="Posicion",DestinoDesplazada="Inventario",Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,Solicitante=Usuario(),UsuarioCreacion=Usuario()};db.SolicitudesOperacion.Add(s);if(first==Guid.Empty)first=s.Id;}
+   foreach(var f in dto.Asignaciones!){var s=new SolicitudOperacion{GrupoOperacionId=group,Tipo=dto.Tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)?"Reemplazar llanta":"Cambio de juego",Estado=EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=vehicle.CentroId,LlantaId=f.LlantaId,LlantaDesplazadaId=f.LlantaActualId,PosicionDestinoId=f.PosicionId,TipoDestino="Posicion",DestinoDesplazada="Inventario",Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,Solicitante=Usuario(),UsuarioCreacion=Usuario()};db.SolicitudesOperacion.Add(s);if(first==Guid.Empty)first=s.Id;}
    await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
   });return Created(string.Empty,await ObtenerSolicitud(first,a,ct));
  }

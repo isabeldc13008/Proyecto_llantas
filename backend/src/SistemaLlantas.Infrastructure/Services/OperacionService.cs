@@ -19,14 +19,14 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
     {
         var x=await db.ActividadesProgramadas.Include(a=>a.Centro).Include(a=>a.Vehiculo).Include(a=>a.TecnicoUsuario).SingleOrDefaultAsync(a=>a.Id==id&&a.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(a.CentroId)),ct)??throw new KeyNotFoundException("Actividad no encontrada.");
         if(x.TecnicoId!=usuario&&x.TecnicoId!=usuario+".local"&&x.TecnicoUsuario?.Username!=usuario) throw new UnauthorizedAccessException("La actividad está asignada a otro técnico.");
-        if(x.Estado is EstadoActividad.Cumplida or EstadoActividad.Cancelada) throw new InvalidOperationException("La actividad no se puede iniciar.");
+        if(x.Estado is EstadoActividad.Cumplida or EstadoActividad.Cancelada) throw new ConflictoException("La actividad no se puede iniciar.");
         x.Estado=EstadoActividad.EnEjecucion; x.FechaInicioReal??=DateTimeOffset.UtcNow; x.UsuarioModificacion=usuario; await db.SaveChangesAsync(ct);
         return new(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal);
     }
 
     public async Task<ActividadDto> CompletarActividadAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct)
     {
-        var x=await db.ActividadesProgramadas.Include(a=>a.Centro).Include(a=>a.Vehiculo).Include(a=>a.TecnicoUsuario).SingleOrDefaultAsync(a=>a.Id==id&&a.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(a.CentroId)),ct)??throw new KeyNotFoundException("Actividad no encontrada.");if(x.TecnicoId!=usuario&&x.TecnicoId!=usuario+".local"&&x.TecnicoUsuario?.Username!=usuario)throw new UnauthorizedAccessException("La actividad está asignada a otro técnico.");if(x.Estado!=EstadoActividad.EnEjecucion)throw new ConflictoException("Sólo una actividad en ejecución puede completarse.");if((x.TipoActividad=="Montaje"||x.TipoActividad=="Cambio de juego")&&!await db.SolicitudesOperacion.AnyAsync(s=>s.ActividadProgramadaId==x.Id&&s.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("Ejecuta primero el montaje asignado.");x.Estado=EstadoActividad.Cumplida;x.FechaFinReal=DateTimeOffset.UtcNow;x.UsuarioModificacion=usuario;x.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return new(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal);
+        var x=await db.ActividadesProgramadas.Include(a=>a.Centro).Include(a=>a.Vehiculo).Include(a=>a.TecnicoUsuario).SingleOrDefaultAsync(a=>a.Id==id&&a.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(a.CentroId)),ct)??throw new KeyNotFoundException("Actividad no encontrada.");if(x.TecnicoId!=usuario&&x.TecnicoId!=usuario+".local"&&x.TecnicoUsuario?.Username!=usuario)throw new UnauthorizedAccessException("La actividad está asignada a otro técnico.");if(x.Estado!=EstadoActividad.EnEjecucion)throw new ConflictoException("Sólo una actividad en ejecución puede completarse.");if((x.TipoActividad=="Montaje"||x.TipoActividad=="Cambio de juego"||x.TipoActividad=="Reemplazar llanta")&&!await db.SolicitudesOperacion.AnyAsync(s=>s.ActividadProgramadaId==x.Id&&s.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("Ejecuta primero el montaje asignado.");x.Estado=EstadoActividad.Cumplida;x.FechaFinReal=DateTimeOffset.UtcNow;x.UsuarioModificacion=usuario;x.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return new(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal);
     }
 
     public Task<MovimientoDto> MoverAsync(EjecutarMovimientoDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct)
@@ -40,9 +40,15 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
     public async Task<MovimientoDto> MontarEnInspeccionAsync(EjecutarMovimientoDto dto,Guid inspeccionId,string usuario,AlcanceCentros alcance,CancellationToken ct)
     {
         if(db.Database.CurrentTransaction is null)throw new InvalidOperationException("La asignación requiere la transacción de inspección.");
-        if(!dto.PosicionDestinoId.HasValue||dto.PosicionOrigenId.HasValue||!await db.InspeccionesDetalle.AnyAsync(x=>x.InspeccionId==inspeccionId&&x.PosicionVehiculoId==dto.PosicionDestinoId&&!x.LlantaId.HasValue&&x.Inspeccion.TecnicoId==usuario&&x.Inspeccion.Estado==EstadoInspeccion.Borrador,ct))throw new ConflictoException("La posición no está vacía en esta inspección.");
+        if(!dto.PosicionDestinoId.HasValue||dto.PosicionOrigenId.HasValue||!await db.InspeccionesDetalle.AnyAsync(x=>x.InspeccionId==inspeccionId&&x.PosicionVehiculoId==dto.PosicionDestinoId&&x.LlantaId==dto.LlantaDesplazadaId&&x.Inspeccion.TecnicoId==usuario&&x.Inspeccion.Estado==EstadoInspeccion.Borrador,ct))throw new ConflictoException("La posición cambió o no pertenece a esta inspección.");
+        if(!await LlantasDisponibles.Consulta(db).AnyAsync(x=>x.Id==dto.LlantaId,ct))throw new ConflictoException("La llanta encontrada está reservada, comprometida o no disponible para corrección.");
+        if(dto.LlantaDesplazadaId.HasValue)
+        {
+            var salida=await MoverCoreAsync(new(){LlantaId=dto.LlantaDesplazadaId.Value,PosicionOrigenId=dto.PosicionDestinoId,TipoDestino="Inventario",KilometrajeVehiculo=dto.KilometrajeVehiculo,Motivo=dto.Motivo,Observaciones=dto.Observaciones},usuario,alcance,ct);
+            var removal=await db.Movimientos.SingleAsync(x=>x.Id==salida.Id,ct);removal.InspeccionId=inspeccionId;removal.Tipo="Corrección por inspección";
+        }
         var result=await MoverCoreAsync(dto,usuario,alcance,ct,true);
-        var movement=await db.Movimientos.SingleAsync(x=>x.Id==result.Id,ct);movement.InspeccionId=inspeccionId;await db.SaveChangesAsync(ct);return result;
+        var movement=await db.Movimientos.SingleAsync(x=>x.Id==result.Id,ct);movement.InspeccionId=inspeccionId;movement.Tipo="Corrección por inspección";await db.SaveChangesAsync(ct);return result;
     }
     private async Task ValidarMontajeCoreAsync(Guid llantaId, Guid posicionId, decimal? kilometraje, AlcanceCentros alcance, CancellationToken ct)
     {
@@ -65,12 +71,22 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
         await using var tx=db.Database.CurrentTransaction is null?await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct):null;
         if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) await ValidarMontajeCoreAsync(dto.LlantaId,dto.PosicionDestinoId.Value,dto.KilometrajeVehiculo,alcance,ct);
         var llanta=await db.Llantas.Include(x=>x.EstadoLlanta).SingleOrDefaultAsync(x=>x.Id==dto.LlantaId && (alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct)??throw new ConflictoException("La llanta cambió o ya no está disponible en los centros autorizados.");
-        if(!llanta.EstadoLlanta.PermiteMontaje && dto.PosicionDestinoId.HasValue) throw new ConflictoException($"La llanta está en estado {llanta.EstadoLlanta.Nombre} y no permite montaje.");
+        if(!llanta.EstadoLlanta.PermiteMontaje && dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) throw new ConflictoException($"La llanta está en estado {llanta.EstadoLlanta.Nombre} y no permite montaje.");
         var actual=await AsignacionActiva(db.AsignacionesLlantaPosicion.Where(x=>x.LlantaId==dto.LlantaId&&x.EsActiva),$"llanta {llanta.Codigo}",ct);
         if(dto.PosicionOrigenId.HasValue && actual?.PosicionVehiculoId!=dto.PosicionOrigenId) throw new ConflictoException("La posición origen ya no coincide con la asignación activa.");
         AsignacionLlantaPosicion? ocupante=null;
         PosicionVehiculo? posicionDestino=null;
         if(dto.PosicionDestinoId.HasValue){posicionDestino=await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==dto.PosicionDestinoId&&(alcance.VerTodos||alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)??throw new UnauthorizedAccessException("La posición destino no pertenece a los centros autorizados.");ocupante=await AsignacionActiva(db.AsignacionesLlantaPosicion.Where(x=>x.PosicionVehiculoId==dto.PosicionDestinoId&&x.EsActiva),$"posición {posicionDestino.Codigo}",ct);}
+        if(actual is not null && posicionDestino is not null)
+        {
+            if(actual.PosicionVehiculoId==posicionDestino.Id||actual.PosicionVehiculo.EjeVehiculo.VehiculoId!=posicionDestino.EjeVehiculo.VehiculoId)
+                throw new ValidacionException("La rotación requiere posiciones distintas del mismo vehículo.");
+            if(!llanta.EstadoLlanta.Activo||llanta.EstadoLlanta.EsDisposicionFinal)throw new ConflictoException("El estado de la llanta no permite rotación.");
+            if(!string.Equals(dto.TipoDestino,"Posicion",StringComparison.OrdinalIgnoreCase)||
+                (ocupante is not null&&(dto.PosicionDestinoDesplazadaId!=actual.PosicionVehiculoId||!string.Equals(dto.DestinoDesplazada,"Posicion",StringComparison.OrdinalIgnoreCase))))
+                throw new ValidacionException("La rotación solo permite mover a posición libre o intercambiar posiciones del mismo vehículo.");
+            if(ocupante is not null&&ocupante.LlantaId!=dto.LlantaDesplazadaId)throw new ConflictoException("La llanta desplazada no coincide.");
+        }
         if(ocupante is not null && ocupante.LlantaId!=dto.LlantaId && !dto.LlantaDesplazadaId.HasValue) throw new ConflictoException("POSICION_DESTINO_OCUPADA: debe indicar el destino de la llanta instalada.");
         // Validate every affected odometer and outgoing assignment before mutating entities.
         PosicionVehiculo? displacedDestination=null;
@@ -87,9 +103,10 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
         if(ocupante is not null && ocupante.LlantaId!=dto.LlantaId){ if(ocupante.LlantaId!=dto.LlantaDesplazadaId) throw new ConflictoException("La llanta desplazada no coincide.");var displaced=ocupante.Llanta;CerrarAsignacion(ocupante,dto.KilometrajeVehiculo,displaced,usuario);ocupante.PosicionVehiculo.LlantaActualId=null;mov.Detalles.Add(new(){LlantaId=ocupante.LlantaId,PosicionOrigenId=ocupante.PosicionVehiculoId,PosicionDestinoId=dto.PosicionDestinoDesplazadaId,TipoDestino=ParseDestino(dto.DestinoDesplazada),DestinoDescripcion=dto.DestinoDesplazada,UsuarioCreacion=usuario}); }
         var destino=ParseDestino(dto.TipoDestino); mov.Detalles.Add(new(){LlantaId=llanta.Id,PosicionOrigenId=actual?.PosicionVehiculoId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=destino,DestinoDescripcion=dto.TipoDestino,UsuarioCreacion=usuario});
         llanta.EstadoLlanta=destinationState;llanta.EstadoLlantaId=destinationState.Id;
+        if(!dto.PosicionDestinoId.HasValue)llanta.UbicacionActual=dto.TipoDestino;
         db.Movimientos.Add(mov); await db.SaveChangesAsync(ct);
         if(dto.PosicionDestinoId.HasValue){var km=dto.KilometrajeVehiculo??posicionDestino!.EjeVehiculo.Vehiculo.Kilometraje;db.AsignacionesLlantaPosicion.Add(new(){LlantaId=llanta.Id,PosicionVehiculoId=dto.PosicionDestinoId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=km,UsuarioCreacion=usuario});posicionDestino!.LlantaActualId=llanta.Id;llanta.UbicacionActual=$"{posicionDestino.EjeVehiculo.Vehiculo.Placa} / {posicionDestino.Codigo}";}
-        if(ocupante is not null&&dto.PosicionDestinoDesplazadaId.HasValue){db.AsignacionesLlantaPosicion.Add(new(){LlantaId=ocupante.LlantaId,PosicionVehiculoId=dto.PosicionDestinoDesplazadaId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=dto.KilometrajeVehiculo??displacedDestination!.EjeVehiculo.Vehiculo.Kilometraje,UsuarioCreacion=usuario});displacedDestination!.LlantaActualId=ocupante.LlantaId;}
+        if(ocupante is not null&&dto.PosicionDestinoDesplazadaId.HasValue){db.AsignacionesLlantaPosicion.Add(new(){LlantaId=ocupante.LlantaId,PosicionVehiculoId=dto.PosicionDestinoDesplazadaId.Value,MovimientoOrigenId=mov.Id,KilometrajeMontaje=dto.KilometrajeVehiculo??displacedDestination!.EjeVehiculo.Vehiculo.Kilometraje,UsuarioCreacion=usuario});displacedDestination!.LlantaActualId=ocupante.LlantaId;ocupante.Llanta.EstadoLlanta=destinationState;ocupante.Llanta.EstadoLlantaId=destinationState.Id;ocupante.Llanta.UbicacionActual=$"{displacedDestination.EjeVehiculo.Vehiculo.Placa} / {displacedDestination.Codigo}";}
         foreach(var v in vehicles)ActualizarOdometro(v,dto.KilometrajeVehiculo);
         await db.SaveChangesAsync(ct); if(tx is not null)await tx.CommitAsync(ct); return Map(mov);
     }

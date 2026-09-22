@@ -57,7 +57,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
     {
         var detalle = await db.InspeccionesDetalle.Include(x => x.Inspeccion).SingleOrDefaultAsync(x => x.InspeccionId == id && x.PosicionVehiculoId == posicionId && x.Inspeccion.TecnicoId == usuario, ct);
         if (detalle is null) return null;
-        if (detalle.Inspeccion.Estado != EstadoInspeccion.Borrador) throw new InvalidOperationException("Solo se puede modificar una inspección en borrador.");
+        if (detalle.Inspeccion.Estado != EstadoInspeccion.Borrador) throw new ConflictoException("Solo se puede modificar una inspección en borrador.");
         detalle.ProfundidadExterior = dto.ProfundidadExterior; detalle.ProfundidadCentro = dto.ProfundidadCentro; detalle.ProfundidadInterior = dto.ProfundidadInterior;
         detalle.CondicionLlantaId = dto.CondicionId; detalle.CausaLlantaId = dto.CausaId; detalle.RecomendacionId = dto.RecomendacionId;
         detalle.Observaciones = dto.Observaciones; detalle.UsuarioModificacion = usuario; detalle.FechaModificacion = DateTimeOffset.UtcNow;
@@ -81,7 +81,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
         var posicion = await db.PosicionesVehiculo.Include(x => x.LlantaActual).SingleOrDefaultAsync(x => x.Id == dto.PosicionId, ct)
             ?? throw new KeyNotFoundException("Posición no encontrada.");
         if (!await db.InspeccionesDetalle.AnyAsync(x => x.InspeccionId == inspeccionId && x.PosicionVehiculoId == dto.PosicionId, ct))
-            throw new InvalidOperationException("La posición no pertenece a la inspección.");
+            throw new ValidacionException("La posición no pertenece a la inspección.");
         if(dto.LlantaEncontradaId.HasValue==dto.LlantaNoEncontrada)throw new ValidacionException("Selecciona una llanta existente o marca que no fue encontrada en el sistema.");
         Llanta? encontrada=null;if(dto.LlantaEncontradaId.HasValue)encontrada=await db.Llantas.SingleOrDefaultAsync(x=>x.Id==dto.LlantaEncontradaId.Value&&x.Activo,ct)??throw new KeyNotFoundException("La llanta encontrada no existe.");
         if(dto.LlantaNoEncontrada&&string.IsNullOrWhiteSpace(dto.IdentificadorEncontrado))throw new ValidacionException("Ingresa la identificación encontrada en la llanta.");
@@ -103,19 +103,24 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 
     public async Task<InconsistenciaDto> ResolverAsync(Guid id, ResolverInconsistenciaDto dto, bool autorizar, string usuario, bool puedeAutorizarPropia, CancellationToken ct, AlcanceCentros? alcance = null)
     {
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
         var item = await db.InconsistenciasInspeccion.Include(x => x.Inspeccion).ThenInclude(x=>x.Vehiculo).Include(x => x.PosicionVehiculo).ThenInclude(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).Include(x => x.LlantaTemporal)
             .SingleOrDefaultAsync(x => x.Id == id && (alcance==null||alcance.VerTodos||alcance.CentroIds.Contains(x.Inspeccion.CentroId)), ct) ?? throw new KeyNotFoundException("Solicitud no encontrada o fuera de los centros autorizados.");
-        if (item.Estado != EstadoInconsistencia.PendienteAutorizacion) throw new InvalidOperationException("La solicitud ya fue resuelta.");
+        if (item.Estado != EstadoInconsistencia.PendienteAutorizacion) throw new ConflictoException("La solicitud ya fue resuelta.");
         if (item.TecnicoId == usuario && !puedeAutorizarPropia) throw new UnauthorizedAccessException("El técnico no puede autorizar su propia solicitud.");
         item.Estado = autorizar ? EstadoInconsistencia.Autorizada : EstadoInconsistencia.Rechazada; item.UsuarioAutorizador = usuario;
         item.FechaAutorizacion = DateTimeOffset.UtcNow; item.ObservacionAutorizacion = dto.Observacion; item.UsuarioModificacion = usuario;
         if(item.LlantaTemporal is not null){item.LlantaTemporal.Estado=item.Estado;item.LlantaTemporal.UsuarioModificacion=usuario;}
         if (autorizar)
         {
-            var llantaAprobadaId=dto.LlantaInventarioId??item.LlantaEncontradaId;if(!llantaAprobadaId.HasValue)throw new InvalidOperationException("Para autorizar debe seleccionar la llanta validada del inventario.");
+            var llantaAprobadaId=dto.LlantaInventarioId??item.LlantaEncontradaId;if(!llantaAprobadaId.HasValue)throw new ValidacionException("Para autorizar debe seleccionar la llanta validada del inventario.");
             var nueva = await db.Llantas.SingleOrDefaultAsync(x => x.Id == llantaAprobadaId, ct) ?? throw new KeyNotFoundException("Llanta de inventario no encontrada.");
-            var vigente=await db.AsignacionesLlantaPosicion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.PosicionVehiculoId==item.PosicionVehiculoId&&x.EsActiva,ct);var anteriorId=vigente?.LlantaId??item.PosicionVehiculo.LlantaActualId;var otra=await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==nueva.Id&&x.EsActiva&&x.PosicionVehiculoId!=item.PosicionVehiculoId,ct);if(otra)throw new ConflictoException("La llanta reportada tiene otro montaje activo y requiere conciliación previa.");
+            var vigentes=await db.AsignacionesLlantaPosicion.Include(x=>x.Llanta).Where(x=>x.PosicionVehiculoId==item.PosicionVehiculoId&&x.EsActiva).Take(2).ToListAsync(ct);var vigente=OperacionService.AsignacionConsistente(item.PosicionVehiculo,item.LlantaEsperadaId,vigentes);var anteriorId=vigente?.LlantaId??item.PosicionVehiculo.LlantaActualId;var otra=await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==nueva.Id&&x.EsActiva&&x.PosicionVehiculoId!=item.PosicionVehiculoId,ct);if(otra)throw new ConflictoException("La llanta reportada tiene otro montaje activo y requiere conciliación previa.");
+            if(nueva.Id==item.LlantaEsperadaId)throw new ConflictoException("No existe una discrepancia de identidad para corregir.");
+            if(!await LlantasDisponibles.Consulta(db).AnyAsync(x=>x.Id==nueva.Id,ct))throw new ConflictoException("La llanta encontrada está reservada, comprometida o no disponible.");
+            KilometrajeOperacion.Validar(item.Inspeccion.Kilometraje,item.Inspeccion.Vehiculo.Kilometraje,vigente is null?[]:[new(vigente.Llanta.Codigo,item.PosicionVehiculo.Codigo,vigente.KilometrajeMontaje)]);
+            if(item.PosicionVehiculo.LlantaActualId!=item.LlantaEsperadaId)throw new ConflictoException("La posición cambió desde el reporte de discrepancia.");
+            item.Inspeccion.Vehiculo.Kilometraje=item.Inspeccion.Kilometraje;
             var movimiento=new Movimiento{Numero=$"MOV-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}"[..28],Tipo="Corrección por inspección",Motivo=dto.Observacion,CentroId=item.Inspeccion.CentroId,InspeccionId=item.InspeccionId,Usuario=usuario,UsuarioCreacion=usuario,Observaciones=$"Inconsistencia {item.Id}. Valor anterior: {vigente?.Llanta.Codigo??"Vacante"}. Valor aprobado: {nueva.Codigo}."};
             if(vigente is not null&&vigente.LlantaId!=nueva.Id){if(item.Inspeccion.Kilometraje.HasValue&&vigente.KilometrajeMontaje.HasValue&&item.Inspeccion.Kilometraje<vigente.KilometrajeMontaje)throw new ValidacionException("El kilometraje de la inspección es inferior al kilometraje de montaje.");vigente.EsActiva=false;vigente.FechaFin=DateTimeOffset.UtcNow;vigente.KilometrajeDesmontaje=item.Inspeccion.Kilometraje;vigente.KilometrajeRecorrido=item.Inspeccion.Kilometraje.HasValue&&vigente.KilometrajeMontaje.HasValue?item.Inspeccion.Kilometraje-vigente.KilometrajeMontaje:null;vigente.UsuarioModificacion=usuario;if(vigente.KilometrajeRecorrido.HasValue)vigente.Llanta.KilometrajeAcumulado+=vigente.KilometrajeRecorrido.Value;vigente.Llanta.UbicacionActual="Inventario · corrección autorizada";var disponible=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(disponible.HasValue)vigente.Llanta.EstadoLlantaId=disponible.Value;movimiento.Detalles.Add(new(){LlantaId=vigente.LlantaId,PosicionOrigenId=item.PosicionVehiculoId,TipoDestino=TipoDestinoLlanta.Inventario,DestinoDescripcion="Inventario por corrección autorizada",UsuarioCreacion=usuario});}
             if(vigente?.LlantaId!=nueva.Id){movimiento.Detalles.Add(new(){LlantaId=nueva.Id,PosicionDestinoId=item.PosicionVehiculoId,TipoDestino=TipoDestinoLlanta.Posicion,DestinoDescripcion=item.PosicionVehiculo.Codigo,UsuarioCreacion=usuario});db.Movimientos.Add(movimiento);await db.SaveChangesAsync(ct);db.AsignacionesLlantaPosicion.Add(new(){LlantaId=nueva.Id,PosicionVehiculoId=item.PosicionVehiculoId,MovimientoOrigenId=movimiento.Id,KilometrajeMontaje=item.Inspeccion.Kilometraje,UsuarioCreacion=usuario});item.PosicionVehiculo.LlantaActualId=nueva.Id;nueva.CentroId=item.Inspeccion.CentroId;nueva.UbicacionActual=$"{item.Inspeccion.Vehiculo.NumeroInterno} · {item.PosicionVehiculo.Codigo}";var montada=await db.EstadosLlanta.Where(x=>x.Codigo=="MONTADA").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(montada.HasValue)nueva.EstadoLlantaId=montada.Value;}
@@ -123,6 +128,8 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
                 PosicionVehiculoId = item.PosicionVehiculoId, LlantaAnteriorId = anteriorId, LlantaNuevaId = nueva.Id,
                 CentroId = item.Inspeccion.CentroId, Motivo = "Regularización de inconsistencia detectada en inspección", TecnicoReporta = item.TecnicoId,
                 UsuarioAutoriza = usuario, FechaReporte = item.FechaCreacion, FechaAutorizacion = item.FechaAutorizacion.Value, Observaciones = dto.Observacion, UsuarioCreacion = usuario });
+            var inspectionDetail=await db.InspeccionesDetalle.SingleOrDefaultAsync(x=>x.InspeccionId==item.InspeccionId&&x.PosicionVehiculoId==item.PosicionVehiculoId,ct);
+            if(inspectionDetail is not null){inspectionDetail.LlantaId=nueva.Id;inspectionDetail.UsuarioModificacion=usuario;}
             item.PosicionVehiculo.UsuarioModificacion = usuario; item.PosicionVehiculo.FechaModificacion = DateTimeOffset.UtcNow;
             if(item.LlantaTemporal is not null)item.LlantaTemporal.Estado = EstadoInconsistencia.Regularizada;
         }

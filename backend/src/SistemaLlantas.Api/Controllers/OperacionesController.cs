@@ -24,11 +24,11 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
     [HttpPost("api/movimientos"),Authorize(Policy="Operaciones.Ejecutar")]
     public Task<MovimientoDto> Mover(EjecutarMovimientoDto dto,CancellationToken ct)
     {
-        if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) throw new ValidacionException("Envía el montaje mediante una solicitud de operación.");
-        return service.MoverAsync(dto,Usuario(),User.AlcanceCentros(),ct);
+        throw new ValidacionException("Envía la operación manual mediante una solicitud para autorización.");
+
     }
     [HttpPost("api/desmontajes"),Authorize(Policy="Operaciones.Ejecutar")]
-    public Task<MovimientoDto> Desmontar(DesmontarLlantaDto dto,CancellationToken ct)=>service.DesmontarAsync(dto,Usuario(),User.AlcanceCentros(),ct);
+    public Task<MovimientoDto> Desmontar(DesmontarLlantaDto dto,CancellationToken ct)=>throw new ValidacionException("Envía el desmontaje mediante una solicitud para autorización.");
     [HttpGet("api/operaciones/solicitudes"),Authorize(Policy="Operaciones.Solicitar")]
     public async Task<IReadOnlyList<SolicitudOperacionDto>> Solicitudes(CancellationToken ct){var a=User.AlcanceCentros();return await db.SolicitudesOperacion.AsNoTracking().Where(x=>x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)||(x.CentroDestinoId.HasValue&&a.CentroIds.Contains(x.CentroDestinoId.Value)))).OrderByDescending(x=>x.FechaCreacion).Select(x=>new SolicitudOperacionDto(x.Id,x.Tipo,x.Estado.ToString(),x.CentroId,x.Centro.Nombre,x.LlantaId,x.Llanta.Codigo,x.PosicionOrigenId,x.PosicionDestinoId,x.TipoDestino,x.CentroDestinoId,x.Motivo,x.Observaciones,x.Solicitante,x.Aprobador,x.MotivoRechazo,x.FechaCreacion,x.FechaRecepcionDestino,Convert.ToBase64String(x.RowVersion))).ToListAsync(ct);}
     [HttpGet("api/operaciones/movimientos"),Authorize(Policy="Operaciones.Solicitar")]
@@ -68,8 +68,11 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
     public async Task<ActionResult<SolicitudOperacionDto>> Solicitar(CrearSolicitudOperacionDto dto,CancellationToken ct)
     {
         if(dto.Asignaciones is not null)return await SolicitarJuego(dto,ct);
+        if(dto.Tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)||dto.Tipo.Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("La operación requiere sus asignaciones.");
         if(dto.ActividadProgramadaId.HasValue&&await db.SolicitudesOperacion.AnyAsync(s=>s.ActividadProgramadaId==dto.ActividadProgramadaId&&s.GrupoOperacionId.HasValue,ct))throw new ValidacionException("Ejecuta las llantas asignadas desde la programación; no se permite sustituirlas.");
         if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new ValidacionException("El motivo es obligatorio y admite máximo 500 caracteres.");
+        if(dto.Tipo.Contains("rot",StringComparison.OrdinalIgnoreCase)&&(dto.CentroDestinoId.HasValue||dto.TipoDestino!="Posicion"||(!string.IsNullOrEmpty(dto.DestinoDesplazada)&&dto.DestinoDesplazada!="Posicion")))throw new ValidacionException("La rotación solo cambia posiciones dentro del mismo vehículo.");
+        if(dto.Tipo.Contains("rot",StringComparison.OrdinalIgnoreCase)&&(!dto.PosicionOrigenId.HasValue||!dto.PosicionDestinoId.HasValue||dto.PosicionOrigenId==dto.PosicionDestinoId))throw new ValidacionException("Selecciona origen ocupado y otra posición del mismo vehículo.");
         var mounting=dto.PosicionDestinoId.HasValue&&!dto.PosicionOrigenId.HasValue;
         if((mounting||dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase))&&!User.HasClaim("permiso","operaciones.montar"))return Forbid();
         if((dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase)&&!mounting)||(mounting&&(dto.CentroDestinoId.HasValue||dto.LlantaDesplazadaId.HasValue)))throw new ValidacionException("El montaje requiere una posición libre y no permite desplazamientos.");
@@ -84,6 +87,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
             var scheduled=false;
             if(dto.ActividadProgramadaId.HasValue)
             {
+                if(!dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("Esta operación manual requiere autorización; no admite ejecución programada en esta fase.");
                 if(await db.SolicitudesOperacion.AnyAsync(x=>x.ActividadProgramadaId==dto.ActividadProgramadaId&&x.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("La programación ya fue ejecutada.");
                 var activity=await db.ActividadesProgramadas.Include(x=>x.TecnicoUsuario).SingleOrDefaultAsync(x=>x.Id==dto.ActividadProgramadaId&&x.Activo,ct);
                 var vehicleId=await db.PosicionesVehiculo.Where(x=>x.Id==(dto.PosicionDestinoId??dto.PosicionOrigenId)).Select(x=>(Guid?)x.EjeVehiculo.VehiculoId).SingleOrDefaultAsync(ct);
@@ -138,7 +142,21 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
         });
     }
     [HttpPost("api/operaciones/solicitudes/{id:guid}/recibir"),Authorize(Policy="Operaciones.Aprobar")]
-    public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct){var a=User.AlcanceCentros();var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepción no encontrado.");if(item.FechaRecepcionDestino.HasValue)throw new Application.Common.ConflictoException("El traslado ya fue recibido.");item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";var state=await db.EstadosLlanta.Where(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).SingleOrDefaultAsync(ct);if(state.HasValue)item.Llanta.EstadoLlantaId=state.Value;item.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return await ObtenerSolicitud(id,a,ct);}
+    public async Task<SolicitudOperacionDto> Recibir(Guid id,CancellationToken ct)
+    {
+        var a=User.AlcanceCentros();
+        await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
+            db.ChangeTracker.Clear();
+            await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
+            var item=await db.SolicitudesOperacion.Include(x=>x.Llanta).ThenInclude(x=>x.EstadoLlanta).SingleOrDefaultAsync(x=>x.Id==id&&x.Activo&&x.Estado==EstadoSolicitudOperacion.EJECUTADO&&x.CentroDestinoId.HasValue&&(a.VerTodos||a.CentroIds.Contains(x.CentroDestinoId.Value)),ct)??throw new KeyNotFoundException("Traslado pendiente de recepción no encontrado.");
+            if(item.FechaRecepcionDestino.HasValue)throw new ConflictoException("El traslado ya fue recibido.");
+            if(item.Llanta.EstadoLlanta.Codigo!="EN_TRASLADO"||item.Llanta.CentroId!=item.CentroDestinoId||await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==item.LlantaId&&x.EsActiva,ct))throw new ConflictoException("La llanta ya no está desmontada en el centro destino.");
+            var state=await db.EstadosLlanta.Where(x=>x.Activo&&(x.Codigo=="DISPONIBLE"||x.Codigo=="DIS")).OrderByDescending(x=>x.Codigo=="DISPONIBLE").FirstOrDefaultAsync(ct)??throw new ValidacionException("No está configurado el estado DISPONIBLE.");
+            item.FechaRecepcionDestino=DateTimeOffset.UtcNow;item.Llanta.UbicacionActual="Inventario";item.Llanta.EstadoLlanta=state;item.Llanta.EstadoLlantaId=state.Id;item.Llanta.UsuarioModificacion=Usuario();item.UsuarioModificacion=Usuario();
+            await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
+        });
+        return await ObtenerSolicitud(id,a,ct);
+    }
     [HttpGet("api/operaciones/vehiculos")]
     public Task<Pagina<SistemaLlantas.Application.Vehiculos.VehiculoResumenDto>> VehiculosMontaje([FromQuery]ConsultaPaginada consulta,[FromServices]SistemaLlantas.Application.Vehiculos.IVehiculoService vehiculos,CancellationToken ct)=>PuedePlanificarMontaje()?vehiculos.ConsultarAsync(consulta,User.AlcanceCentros(),ct):throw new UnauthorizedAccessException();
     [HttpGet("api/operaciones/vehiculos/{id:guid}")]
@@ -188,7 +206,13 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
             await service.EjecutarReemplazosAsync([x],x.KilometrajeVehiculo??throw new ValidacionException("Ingresa un kilometraje válido."),Usuario(),a,ct);
             return;
         }
-        if(x.CentroDestinoId.HasValue) await ciclo.TrasladarCentroAsync(x.LlantaId,new(x.CentroDestinoId.Value,x.Motivo,x.Observaciones),Usuario(),a,ct);
+        if(x.CentroDestinoId.HasValue)
+        {
+            if(x.PosicionOrigenId.HasValue)
+                await service.MoverAsync(new(){LlantaId=x.LlantaId,PosicionOrigenId=x.PosicionOrigenId,TipoDestino="Inventario",Motivo=x.Motivo,KilometrajeVehiculo=x.KilometrajeVehiculo,Observaciones=x.Observaciones},Usuario(),a,ct);
+            await ciclo.TrasladarCentroAsync(x.LlantaId,new(x.CentroDestinoId.Value,x.Motivo,x.Observaciones),Usuario(),a,ct);
+            x.MovimientoEjecutadoId=await db.Movimientos.Where(m=>m.Detalles.Any(d=>d.LlantaId==x.LlantaId&&d.CentroDestinoId==x.CentroDestinoId)).OrderByDescending(m=>m.FechaCreacion).Select(m=>(Guid?)m.Id).FirstOrDefaultAsync(ct);
+        }
         else
         {
             var rotation=x.Tipo.Contains("rot",StringComparison.OrdinalIgnoreCase);

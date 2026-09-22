@@ -35,19 +35,24 @@ public sealed class InventarioController(LlantasDbContext db):ControllerBase
     [HttpPost("{id:guid}/reservar"),Authorize(Policy="Operaciones.Solicitar")]
     public async Task<ActionResult> Reservar(Guid id,ReservarLlantaDto dto,CancellationToken ct)
     {
+        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
+        db.ChangeTracker.Clear();
+        await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
         var tire=await Alcanzables().SingleOrDefaultAsync(x=>x.Id==id,ct)??throw new KeyNotFoundException("Llanta no encontrada.");
-        if(await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==id&&x.EsActiva,ct))throw new ConflictoException("Una llanta montada no se puede reservar.");
+        if(!await SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db).AnyAsync(x=>x.Id==id,ct))throw new ConflictoException("La llanta está montada, reservada o comprometida por otro proceso.");
         if(await db.SolicitudesOperacion.AnyAsync(x=>x.LlantaId==id&&x.Activo&&x.Tipo=="RESERVA"&&x.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("La llanta ya tiene una reserva activa.");
         if(dto.VehiculoId.HasValue&&!await db.Vehiculos.AnyAsync(x=>x.Id==dto.VehiculoId&&x.CentroId==tire.CentroId,ct))throw new ValidacionException("El vehículo de la reserva debe pertenecer al mismo centro.");
         var item=new SolicitudOperacion{Tipo="RESERVA",Estado=EstadoSolicitudOperacion.EJECUTADO,CentroId=tire.CentroId,LlantaId=id,PosicionDestinoId=dto.PosicionId,TipoDestino=dto.VehiculoId?.ToString()??"Sin vehículo",Motivo=string.IsNullOrWhiteSpace(dto.Motivo)?"Reserva operativa":dto.Motivo.Trim(),Solicitante=Usuario(),ActividadProgramadaId=dto.ActividadProgramadaId,UsuarioCreacion=Usuario()};
-        db.SolicitudesOperacion.Add(item);await db.SaveChangesAsync(ct);return NoContent();
+        db.SolicitudesOperacion.Add(item);await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);return NoContent();});
     }
 
     [HttpPost("{id:guid}/liberar-reserva"),Authorize(Policy="Operaciones.Solicitar")]
     public async Task<ActionResult> Liberar(Guid id,CancellationToken ct)
     {
         if(!await Alcanzables().AnyAsync(x=>x.Id==id,ct))throw new KeyNotFoundException("Llanta no encontrada.");
-        var reservation=await db.SolicitudesOperacion.SingleOrDefaultAsync(x=>x.LlantaId==id&&x.Activo&&x.Tipo=="RESERVA"&&x.Estado==EstadoSolicitudOperacion.EJECUTADO,ct)??throw new KeyNotFoundException("Reserva activa no encontrada.");
+        var reservations=await db.SolicitudesOperacion.Where(x=>x.LlantaId==id&&x.Activo&&x.Tipo=="RESERVA"&&x.Estado==EstadoSolicitudOperacion.EJECUTADO).Take(2).ToListAsync(ct);
+        if(reservations.Count>1)throw new ConflictoException("La llanta tiene más de una reserva activa. Requiere corrección de datos antes de liberarla.");
+        var reservation=reservations.FirstOrDefault()??throw new KeyNotFoundException("Reserva activa no encontrada.");
         reservation.Activo=false;reservation.FechaModificacion=DateTimeOffset.UtcNow;reservation.UsuarioModificacion=Usuario();await db.SaveChangesAsync(ct);return NoContent();
     }
 

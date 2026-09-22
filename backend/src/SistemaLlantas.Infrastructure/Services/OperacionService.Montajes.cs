@@ -22,7 +22,7 @@ public sealed partial class OperacionService
    var p=positions.SingleOrDefault(p=>p.Id==f.PosicionId)??throw new ValidacionException("La posición no pertenece al vehículo activo.");
    AsignacionConsistente(p,f.LlantaActualId,active.Where(a=>a.PosicionVehiculoId==p.Id));
    if(!available.Contains(f.LlantaId))throw new ConflictoException($"La llanta asignada a {p.Codigo} no está disponible en el centro o está comprometida.");
-   if(await db.ActividadesProgramadas.AnyAsync(a=>a.Activo&&a.Id!=actividadExcluir&&a.PosicionVehiculoId==p.Id&&(!grupoExcluir.HasValue||a.GrupoProgramacionId!=grupoExcluir)&&(a.TipoActividad=="Montaje"||a.TipoActividad=="Cambio de juego")&&a.Estado!=EstadoActividad.Cumplida&&a.Estado!=EstadoActividad.Cancelada,ct))throw new ConflictoException($"La posición {p.Codigo} ya tiene un montaje programado.");
+   if(await db.ActividadesProgramadas.AnyAsync(a=>a.Activo&&a.Id!=actividadExcluir&&a.PosicionVehiculoId==p.Id&&(!grupoExcluir.HasValue||a.GrupoProgramacionId!=grupoExcluir)&&(a.TipoActividad=="Montaje"||a.TipoActividad=="Cambio de juego"||a.TipoActividad=="Reemplazar llanta")&&a.Estado!=EstadoActividad.Cumplida&&a.Estado!=EstadoActividad.Cancelada,ct))throw new ConflictoException($"La posición {p.Codigo} ya tiene un montaje programado.");
    if(await db.SolicitudesOperacion.AnyAsync(s=>s.Activo&&s.Id!=solicitudExcluir&&s.PosicionDestinoId==p.Id&&(!grupoExcluir.HasValue||s.GrupoOperacionId!=grupoExcluir)&&(s.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION||s.Estado==EstadoSolicitudOperacion.APROBADO),ct))throw new ConflictoException($"La posición {p.Codigo} tiene una solicitud pendiente.");
   }
  }
@@ -61,7 +61,7 @@ public sealed partial class OperacionService
   foreach(var s in solicitudes)
   {
    var p=positions[s.PosicionDestinoId!.Value];var tire=tires[s.LlantaId];
-   var movement=new Movimiento{Numero=$"MOV-{Guid.NewGuid():N}"[..28],Tipo=s.Tipo=="Cambio de juego"?"CAMBIO_JUEGO":"MONTAJE",CentroId=vehicle.CentroId,Usuario=usuario,UsuarioCreacion=usuario,Motivo=s.Motivo,Observaciones=s.Observaciones};
+   var movement=new Movimiento{Numero=$"MOV-{Guid.NewGuid():N}"[..28],Tipo=s.Tipo=="Cambio de juego"?"CAMBIO_JUEGO":s.Tipo=="Reemplazar llanta"?"REEMPLAZO":"MONTAJE",CentroId=vehicle.CentroId,Usuario=usuario,UsuarioCreacion=usuario,Motivo=s.Motivo,Observaciones=s.Observaciones};
    if(s.LlantaDesplazadaId.HasValue)movement.Detalles.Add(new(){LlantaId=s.LlantaDesplazadaId.Value,PosicionOrigenId=p.Id,TipoDestino=TipoDestinoLlanta.Inventario,DestinoDescripcion="Inventario",UsuarioCreacion=usuario});
    tire.EstadoLlanta=mounted;tire.EstadoLlantaId=mounted.Id;tire.UbicacionActual=$"{vehicle.Placa} / {p.Codigo}";
    movement.Detalles.Add(new(){LlantaId=tire.Id,PosicionDestinoId=p.Id,TipoDestino=TipoDestinoLlanta.Posicion,UsuarioCreacion=usuario});db.Movimientos.Add(movement);

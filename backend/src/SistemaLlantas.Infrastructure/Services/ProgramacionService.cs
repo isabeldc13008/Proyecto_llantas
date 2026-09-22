@@ -76,7 +76,7 @@ public sealed partial class ProgramacionService(LlantasDbContext db):IProgramaci
     private async Task<ProgramacionDto> Obtener(Guid id,AlcanceCentros scope,CancellationToken ct)=>Map(await Base(scope).SingleAsync(x=>x.Id==id,ct));
     private async Task Validar(GuardarProgramacionDto dto,AlcanceCentros alcance,Guid? exclude,CancellationToken ct)
     {
-        if(EsMontaje(dto.Tipo)){AsignacionesMontaje.Validar(dto.Asignaciones,dto.Tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase));if(string.IsNullOrWhiteSpace(dto.Motivo))throw new ValidacionException("El motivo del montaje es obligatorio.");}
+        if(EsMontaje(dto.Tipo)){AsignacionesMontaje.ValidarNueva(dto.Tipo.Trim(),dto.Asignaciones);if(string.IsNullOrWhiteSpace(dto.Motivo))throw new ValidacionException("El motivo del montaje es obligatorio.");}
         if(dto.Inicio==default||dto.Fin<=dto.Inicio)throw new ValidacionException("La fecha final debe ser posterior a la inicial.");if(!alcance.Autoriza(dto.CentroId))throw new UnauthorizedAccessException("Centro no autorizado.");
         if(!await db.Centros.AnyAsync(x=>x.Id==dto.CentroId&&x.Activo,ct))throw new KeyNotFoundException("Centro no encontrado.");
         if(dto.VehiculoId.HasValue&&!await db.Vehiculos.AnyAsync(x=>x.Id==dto.VehiculoId&&x.CentroId==dto.CentroId,ct))throw new ValidacionException("El vehículo no pertenece al centro seleccionado.");

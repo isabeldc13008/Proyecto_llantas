@@ -6,7 +6,7 @@ using SistemaLlantas.Domain.Entities;
 namespace SistemaLlantas.Infrastructure.Services;
 public sealed partial class ProgramacionService
 {
- private static bool EsMontaje(string tipo)=>tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase)||tipo.Trim().Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase);
+ private static bool EsMontaje(string tipo)=>tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase)||tipo.Trim().Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase)||tipo.Trim().Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase);
  private async Task<T> Transaccion<T>(Func<Task<T>> action,CancellationToken ct)
  {
   if(db.Database.CurrentTransaction is not null)return await action();
@@ -19,7 +19,7 @@ public sealed partial class ProgramacionService
   var group=Guid.NewGuid();ActividadProgramada? first=null;
   foreach(var fila in dto.Asignaciones!)
   {
-   var activity=await Construir(dto,usuario,ct);activity.TipoActividad=dto.Tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase)?"Montaje":"Cambio de juego";activity.GrupoProgramacionId=group;activity.LlantaId=fila.LlantaId;activity.PosicionVehiculoId=fila.PosicionId;
+   var activity=await Construir(dto,usuario,ct);activity.TipoActividad=dto.Tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase)?"Montaje":dto.Tipo.Trim().Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)?"Reemplazar llanta":"Cambio de juego";activity.GrupoProgramacionId=group;activity.LlantaId=fila.LlantaId;activity.PosicionVehiculoId=fila.PosicionId;
    if(first is not null)activity.IdempotencyKey=null;
    first??=activity;db.ActividadesProgramadas.Add(activity);
    db.SolicitudesOperacion.Add(new(){Tipo=activity.TipoActividad,GrupoOperacionId=group,ActividadProgramadaId=activity.Id,CentroId=activity.CentroId,LlantaId=fila.LlantaId,PosicionDestinoId=fila.PosicionId,LlantaDesplazadaId=fila.LlantaActualId,TipoDestino="Posicion",DestinoDesplazada="Inventario",Motivo=dto.Motivo!.Trim(),Observaciones=dto.Observaciones,Estado=EstadoSolicitudOperacion.APROBADO,Solicitante=usuario,Aprobador=usuario,FechaDecision=DateTimeOffset.UtcNow,UsuarioCreacion=usuario});

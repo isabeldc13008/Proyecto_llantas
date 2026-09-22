@@ -54,6 +54,15 @@ public sealed record TrabajoMontajeDto(Guid ActividadId,Guid? GrupoId,Guid Vehic
 public sealed record EjecutarTrabajoMontajeDto(decimal Kilometraje);
 public static class AsignacionesMontaje
 {
+ public static void ValidarNueva(string tipo,IReadOnlyList<AsignacionMontajeDto>? filas)
+ {
+  var reemplazo=tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase);
+  var juego=tipo.Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase);
+  if(!reemplazo&&!juego&&!tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("Tipo de montaje no permitido.");
+  Validar(filas,!juego);
+  if(juego&&filas!.Count<2)throw new ValidacionException("Cambio de juego requiere al menos dos posiciones. Para una posición usa Reemplazar llanta.");
+  if(reemplazo&&filas!.Any(x=>!x.LlantaActualId.HasValue))throw new ValidacionException("Reemplazar llanta requiere exactamente una posición ocupada.");
+ }
  public static void Validar(IReadOnlyList<AsignacionMontajeDto>? filas,bool individual=false)
  {
   if(filas is null||filas.Count==0)throw new ValidacionException("Asigna al menos una llanta a una posición.");

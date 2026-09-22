@@ -53,12 +53,13 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
         return db.Inspecciones.Where(x=>x.Id==id&&x.Activo&&x.TecnicoId==usuario&&x.Estado==EstadoInspeccion.Borrador&&x.Vehiculo.Activo
             &&(a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)));
     }
-    public sealed record AsignarLlantaDto(Guid LlantaId,string Motivo);
+    public sealed record AsignarLlantaDto(Guid LlantaId,string Motivo,bool DiscrepanciaFisica=false,string? IdentificadorFisico=null,Guid? LlantaAnteriorId=null);
     [HttpPost("{id:guid}/posiciones/{posicionId:guid}/asignar"),Authorize(Policy="Inspecciones.Crear")]
     public async Task<ActionResult<ContextoInspeccionDto>> Asignar(Guid id,Guid posicionId,AsignarLlantaDto dto,
         [FromServices]SistemaLlantas.Application.Operaciones.IOperacionService operaciones,CancellationToken ct,
         [FromServices]SistemaLlantas.Application.Llantas.ICicloVidaLlantaService ciclo)
     {
+        if(!dto.DiscrepanciaFisica||string.IsNullOrWhiteSpace(dto.IdentificadorFisico))throw new SistemaLlantas.Application.Common.ValidacionException("Solo se permite corregir una llanta observada físicamente. Para instalar una llanta nueva usa Programación o Montajes con autorización.");
         if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>400)throw new SistemaLlantas.Application.Common.ValidacionException("Indica el motivo de asignación (máximo 400 caracteres).");
         Guid vehicleId=Guid.Empty;
         await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
@@ -68,14 +69,18 @@ public sealed class InspeccionesController(IInspeccionService service, LlantasDb
             vehicleId=inspection.VehiculoId;
             var detail=await db.InspeccionesDetalle.Include(x=>x.PosicionVehiculo).ThenInclude(x=>x.EjeVehiculo).SingleOrDefaultAsync(x=>x.InspeccionId==id&&x.PosicionVehiculoId==posicionId,ct)
                 ??throw new KeyNotFoundException("Posición no perteneciente a la inspección.");
-            if(detail.LlantaId.HasValue||detail.PosicionVehiculo.EjeVehiculo.VehiculoId!=vehicleId)throw new SistemaLlantas.Application.Common.ConflictoException("La posición de inspección ya tiene llanta.");
+            if(detail.LlantaId!=dto.LlantaAnteriorId||detail.PosicionVehiculo.LlantaActualId!=dto.LlantaAnteriorId||dto.LlantaId==dto.LlantaAnteriorId||detail.PosicionVehiculo.EjeVehiculo.VehiculoId!=vehicleId)throw new SistemaLlantas.Application.Common.ConflictoException("La posición cambió o no existe la discrepancia indicada. Actualiza la inspección.");
             var tire=await SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db).SingleOrDefaultAsync(x=>x.Id==dto.LlantaId,ct)
                 ??throw new SistemaLlantas.Application.Common.ConflictoException("La llanta ya no está disponible. Actualiza la búsqueda.");
+            if(!string.Equals(dto.IdentificadorFisico.Trim(),tire.Codigo,StringComparison.OrdinalIgnoreCase)&&!string.Equals(dto.IdentificadorFisico.Trim(),tire.Serial,StringComparison.OrdinalIgnoreCase))throw new SistemaLlantas.Application.Common.ValidacionException("El identificador físico debe coincidir exactamente con el código o serial de la llanta encontrada.");
+            var correction=new InconsistenciaInspeccion{InspeccionId=id,PosicionVehiculoId=posicionId,LlantaEsperadaId=dto.LlantaAnteriorId,LlantaEncontradaId=tire.Id,IdentificadorEncontrado=dto.IdentificadorFisico.Trim(),TecnicoId=Usuario(),Observacion=dto.Motivo.Trim(),Estado=EstadoInconsistencia.Regularizada,UsuarioAutorizador=Usuario(),FechaAutorizacion=DateTimeOffset.UtcNow,ObservacionAutorizacion="Corrección de realidad física observada por el inspector",UsuarioCreacion=Usuario()};
+            db.InconsistenciasInspeccion.Add(correction);
             // This narrow scope is used only after validating ownership of the inspection.
             var scope=User.AlcanceCentros();
-            var reason="Inspección: "+dto.Motivo.Trim();
+            var reason="Corrección física en inspección: "+dto.Motivo.Trim();
             if(tire.CentroId!=inspection.Vehiculo.CentroId)await ciclo.TrasladarParaInspeccionAsync(tire.Id,id,reason,Usuario(),scope,ct);
-            await operaciones.MontarEnInspeccionAsync(new(){LlantaId=tire.Id,PosicionDestinoId=posicionId,TipoDestino="Posicion",Motivo=reason,KilometrajeVehiculo=inspection.Kilometraje,Observaciones=$"Inspección {id}"},id,Usuario(),scope,ct);
+            await operaciones.MontarEnInspeccionAsync(new(){LlantaId=tire.Id,PosicionDestinoId=posicionId,LlantaDesplazadaId=dto.LlantaAnteriorId,TipoDestino="Posicion",Motivo=reason,KilometrajeVehiculo=inspection.Kilometraje,Observaciones=$"Inspección {id}"},id,Usuario(),scope,ct);
+            db.MovimientosLlanta.Add(new(){InspeccionId=id,InconsistenciaInspeccionId=correction.Id,PosicionVehiculoId=posicionId,LlantaAnteriorId=dto.LlantaAnteriorId,LlantaNuevaId=tire.Id,CentroId=inspection.CentroId,Motivo=reason,TecnicoReporta=Usuario(),UsuarioAutoriza=Usuario(),FechaReporte=DateTimeOffset.UtcNow,FechaAutorizacion=DateTimeOffset.UtcNow,Observaciones=dto.IdentificadorFisico.Trim(),UsuarioCreacion=Usuario()});
             detail.LlantaId=tire.Id;detail.UsuarioModificacion=Usuario();detail.FechaModificacion=DateTimeOffset.UtcNow;
             await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
         });
