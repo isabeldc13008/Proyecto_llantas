@@ -15,8 +15,8 @@
     </tbody></table></div>
    }
    @else if(selected().key==='usuarios'){
-    <div class="panel table"><table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Centros autorizados</th><th>Módulos efectivos</th><th>Estado</th><th></th></tr></thead><tbody>
-     @for(user of users();track user.id){<tr><td><b>{{user.username}}</b></td><td>{{user.nombre}}</td><td>{{user.rol}}</td><td><small>{{user.accesoGlobal?'Todos (permiso global)':(user.centros.join(' · ')||'Sin centros asignados')}}</small></td><td><small>{{modules(user.rolId)}}</small></td><td><span class="status" [class.off]="!user.activo">{{user.activo?'Activo':'Inactivo'}}</span></td><td><button class="link" (click)="editUser(user)">Editar</button></td></tr>}
+    <div class="panel table"><table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Centros autorizados</th><th>Accesos del rol</th><th>Estado</th><th></th></tr></thead><tbody>
+     @for(user of users();track user.id){<tr><td><b>{{user.username}}</b></td><td>{{user.nombre}}</td><td>{{user.rol}}</td><td><small>{{user.accesoGlobal?'Todos (permiso global)':(user.centros.join(' · ')||'Sin centros asignados')}}</small></td><td><div class="access-chips">@for(module of modules(user.rolId);track module){<span>{{module}}</span>}@empty{<small>Sin módulos visibles</small>}</div></td><td><span class="status" [class.off]="!user.activo">{{user.activo?'Activo':'Inactivo'}}</span></td><td><button class="link" (click)="editUser(user)">Editar</button></td></tr>}
     </tbody></table></div>
    } @else {
     <div class="panel table"><table><thead><tr><th>Código</th><th>Nombre o configuración</th><th>Estado</th><th>Uso</th><th></th></tr></thead><tbody>
@@ -48,10 +48,14 @@
    } @empty{<p>No hay permisos coincidentes.</p>}
    </fieldset>
   } @else if(selected().key==='usuarios'){
-   <label>Usuario<input [(ngModel)]="username" [disabled]="!!editingId"></label><label>Nombre<input [(ngModel)]="nombre"></label><label>{{editingId?'Nueva contraseña (opcional)':'Contraseña'}}<input type="password" [(ngModel)]="password"></label>
-   <label>Rol<select [(ngModel)]="roleId"><option value="">Selecciona un rol</option>@for(role of roles();track role.id){<option [value]="role.id">{{role.nombre}}</option>}</select></label>
-   <fieldset><legend>Centros autorizados</legend>@for(center of centers();track center.id){<label><input type="checkbox" [checked]="centerIds.includes(center.id)" (change)="toggleCenter(center.id,$any($event.target).checked)"> {{center.codigo}} · {{center.nombre}}</label>}<small>Sin centros asignados, el usuario inicia sesión pero no ve información operativa, salvo permiso global.</small></fieldset>
-   @if(editingId){<label><input type="checkbox" [(ngModel)]="active"> Cuenta activa</label>}<div class="hint"><b>Módulos efectivos</b><span>{{modules(roleId)||'Selecciona un rol para ver sus accesos.'}}</span></div>
+   <section class="user-section"><h3>Datos de cuenta</h3>
+    <label>Usuario<input [(ngModel)]="username" [disabled]="!!editingId"></label><label>Nombre<input [(ngModel)]="nombre"></label><label>{{editingId?'Nueva contraseña (opcional)':'Contraseña'}}<input type="password" [(ngModel)]="password"></label>
+   </section>
+   <section class="user-section"><h3>Rol y accesos</h3><label>Rol<select [(ngModel)]="roleId"><option value="">Selecciona un rol</option>@for(role of roles();track role.id){<option [value]="role.id">{{role.nombre}}</option>}</select></label>
+    <div class="role-access" aria-live="polite"><h4>Accesos del rol</h4>@if(roleId){<div class="access-chips">@for(module of modules(roleId);track module){<span>{{module}}</span>}@empty{<small>Sin módulos visibles</small>}</div>}@else{<p>Selecciona un rol para ver sus accesos.</p>}</div>
+   </section>
+   <section class="user-section"><h3>Centros autorizados</h3><p>Define dónde puede consultar y operar. Sin centros, solo tendrá acceso operativo si su rol incluye alcance global.</p><fieldset class="center-list"><legend>Seleccionar centros</legend>@for(center of centers();track center.id){<label class="check-option"><input type="checkbox" [checked]="centerIds.includes(center.id)" (change)="toggleCenter(center.id,$any($event.target).checked)"><span>{{center.codigo}} · {{center.nombre}}</span></label>}</fieldset></section>
+   <section class="user-section"><h3>Estado de cuenta</h3>@if(editingId){<label class="check-option"><input type="checkbox" [(ngModel)]="active"> Cuenta activa</label>}@else{<p>La nueva cuenta se creará activa.</p>}</section>
   } @else {
    <label>Código<input [(ngModel)]="codigo" placeholder="Ej. CONT"></label><label>Nombre o valor<input [(ngModel)]="nombre" placeholder="Nombre descriptivo"></label>
    @if(selected().key==='referencias'||selected().key==='centros'){<label>{{selected().key==='centros'?'Regional':'Marca relacionada'}}<select [(ngModel)]="parentId"><option value="">Selecciona {{selected().key==='centros'?'una regional':'una marca'}}</option>@for(brand of brands();track brand.id){<option [value]="brand.id">{{brand.codigo}} · {{brand.nombre}}</option>}</select></label>}

@@ -35,7 +35,10 @@ export class CatalogAdmin implements OnInit{
  editUser(user:UserRow){this.editingId=user.id;this.username=user.username;this.nombre=user.nombre;this.roleId=user.rolId;this.active=user.activo;this.password='';this.centerIds=[...user.centroIds];this.showForm=true}
  async saveUser(){try{const body={nombre:this.nombre,rolId:this.roleId,activo:this.active,password:this.password||null,centroIds:this.centerIds};if(this.editingId)await firstValueFrom(this.http.put(`/api/usuarios/${this.editingId}`,body));else await firstValueFrom(this.http.post('/api/usuarios',{username:this.username,...body,password:this.password}));this.showForm=false;await this.load()}catch(error:any){this.error.set(error?.userMessage??'No fue posible guardar el usuario.')}}
  toggleCenter(id:string,checked:boolean){this.centerIds=checked?[...new Set([...this.centerIds,id])]:this.centerIds.filter(x=>x!==id)}
- modules(roleId:string){const role=this.roles().find(x=>x.id===roleId);if(!role)return'';return role.permisos.join(' · ')}
+ modules(roleId:string){
+  const labels:Record<string,string>={resumen:'Resumen',actividades:'Mis actividades',vehiculos:'Vehículos',llantas:'Llantas',inventario:'Inventario',inspecciones:'Inspecciones',alertas:'Alertas',programacion:'Programación',montajes:'Montajes',movimientos:'Movimientos',autorizaciones:'Autorizaciones',reparaciones:'Reparaciones',reencauches:'Reencauches',disposicion:'Disposición final',historial:'Historial',carga_masiva:'Carga masiva',analitica:'Analítica',administracion:'Administración',auditoria:'Auditoría'};
+  return [...new Set((this.roles().find(x=>x.id===roleId)?.permisos??[]).filter(p=>p.startsWith('modulos.')).map(p=>{const key=p.slice(8);return labels[key]??key.replaceAll('_',' ').replace(/^./,c=>c.toLocaleUpperCase('es'))}))];
+ }
 
  async editRole(role:ManagedRole){this.error.set('');try{
   const detail=await firstValueFrom(this.http.get<ManagedRole>(`/api/roles/${role.id}`));
