@@ -15,12 +15,13 @@ public sealed partial class OperacionesController
   if(dto.ActividadProgramadaId.HasValue)throw new ValidacionException("Ejecuta la asignación guardada desde su programación.");
   if(!dto.Tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)&&!dto.Tipo.Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("Usa Montaje para una posición libre o Reemplazar llanta para una ocupada.");
   AsignacionesMontaje.ValidarNueva(dto.Tipo,dto.Asignaciones);
+  if(!dto.VehiculoId.HasValue||dto.VehiculoId==Guid.Empty)throw new ValidacionException("Selecciona un vehículo válido.");
   if(!dto.KilometrajeVehiculo.HasValue||dto.KilometrajeVehiculo<0||string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500||(dto.Observaciones?.Length??0)>1000)throw new ValidacionException("Ingresa kilometraje, motivo (máximo 500 caracteres) y observaciones válidas.");
   var a=User.AlcanceCentros();Guid first=Guid.Empty;
   await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>{
    db.ChangeTracker.Clear();first=Guid.Empty;await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct);
    await service.ValidarAsignacionesAsync(dto.VehiculoId??Guid.Empty,dto.Asignaciones!,a,null,ct);
-   var vehicle=await db.Vehiculos.SingleAsync(v=>v.Id==dto.VehiculoId,ct);
+   var vehicle=await db.Vehiculos.SingleOrDefaultAsync(v=>v.Id==dto.VehiculoId,ct)??throw new ConflictoException("El vehículo ya no está disponible. Actualiza la solicitud.");
    var positions=dto.Asignaciones!.Select(f=>f.PosicionId).ToArray();var outgoing=await db.AsignacionesLlantaPosicion.Where(x=>x.EsActiva&&positions.Contains(x.PosicionVehiculoId)).Select(x=>new SalidaKilometraje(x.Llanta.Codigo,x.PosicionVehiculo.Codigo,x.KilometrajeMontaje)).ToListAsync(ct);
    KilometrajeOperacion.Validar(dto.KilometrajeVehiculo,vehicle.Kilometraje,outgoing);
    var group=Guid.NewGuid();

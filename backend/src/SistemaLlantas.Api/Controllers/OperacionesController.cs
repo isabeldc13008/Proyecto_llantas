@@ -67,10 +67,19 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
     [HttpPost("api/operaciones/solicitudes"),Authorize(Policy="Operaciones.Solicitar")]
     public async Task<ActionResult<SolicitudOperacionDto>> Solicitar(CrearSolicitudOperacionDto dto,CancellationToken ct)
     {
+        if(dto is null||string.IsNullOrWhiteSpace(dto.Tipo))throw new ValidacionException("El tipo de operación es obligatorio.");
+        if(dto.Tipo.Length>50||(dto.TipoDestino?.Length??0)>50)throw new ValidacionException("El tipo de operación y destino admiten máximo 50 caracteres.");
+        if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new ValidacionException("El motivo es obligatorio y admite máximo 500 caracteres.");
+        if((dto.Observaciones?.Length??0)>1000)throw new ValidacionException("Las observaciones admiten máximo 1000 caracteres.");
+        if(dto.KilometrajeVehiculo<0||dto.KilometrajeVehiculo>9999999999999999.99m)throw new ValidacionException("El kilometraje debe ser mayor o igual a cero y admitir como máximo 16 dígitos enteros.");
+        if(dto.Asignaciones is not null&&dto.Asignaciones.Any(x=>x is null))throw new ValidacionException("Cada asignación debe contener una posición y una llanta válidas.");
         if(dto.Asignaciones is not null)return await SolicitarJuego(dto,ct);
         if(dto.Tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)||dto.Tipo.Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("La operación requiere sus asignaciones.");
+        if(dto.LlantaId==Guid.Empty)throw new ValidacionException("Selecciona una llanta válida.");
+        if(dto.PosicionOrigenId==Guid.Empty||dto.PosicionDestinoId==Guid.Empty)throw new ValidacionException("Selecciona una posición válida.");
+        if(dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase)&&!dto.PosicionDestinoId.HasValue)throw new ValidacionException("El montaje requiere una posición destino.");
+        if(!(dto.PosicionDestinoId.HasValue&&!dto.PosicionOrigenId.HasValue)&&!dto.CentroDestinoId.HasValue&&string.IsNullOrWhiteSpace(dto.TipoDestino))throw new ValidacionException("El tipo de destino es obligatorio.");
         if(dto.ActividadProgramadaId.HasValue&&await db.SolicitudesOperacion.AnyAsync(s=>s.ActividadProgramadaId==dto.ActividadProgramadaId&&s.GrupoOperacionId.HasValue,ct))throw new ValidacionException("Ejecuta las llantas asignadas desde la programación; no se permite sustituirlas.");
-        if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new ValidacionException("El motivo es obligatorio y admite máximo 500 caracteres.");
         if(dto.Tipo.Contains("rot",StringComparison.OrdinalIgnoreCase)&&(dto.CentroDestinoId.HasValue||dto.TipoDestino!="Posicion"||(!string.IsNullOrEmpty(dto.DestinoDesplazada)&&dto.DestinoDesplazada!="Posicion")))throw new ValidacionException("La rotación solo cambia posiciones dentro del mismo vehículo.");
         if(dto.Tipo.Contains("rot",StringComparison.OrdinalIgnoreCase)&&(!dto.PosicionOrigenId.HasValue||!dto.PosicionDestinoId.HasValue||dto.PosicionOrigenId==dto.PosicionDestinoId))throw new ValidacionException("Selecciona origen ocupado y otra posición del mismo vehículo.");
         var mounting=dto.PosicionDestinoId.HasValue&&!dto.PosicionOrigenId.HasValue;
@@ -102,7 +111,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
                 if(await db.SolicitudesOperacion.AnyAsync(x=>x.ActividadProgramadaId==dto.ActividadProgramadaId&&x.Estado==EstadoSolicitudOperacion.EJECUTADO,ct))throw new ConflictoException("La programación ya fue ejecutada.");
             }
             if(mounting&&!scheduled)await service.ValidarMontajeAsync(dto.LlantaId,dto.PosicionDestinoId!.Value,dto.KilometrajeVehiculo,a,ct);
-            var item=new SolicitudOperacion{Tipo=mounting?"Montaje":dto.Tipo,Estado=scheduled?EstadoSolicitudOperacion.APROBADO:EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=tire.CentroId,LlantaId=tire.Id,PosicionOrigenId=dto.PosicionOrigenId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=mounting?"Posicion":dto.CentroDestinoId.HasValue?"Traslado":dto.TipoDestino,CentroDestinoId=dto.CentroDestinoId,LlantaDesplazadaId=dto.LlantaDesplazadaId,PosicionDestinoDesplazadaId=dto.PosicionDestinoDesplazadaId,DestinoDesplazada=dto.DestinoDesplazada,Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,ActividadProgramadaId=dto.ActividadProgramadaId,Solicitante=Usuario(),Aprobador=scheduled?"Programación autorizada":null,FechaDecision=scheduled?DateTimeOffset.UtcNow:null,UsuarioCreacion=Usuario()};
+            var item=new SolicitudOperacion{Tipo=mounting?"Montaje":dto.Tipo,Estado=scheduled?EstadoSolicitudOperacion.APROBADO:EstadoSolicitudOperacion.PENDIENTE_APROBACION,CentroId=tire.CentroId,LlantaId=tire.Id,PosicionOrigenId=dto.PosicionOrigenId,PosicionDestinoId=dto.PosicionDestinoId,TipoDestino=mounting?"Posicion":dto.CentroDestinoId.HasValue?"Traslado":dto.TipoDestino!,CentroDestinoId=dto.CentroDestinoId,LlantaDesplazadaId=dto.LlantaDesplazadaId,PosicionDestinoDesplazadaId=dto.PosicionDestinoDesplazadaId,DestinoDesplazada=dto.DestinoDesplazada,Motivo=dto.Motivo.Trim(),Observaciones=dto.Observaciones,KilometrajeVehiculo=dto.KilometrajeVehiculo,ActividadProgramadaId=dto.ActividadProgramadaId,Solicitante=Usuario(),Aprobador=scheduled?"Programación autorizada":null,FechaDecision=scheduled?DateTimeOffset.UtcNow:null,UsuarioCreacion=Usuario()};
             db.SolicitudesOperacion.Add(item);await db.SaveChangesAsync(ct);
             if(scheduled)await Ejecutar(item,a,ct);
             await tx.CommitAsync(ct);id=item.Id;

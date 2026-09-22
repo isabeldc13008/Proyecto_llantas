@@ -30,7 +30,19 @@ public sealed partial class MountAuthorizationInspectionTests(TestApplicationFac
   var axle=new EjeVehiculo{Nombre="Eje QA",Numero=1,Orden=1,TipoEje="Direccional"};var position=new PosicionVehiculo{Codigo="P1",Lado="Izquierda",Ubicacion="Externa",Orden=1};axle.Posiciones.Add(position);vehicle.Ejes.Add(axle);db.Llantas.Add(tire);db.Vehiculos.Add(vehicle);await db.SaveChangesAsync();return(tire,vehicle,position);
  }
  private static CrearSolicitudOperacionDto Request(Llanta tire,PosicionVehiculo position,Guid? activity=null)=>new(){Tipo="Montaje",LlantaId=tire.Id,PosicionDestinoId=position.Id,TipoDestino="Posicion",Motivo="Montaje QA",KilometrajeVehiculo=1000,ActividadProgramadaId=activity};
- private static SolicitudOperacionDto Created(ActionResult<SolicitudOperacionDto> result)=>Assert.IsType<SolicitudOperacionDto>(Assert.IsType<CreatedResult>(result.Result).Value);
+ private static SolicitudOperacionDto Created(ActionResult<SolicitudOperacionDto> result)
+ {
+  var created=Assert.IsType<CreatedResult>(result.Result);Assert.Equal(201,created.StatusCode);
+  return Assert.IsType<SolicitudOperacionDto>(created.Value);
+ }
+ [Fact]public async Task SolicitarMontaje_PosicionOcupadaDevuelveConflicto()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();
+  var(t,v,p)=await Setup(db);var(other,_,_)=await Setup(db);
+  await sp.GetRequiredService<IOperacionService>().MoverAsync(new(){LlantaId=other.Id,PosicionDestinoId=p.Id,TipoDestino="Posicion",Motivo="Ocupar posición",KilometrajeVehiculo=1000},"qa-other",new(true,[]),Ct);
+  await Assert.ThrowsAsync<ConflictoException>(()=>Operations(sp,db,v.CentroId).Solicitar(Request(t,p),Ct));
+  Assert.False(await db.SolicitudesOperacion.AnyAsync(x=>x.LlantaId==t.Id));
+ }
  [Fact]public async Task SinProgramacion_PendienteVisible_RechazarNoModificaInventario()
  {
   _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);
