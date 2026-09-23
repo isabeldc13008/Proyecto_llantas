@@ -38,6 +38,16 @@ public sealed class OperationalPhasesTests:IClassFixture<TestApplicationFactory>
  }
 
  [Fact]
+ public async Task DisposicionFinal_EvaluacionTecnica_Reutilizable_RetornaInventario()
+ {
+  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var db=scope.ServiceProvider.GetRequiredService<LlantasDbContext>();var strategy=db.Database.CreateExecutionStrategy();await strategy.ExecuteAsync(async()=>
+  {
+   await using var tx=await db.Database.BeginTransactionAsync();var tire=await db.Llantas.AsNoTracking().FirstAsync(x=>!db.AsignacionesLlantaPosicion.Any(a=>a.LlantaId==x.Id&&a.EsActiva)&&!db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&!new[]{"CERRADA","RECHAZADA","NO_REPARABLE","DISPOSICION_FINAL","RETORNADA_INVENTARIO"}.Contains(o.Estado)));var controller=new ServiciosLlantaController(db,scope.ServiceProvider.GetRequiredService<IOperacionService>(),scope.ServiceProvider.GetRequiredService<ICicloVidaLlantaService>(),scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>()){ControllerContext=Context("qa-tecnico","centros.ver_todos","servicios_llanta.consultar","servicios_llanta.gestionar","servicios_llanta.aprobar_propia")};
+   var created=await controller.Crear(new("DisposicionFinal",tire.Id,null,null,"Candidata a disposición","Evaluación requerida"),CancellationToken.None);var pending=Assert.IsType<ServiciosLlantaController.OrdenDto>(Assert.IsType<CreatedResult>(created.Result).Value);Assert.Equal("PENDIENTE_EVALUACION_TECNICA",pending.Estado);var evaluated=await controller.EvaluarDisposicion(pending.Id,new(true,"La carcasa y el remanente permiten continuar en operación."),CancellationToken.None);Assert.Equal("RETORNADA_INVENTARIO",evaluated.Estado);Assert.Equal("REUTILIZABLE",evaluated.Resultado);var stored=await db.OrdenesServicioLlanta.SingleAsync(x=>x.Id==pending.Id);Assert.Equal("REUTILIZABLE",stored.Resultado);await tx.RollbackAsync();
+  });
+ }
+
+ [Fact]
  public async Task CargaReportesYRolIntermedio_RespetanContratoReal()
  {
   var admin=factory.CreateClient();var adminLogin=await Login(admin,"administrador","admin123");Assert.Contains("operaciones.montar",adminLogin.Permissions);var template=await admin.GetAsync("/api/carga-masiva/plantillas/llantas?formato=csv");template.EnsureSuccessStatusCode();Assert.Contains("TipoLlanta",await template.Content.ReadAsStringAsync());var csv=await admin.GetAsync("/api/reportes/vehiculos?formato=csv");csv.EnsureSuccessStatusCode();Assert.Equal("text/csv",csv.Content.Headers.ContentType?.MediaType);var xlsx=await admin.GetAsync("/api/reportes/movimientos?formato=xlsx");xlsx.EnsureSuccessStatusCode();Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",xlsx.Content.Headers.ContentType?.MediaType);
