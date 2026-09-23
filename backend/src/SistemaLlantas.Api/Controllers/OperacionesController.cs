@@ -75,6 +75,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
         if(dto.Asignaciones is not null&&dto.Asignaciones.Any(x=>x is null))throw new ValidacionException("Cada asignación debe contener una posición y una llanta válidas.");
         if(dto.Asignaciones is not null)return await SolicitarJuego(dto,ct);
         if(dto.Tipo.Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)||dto.Tipo.Equals("Cambio de juego",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("La operación requiere sus asignaciones.");
+        if((dto.TipoDestino??string.Empty).Replace("ó","o").Equals("DisposicionFinal",StringComparison.OrdinalIgnoreCase)||dto.Tipo.Equals("Disposición final",StringComparison.OrdinalIgnoreCase))throw new ValidacionException("La disposición final debe gestionarse desde su módulo para garantizar evaluación técnica, aprobación, traslado, evidencia y cierre.");
         if(dto.LlantaId==Guid.Empty)throw new ValidacionException("Selecciona una llanta válida.");
         if(dto.PosicionOrigenId==Guid.Empty||dto.PosicionDestinoId==Guid.Empty)throw new ValidacionException("Selecciona una posición válida.");
         if(dto.Tipo.Equals("Montaje",StringComparison.OrdinalIgnoreCase)&&!dto.PosicionDestinoId.HasValue)throw new ValidacionException("El montaje requiere una posición destino.");
