@@ -6,6 +6,11 @@
  <nav aria-label="Secciones de Analítica">
   @for(tab of tabs;track tab.id){<button [class.active]="view()===tab.id" [attr.aria-pressed]="view()===tab.id" (click)="selectView(tab.id)">{{tab.label}}</button>}
  </nav>
+ <form class="search-tools" (ngSubmit)="apply()"><label>Buscar llanta por código o serial<input name="buscar" maxlength="100" [(ngModel)]="filters.buscar" type="search" placeholder="Código o serial"></label><button type="submit">Buscar</button></form>
+ @if(view()==='vida-util'||view()==='posiciones'){
+ <section class="comparison-tools panel"><label>Agrupar comparativos por<select [(ngModel)]="group" (change)="load(1)"><option value="marca">Marca</option><option value="marca-referencia">Marca + referencia</option><option value="dimension">Dimensión</option><option value="centro">Centro</option><option value="posicion">Posición</option></select></label><p>Las posiciones usan tramos; las demás agrupaciones usan llantas. Sus denominadores no son intercambiables.</p></section>
+ }
+
  <section class="filter-summary">
   <div><b>{{filterCount()===0?'Todos los datos autorizados':filterCount()+' filtros aplicados'}}</b><small>Centro y estado actuales · fechas de ingreso de la cohorte</small></div>
   <button (click)="showFilters=!showFilters" [attr.aria-expanded]="showFilters" aria-controls="analytics-filters">Filtros <span>{{filterCount()}}</span></button>
@@ -34,48 +39,73 @@
    <p>Las fechas filtran la <b>fecha de ingreso de la llanta</b>, no la fecha del evento. Se considera su historial autorizado. Tipo de vehículo selecciona llantas con asignaciones autorizadas a ese tipo y restringe los tramos a ese tipo. Centros agrupa por centro actual; la configuración de ejes es la actual, no una versión histórica.</p>
    <p>Profundidad: mínimo de las tres lecturas de la última inspección finalizada con mediciones completas. Reparaciones y reencauches: órdenes cerradas. Las alertas son abiertas o en proceso. La desviación describe la dispersión de la cohorte, no un intervalo de confianza.</p>
    <p>Comparativos exactos hasta 5.000 llantas por cohorte; si se supera el límite, se solicita acotar filtros. No se recorta una muestra silenciosamente. Se excluyen registros desactivados y eventos fuera del alcance autorizado.</p>
-   <p><b>Fases siguientes:</b> desgaste, predicción interpretable, anomalías, ciclos de reencauche y rotaciones. Supervivencia y modelos avanzados requieren verificar integridad y volumen histórico. No hay porcentajes estimados de vida ni un índice compuesto de salud en esta fase.</p>
+   <p><b>Desgaste:</b> lecturas registradas y mínimo calculado. Los kilómetros desde montaje se derivan solo de un tramo inequívoco con odómetros consistentes. Pronóstico pendiente de certificar continuidad, ciclos y unidades históricas; no se calculan porcentajes de vida ni fechas de intervención.</p>
   </aside>
+ }
+ @if(wearLoading()){<p role="status">Cargando historial de mediciones…</p>}
+ @if(wearError()){<p class="notice" role="alert">{{wearError()}}</p>}
+ @if(wear();as d){
+ <section class="panel wear-detail" aria-label="Evolución de profundidad">
+  <header class="section-heading"><div><p class="eyebrow">{{d.codigo}} · HISTORIAL AUTORIZADO COMPLETO</p><h2>Evolución de profundidad</h2></div><button (click)="closeWear()">Cerrar detalle</button></header>
+  <p>{{d.lecturasCompletas}} / {{d.totalLecturas}} lecturas completas · {{d.lecturasConTramo}} / {{d.totalLecturas}} con tramo y odómetro consistentes. Cobertura de datos, no vida consumida.</p>
+  <p class="footnote">Fechas de registro de inspecciones finalizadas. Exterior / centro / interior y odómetro son observados; mínimo y km desde montaje son derivados. El odómetro pertenece al vehículo, no es el recorrido acumulado de la llanta. Los tramos no equivalen a ciclos.</p>
+  <ol class="measurement-history">@for(m of d.mediciones;track m.lectura.id){
+   <li><header><strong>{{m.lectura.fecha|date:'dd/MM/yyyy HH:mm'}}</strong><span>Posición {{m.lectura.posicion}}</span></header>
+   <dl><div><dt>Exterior / centro / interior (mm)</dt><dd>{{m.lectura.exterior??'—'}} / {{m.lectura.centro??'—'}} / {{m.lectura.interior??'—'}}</dd></div><div><dt>Profundidad mínima calculada</dt><dd>{{m.minima===null?'Sin dato válido':(m.minima|number:'1.1-2')+' mm'}}</dd></div><div><dt>Odómetro observado</dt><dd>{{m.lectura.odometro===null?'Sin dato':(m.lectura.odometro|number:'1.0-0')+' km'}}</dd></div><div><dt>Km desde montaje del tramo</dt><dd>{{m.kmDesdeMontaje===null?'No verificable':(m.kmDesdeMontaje|number:'1.0-0')+' km'}}</dd></div></dl>
+   <small>{{m.calidad}} · Inspección {{m.lectura.inspeccionId}} @if(m.tramoId){· Tramo {{m.tramoId}}}</small>
+   </li>
+  }@empty{<li>No existen lecturas finalizadas autorizadas para esta llanta.</li>}</ol>
+  <aside class="notice"><h3>Pronóstico: {{d.pronostico}}</h3><ul>@for(reason of d.limitaciones;track reason){<li>{{reason}}</li>}</ul><p>No se calcula fecha, vida restante ni desgaste por km a partir de promedios generales.</p></aside>
+  <h3>Reglas activas del centro actual</h3><p class="footnote">Se muestran para revisar su aplicabilidad; no se aplican retroactivamente como umbral histórico ni se elige una regla arbitrariamente.</p>
+  <ul>@for(rule of d.reglas;track rule.codigo){<li>{{rule.codigo}}: {{rule.operador}} {{rule.valor}} {{rule.unidad}} · {{rule.alcance}}</li>}@empty{<li>No hay reglas activas de profundidad mínima aplicables.</li>}</ul>
+ </section>
  }
  @if(loading()){<section class="empty panel" role="status"><span class="loader"></span><h2>Consultando datos reales</h2><p>Aplicando filtros y alcance de centros…</p></section>}
  @else if(error()){<section class="empty panel" role="alert"><h2>No se pudo completar la consulta</h2><p>{{error()}}</p><button class="primary" (click)="load(page())">Reintentar</button></section>}
  @else if(summary();as s){
   @if(s.total===0){<section class="empty panel"><h2>No hay llantas en esta cohorte</h2><p>Revisa los filtros o el alcance asignado a tu usuario.</p><button (click)="clear()">Limpiar filtros</button></section>}
   @else{
+   <aside class="notice"><h2>Requieren revisión</h2><p>{{s.conAlertas}} llantas con alertas abiertas o en proceso. No equivale a falla ni retiro.</p><button (click)="drill('alertas')">Revisar llantas con alertas</button></aside>
    <section class="kpis" aria-label="Resumen de llantas">
-    <article class="kpi principal"><span>Llantas analizadas</span><strong>{{s.total|number}}</strong><small>Cohorte autorizada</small></article>
-    <article class="kpi"><span>Montadas</span><strong>{{s.montadas|number}}</strong><small>Asignación activa</small></article>
-    <article class="kpi available"><span>Disponibles</span><strong>{{s.disponibles|number}}</strong><small>Reglas reales de montaje</small></article>
-    <article class="kpi service"><span>En reparación</span><strong>{{s.enReparacion|number}}</strong><small>Estado actual</small></article>
-    <article class="kpi service"><span>En reencauche</span><strong>{{s.enReencauche|number}}</strong><small>Estado actual</small></article>
-    <article class="kpi"><span>Disposición final</span><strong>{{s.disposicionFinal|number}}</strong><small>Según catálogo de estados</small></article>
+    <article class="kpi principal"><span>Llantas analizadas</span><strong>{{s.total|number}}</strong><button (click)="drill('todas')">Ver llantas</button><small>Cohorte autorizada</small></article>
+    <article class="kpi"><span>Montadas</span><strong>{{s.montadas|number}}</strong><button (click)="drill('montadas')">Ver llantas</button><small>Asignación activa</small></article>
+    <article class="kpi available"><span>Disponibles</span><strong>{{s.disponibles|number}}</strong><button (click)="drill('disponibles')">Ver llantas</button><small>Reglas reales de montaje</small></article>
+    <article class="kpi service"><span>En reparación</span><strong>{{s.enReparacion|number}}</strong><button (click)="drill('reparacion')">Ver llantas</button><small>Estado actual</small></article>
+    <article class="kpi service"><span>En reencauche</span><strong>{{s.enReencauche|number}}</strong><button (click)="drill('reencauche')">Ver llantas</button><small>Estado actual</small></article>
+    <article class="kpi"><span>Disposición final</span><strong>{{s.disposicionFinal|number}}</strong><button (click)="drill('finalizadas')">Ver llantas</button><small>Según catálogo de estados</small></article>
    </section>
    <section class="overview">
     <article class="panel coverage"><div class="section-heading"><div><p class="eyebrow">CALIDAD DE MEDICIÓN</p><h2>Lo que sabemos del recorrido</h2></div></div>
      <app-tire-metric [value]="s.enOperacion.promedio" [measured]="s.enOperacion.muestra+s.finalizadas.muestra" [total]="s.total"/>
      <p class="footnote">Promedio de llantas que no están en disposición final. El anillo representa cobertura de datos, no vida consumida.</p>
-     <div class="quality"><span><b>{{s.sinKm|number}}</b> sin total verificable</span><span><b>{{s.conTramosIncompletos|number}}</b> con tramos incompletos</span></div>
+     <div class="quality"><button (click)="drill('sin-km')"><b>{{s.sinKm|number}}</b> sin total verificable</button><button (click)="drill('incompletos')"><b>{{s.conTramosIncompletos|number}}</b> con tramos incompletos</button></div>
     </article>
     <article class="panel"><div class="section-heading"><div><p class="eyebrow">SITUACIÓN ACTUAL</p><h2>Distribución por estado</h2></div><span class="pill">n = {{s.total}}</span></div>
      <div class="bars">@for(state of s.estados;track state.nombre){<div class="bar-row"><div><span>{{state.nombre}}</span><b>{{state.cantidad|number}}</b></div><div class="track"><i [style.width.%]="100*state.cantidad/maxCount(s.estados)"></i></div></div>}</div>
     </article>
    </section>
    <section class="kpis secondary-kpis">
-    <article class="kpi attention"><span>Llantas con alertas abiertas</span><strong>{{s.conAlertas|number}}</strong><small>No equivale a falla o retiro</small></article>
-    <article class="kpi"><span>Profundidad mínima promedio</span><strong>{{s.profundidadPromedio===null?'Sin dato':(s.profundidadPromedio|number:'1.1-2')+' mm'}}</strong><small>Última medición completa · n = {{s.muestraProfundidad}}</small></article>
-    <article class="kpi"><span>Movimientos por llanta</span><strong>{{s.movimientosPromedio===null?'Sin dato':(s.movimientosPromedio|number:'1.1-2')}}</strong><small>Movimientos distintos / {{s.total}} llantas</small></article>
+
+    <article class="kpi"><span>Profundidad mínima promedio</span><strong>{{s.profundidadPromedio===null?'Sin dato':(s.profundidadPromedio|number:'1.1-2')+' mm'}}</strong><small>Última medición completa · n = {{s.muestraProfundidad}} / {{s.total}}</small><button (click)="drill('medidas')">Ver mediciones</button></article>
+    <article class="kpi"><span>Movimientos por llanta</span><strong>{{s.movimientosPromedio===null?'Sin dato':(s.movimientosPromedio|number:'1.1-2')}}</strong><small>Movimientos distintos / {{s.total}} llantas</small><button (click)="selectView('movimientos')">Ver movimientos</button></article>
    </section>
-   <section class="cohort-panels">
-    @for(item of [{label:'En operación / otros estados',data:s.enOperacion},{label:'En disposición final',data:s.finalizadas}];track item.label){
-     <article class="panel"><div class="section-heading"><h2>{{item.label}}</h2><span class="pill">n = {{item.data.muestra}}</span></div><strong class="big-number">{{item.data.promedio===null?'Sin dato':(item.data.promedio|number:'1.0-0')+' km'}}</strong><p>Promedio de recorrido registrado en tramos cerrados.</p><small>Mediana: {{item.data.mediana===null?'Sin dato':(item.data.mediana|number:'1.0-0')+' km'}} · No garantiza vida completa.</small></article>
-    }
-   </section>
+
   }
+ }
+ @else if(tires();as data){
+  <section class="panel">
+   <header class="section-heading"><div><p class="eyebrow">OBSERVACIONES POR LLANTA</p><h2>Desgaste y calidad de los datos</h2><p>Selección: {{indicatorLabel()}} · {{data.totalItems}} llantas · ordenadas por cantidad de alertas abiertas.</p></div><button (click)="drill('todas')">Todas las llantas</button></header>
+   <p class="footnote">La profundidad listada es el mínimo de la última inspección completa; puede ser anterior a una lectura incompleta. No representa vida restante.</p>
+   <div class="comparisons">@for(t of data.items;track t.id){
+    <article class="comparison"><h3>{{t.codigo}}</h3><p>{{t.serial}} · {{t.centro}} · {{t.estado}}</p><p>{{t.alertas}} alertas abiertas</p><dl><div><dt>Mínimo última medición completa</dt><dd>{{t.profundidad===null?'Sin dato':(t.profundidad|number:'1.1-2')+' mm'}}</dd></div><div><dt>Recorrido de tramos cerrados</dt><dd>{{t.km===null?'Sin total verificable':(t.km|number:'1.0-0')+' km'}}</dd></div></dl><button (click)="openWear(t.id)">Ver evolución y pronóstico</button>
+    @if(canOpenHistory()){<a [routerLink]="['/llantas']" [queryParams]="{llantaId:t.id}">Historial operativo</a>}
+    </article>
+   }@empty{<p>No hay llantas para este indicador y filtros.</p>}</div>
+  </section>
  }
  @else if(groups();as data){
   <section class="panel">
-   <header class="comparison-tools"><div><p class="eyebrow">RECORRIDO OBSERVADO</p><h2>{{view()==='centros'?'Centros':view()==='vida-util'?'Vida útil observada':'Marcas y referencias'}}</h2><p>Ordenado por cobertura de muestra, no por un promedio aislado.</p></div>
-    @if(view()!=='centros'){<label>Agrupar por<select [(ngModel)]="group" (change)="load(1)"><option value="marca">Marca</option><option value="marca-referencia">Marca + referencia</option><option value="dimension">Dimensión</option><option value="centro">Centro</option></select></label>}
+   <header class="comparison-tools"><div><p class="eyebrow">RECORRIDO OBSERVADO</p><h2>Comparativos de recorrido</h2><p>Ordenado por cobertura de muestra, no por un promedio aislado.</p></div>
     <label>Cohorte<select [(ngModel)]="cohort"><option value="enOperacion">En operación / otros estados</option><option value="finalizadas">Disposición final</option></select></label>
    </header>
    <p class="footnote">Cada promedio describe tramos registrados; no predice la vida completa. Mínimo visible: {{applied.minimoMuestra}} llantas con kilometraje.</p>
@@ -105,11 +135,11 @@
    <div class="section-heading"><div><p class="eyebrow">MAPA DE POSICIONES</p><h2>Recorrido por tramo cerrado</h2><p>Más intensidad = mayor kilometraje observado; no significa mayor desgaste.</p></div></div>
    <p class="footnote">Configuración actual + eje + posición + lado. Sin configuración, cada vehículo se conserva separado. Escala relativa a esta página; gris = muestra insuficiente.</p>
    <div class="heatmap">@for(p of data.items;track $index){
-    <article class="position" [style.background-color]="'rgba(0,166,204,'+heat(p)+')'">
+    <article class="position" [style.background-color]="'rgba(12,93,12,'+heat(p)+')'">
      <small>{{p.configuracion}} · {{p.tipoVehiculo}}</small><h3>{{p.posicion}}</h3><span>Eje {{p.eje}} · {{p.tipoEje}}</span>
      <strong>{{!p.muestraSuficiente?'Muestra insuficiente':p.kmPromedio===null?'Sin dato':(p.kmPromedio|number:'1.0-0')+' km'}}</strong>
      <p>{{p.muestraKm}} / {{p.llantas}} llantas con km · {{p.tramosValidos}} / {{p.tramos}} tramos con km válidos</p>
-     <details><summary>Detalle</summary><p>Promedio por tramo: {{p.kmPromedio===null?'Sin dato':(p.kmPromedio|number:'1.0-0')+' km'}}</p><p>Duración media de tramos con fechas válidas: {{p.diasPromedio===null?'Sin dato':(p.diasPromedio|number:'1.1-1')+' días'}}</p><p>El desgaste por 1.000 km requiere vincular inspecciones al mismo tramo y se analizará en Fase 2.</p></details>
+     <details><summary>Detalle</summary><p>Promedio por tramo: {{p.kmPromedio===null?'Sin dato':(p.kmPromedio|number:'1.0-0')+' km'}}</p><p>Duración media de tramos con fechas válidas: {{p.diasPromedio===null?'Sin dato':(p.diasPromedio|number:'1.1-1')+' días'}}</p><p>Esta intensidad describe recorrido, no pérdida de profundidad. Consulta las lecturas individuales en Desgaste.</p></details>
     </article>
    }@empty{<div class="empty"><h2>No hay tramos cerrados</h2><p>Los montajes todavía abiertos no se consideran vida finalizada.</p></div>}</div>
   </section>
@@ -121,7 +151,7 @@
     <div class="section-heading"><div><p class="eyebrow">TRAZABILIDAD</p><h2>Llantas con más movimientos</h2></div></div>
     @for(tire of data.ranking.items;track tire.id){
      <article class="panel ranking-row"><header><div><h3>{{tire.codigo}}</h3><small>{{tire.serial}} · {{tire.marca}} / {{tire.referencia}}</small></div><div class="count"><strong>{{tire.total|number}}</strong><span>movimientos</span></div></header>
-      <p class="pill">{{tire.estado}}</p><div class="mini-stats"><span><b>{{tire.vehiculos}}</b> vehículos</span><span><b>{{tire.centros}}</b> centros</span><span><b>{{tire.posiciones}}</b> posiciones</span></div>
+      <button (click)="openWear(tire.id)">Ver mediciones</button> @if(canOpenHistory()){<a [routerLink]="['/llantas']" [queryParams]="{llantaId:tire.id}">Ver historial operativo</a>}<p class="pill">{{tire.estado}}</p><div class="mini-stats"><span><b>{{tire.vehiculos}}</b> vehículos</span><span><b>{{tire.centros}}</b> centros</span><span><b>{{tire.posiciones}}</b> posiciones</span></div>
       <details><summary>Desglose por tipo</summary>@for(type of tire.tipos;track type.nombre){<div class="type-count"><span>{{type.nombre}}</span><b>{{type.cantidad}}</b></div>}</details>
      </article>
     }@empty{<div class="empty panel"><h2>Sin movimientos para mostrar</h2><p>No se crean eventos a partir del estado actual.</p></div>}
@@ -131,5 +161,5 @@
  @if(!loading()&&!error()&&view()!=='resumen'&&totalItems()>0){
   <footer class="pager"><span>{{totalItems()|number}} resultados · página {{page()}} de {{totalPages()}}</span><div><button [disabled]="page()<=1" (click)="load(page()-1)">← Anterior</button><button [disabled]="page()>=totalPages()" (click)="load(page()+1)">Siguiente →</button></div></footer>
  }
- <footer class="method-note">Fase 1 · Estadística descriptiva · Solo datos autorizados · Sin predicciones ni inferencias causales</footer>
+ <footer class="method-note">Datos observados y cálculos identificados · Solo centros autorizados · Pronóstico pendiente de evidencia certificada</footer>
 </main>

@@ -1,4 +1,63 @@
-# Analítica de Llantas — Fase 1
+# Analítica de Llantas — Fase 1 y evolución de mediciones
+
+
+## Rediseño de septiembre de 2026 — alcance implementado
+
+Se revisaron AnaliticaController, AnaliticaService, DTO/estadísticas, entidades de inspección/asignación/reglas, generación de alertas, políticas y pruebas de Fase 1. El historial operativo de Llantas ya permite abrir `?llantaId=...`; se reutiliza sin crear otro módulo de movimientos o cambiar permisos.
+
+### Navegación
+
+- **Estado actual:** disponibilidad, estados y alertas; prioridad a llantas con alertas. Cada indicador principal abre sus integrantes conservando filtros. Los totales son categorías que pueden solaparse, no porcentajes sumables.
+- **Desgaste y pronóstico:** lista por llanta, historial cronológico de lecturas finalizadas, cobertura explícita y reglas activas aplicables al centro actual. El detalle muestra todo el historial autorizado de la llanta seleccionada; no solo el tipo de vehículo de la cohorte.
+- **Comparativos:** sustituye las pestañas repetidas Vida útil, Marcas/referencias y Centros. Agrupaciones por marca, referencia (identificada junto a marca), dimensión, centro o posición. Posiciones conserva denominador por tramo; no se mezcla con promedios por llanta.
+- **Movimientos:** conserva conteos de eventos distintos, búsqueda por código/serial, filtros de cohorte y acceso al historial operativo existente cuando se dispone de `modulos.llantas.consultar` y `llantas.consultar` o `llantas.administrar`.
+
+No se eliminan endpoints anteriores: se reutilizan para mantener compatibilidad. Nuevos GET, bajo la misma política `Analitica.Consultar`:
+
+- `/api/analitica/llantas?indicador=...`: integrantes paginados del indicador; misma fuente y predicado que el resumen. Valores: todas, montadas, disponibles, reparacion, reencauche, finalizadas, alertas, sin-km, incompletos, medidas. Orden por cantidad de alertas, código e ID. Se mantiene el límite de 5.000 llantas para el cálculo exacto de la cohorte.
+- `/api/analitica/llantas/{id}/desgaste`: lecturas y vínculo a tramos del historial autorizado. ID inexistente o fuera de alcance devuelve 404 antes de consultar su historial. Máximo 1.000 lecturas/tramos; si se supera, devuelve validación, sin truncar silenciosamente.
+- `buscar` filtra código/serial en la consulta SQL base y se conserva al paginar, comparar y consultar movimientos.
+
+### Observado, derivado y faltante
+
+**Observado:** tres profundidades, odómetro de inspección, fecha de registro de inspección, estado y eventos registrados. Se conservan ceros, nulos y valores históricos inválidos, identificados; no se imputan lecturas.
+
+**Derivado:** mínimo de tres profundidades completas no negativas; cobertura = lecturas completas / lecturas finalizadas autorizadas; km desde montaje = odómetro de inspección menos odómetro de montaje. Este último exige posición y fecha dentro de un único tramo, odómetro inicial no negativo y lectura dentro de límites conocidos (en tramos abiertos, también exige odómetro actual del vehículo conocido y no menor a la lectura). Los solapamientos y límites compartidos no se resuelven arbitrariamente. Un retroceso de odómetro o lecturas con distintos odómetros en la misma fecha invalida el vínculo de toda la serie del tramo. No se suman odómetros de vehículos diferentes ni se presentan tramos como ciclos. Las estadísticas previas de tramos cerrados mantienen su fórmula.
+
+El número de lecturas con tramo cuenta vínculos válidos aunque una profundidad esté incompleta; se muestra separado de las lecturas completas. La profundidad de la lista es la última **completa**, que podría preceder una lectura incompleta posterior. El detalle no oculta estas lecturas posteriores.
+
+**Pronóstico pendiente, no implementado numéricamente:** siempre se muestra «Datos insuficientes», con limitaciones concretas. No es una predicción con valor cero. Se muestran todas las reglas activas `PROFUNDIDAD_MINIMA` globales y del centro actual; no se inventa precedencia centro/global. Se señala ausencia, multiplicidad o incompatibilidad de unidad/operador (mm, < o <=, valor no negativo). Una regla actual no demuestra el umbral histórico ni habilita por sí sola una predicción.
+
+Motivo: InspeccionDetalle no referencia una asignación o ciclo certificado; la inspección conserva fecha de creación, no una fecha independiente de toma de lectura; las unidades no tienen snapshot por observación. Las órdenes de reencauche existentes no certifican por sí solas continuidad completa de un ciclo, especialmente si parte del historial queda fuera de alcance. Hay datos para describir y vincular tramos, pero no se certificó una serie individual suficiente para extrapolar. No se usa el promedio general de kilómetros, ni ProfundidadInicial, como predicción individual.
+
+Para habilitar una estimación futura se requiere validar continuidad de fechas y odómetros dentro de cada ciclo, identificar reencauches/cambios que rompen la serie, verificar unidades históricas, resolver múltiples umbrales y acordar/validar un método con error medido. No se requiere migración para este rediseño; no se añadió infraestructura predictiva especulativa.
+
+### Seguridad y reutilización
+
+Listado/resumen/comparativos reutilizan Llantas y DatosAsync. Historial: alcance en llanta actual, centro de inspección y centro actual de su vehículo; tramos reutilizan Asignaciones con movimiento de origen y vehículo autorizados. Reglas solo globales o del centro actual autorizado. Sin escrituras ni ampliación de roles. No se enlaza el historial operativo si falta cualquiera de sus permisos de módulo/API. La fecha de ingreso filtra la cohorte, no la fecha de sus lecturas/eventos.
+
+### Pruebas del rediseño
+
+- DesgasteAnaliticaTests: mínimo, cero/null/negativos, límites de odómetro, posición/fechas, solapamientos, retrocesos, tramos diferentes y serie vacía.
+- AnaliticaQueryTests: traducción SQL del listado/desgaste, búsqueda en SQL, alcance por fuente, ausencia de tracking, llanta inaccesible sin leer historial, indicador inválido y estado de datos insuficientes. Son pruebas de traducción con lectores sustituidos, **no ejecución SQL real**.
+- AnaliticaPolicyTests: política existente y rechazo sin permiso.
+- AnaliticaIntegrationTests ampliada: lecturas y reglas fuera de centro excluidas, mínimos/cobertura, búsqueda, integrantes del indicador y llanta inaccesible. Requiere SQL Server funcional.
+- analytics-page/api.spec.ts: cuatro secciones, filtros/drilldown, agrupación por posición, respuesta tardía descartada, permisos de enlace, datos insuficientes, cero medido y cobertura; responsive 390/768/1024/1366.
+
+Resultados del 28/09/2026:
+- 27 pruebas de aplicación de Analítica/desgaste aprobadas.
+- 14 pruebas de traducción SQL y política aprobadas (sin conexión a SQL Server).
+- `dotnet build SistemaLlantas.slnx --configuration Release --no-restore`: 0 errores, 0 advertencias.
+- TypeScript (`tsc --noEmit -p tsconfig.spec.json`) y plantillas Angular (`ngc -p tsconfig.app.json --noEmit`): correctos.
+- `git diff --check`: correcto.
+- AnaliticaIntegrationTests ampliada no ejecutada: bloqueo conocido de creación de instancia LocalDB. No se repitieron intentos del entorno.
+- Specs Jasmine/DOM/responsive y build de producción no ejecutados en este cierre: bloqueos conocidos de esbuild/browser. Las specs compilan, lo que no sustituye su ejecución en navegador.
+
+No se declara cobertura porcentual, resultados SQL reales, compatibilidad de navegadores ni ausencia de overflow sin la correspondiente ejecución.
+
+## Referencia de Fase 1
+
+La siguiente sección documenta las consultas y fórmulas originales. La navegación y el alcance implementado se actualizan en la sección anterior.
 
 ## Diagnóstico del modelo real
 

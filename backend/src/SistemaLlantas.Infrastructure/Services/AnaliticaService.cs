@@ -6,7 +6,7 @@ using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Infrastructure.Services;
 
-public sealed class AnaliticaService(LlantasDbContext db) : IAnaliticaService
+public sealed partial class AnaliticaService(LlantasDbContext db) : IAnaliticaService
 {
     public const int MaximoCohorte = 5000;
 
@@ -15,6 +15,11 @@ public sealed class AnaliticaService(LlantasDbContext db) : IAnaliticaService
     {
         f.Validar(a);
         var q = db.Llantas.AsNoTracking().Where(x => x.Activo && (a.VerTodos || a.CentroIds.Contains(x.CentroId)));
+        if (!string.IsNullOrWhiteSpace(f.Buscar))
+        {
+            var buscar = f.Buscar.Trim();
+            q = q.Where(x => x.Codigo.Contains(buscar) || x.Serial.Contains(buscar));
+        }
         if (f.CentroId.HasValue) q = q.Where(x => x.CentroId == f.CentroId);
         if (f.MarcaId.HasValue) q = q.Where(x => x.MarcaId == f.MarcaId);
         if (f.ReferenciaId.HasValue) q = q.Where(x => x.ReferenciaId == f.ReferenciaId);

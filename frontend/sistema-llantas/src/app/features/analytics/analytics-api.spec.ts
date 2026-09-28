@@ -4,6 +4,15 @@ import {provideHttpClientTesting,HttpTestingController} from '@angular/common/ht
 import {AnalyticsApi,AnalyticsFilters} from './analytics-api';
 
 describe('Analytics API',()=>{
+ it('sends the search and indicator to the authorized list and uses the tire wear endpoint',()=>{
+  TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
+  const api=TestBed.inject(AnalyticsApi),http=TestBed.inject(HttpTestingController);
+  const filter:AnalyticsFilters={buscar:'LL-1',centroId:'allowed',marcaId:'',referenciaId:'',dimensionId:'',estadoId:'',tipoVehiculo:'',ingresoDesde:'',ingresoHasta:'',minimoMuestra:5};
+  api.tires(filter,2,'alertas').subscribe();const list=http.expectOne(r=>r.url==='/api/analitica/llantas');
+  expect(list.request.params.get('indicador')).toBe('alertas');expect(list.request.params.get('buscar')).toBe('LL-1');expect(list.request.params.get('centroId')).toBe('allowed');expect(list.request.params.get('pagina')).toBe('2');list.flush({items:[]});
+  api.wear('tire-id').subscribe();http.expectOne('/api/analitica/llantas/tire-id/desgaste').flush({});http.verify();
+ });
+
  it('encodes every filter and keeps pagination on specific endpoints',()=>{
   TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
   const api=TestBed.inject(AnalyticsApi),http=TestBed.inject(HttpTestingController);

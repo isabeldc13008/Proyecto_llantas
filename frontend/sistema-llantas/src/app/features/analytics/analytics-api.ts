@@ -1,7 +1,7 @@
 import {HttpClient,HttpParams} from '@angular/common/http';
 import {inject,Injectable} from '@angular/core';
 
-export interface AnalyticsFilters {centroId:string;marcaId:string;referenciaId:string;dimensionId:string;estadoId:string;tipoVehiculo:string;ingresoDesde:string;ingresoHasta:string;minimoMuestra:number}
+export interface AnalyticsFilters {buscar?:string;centroId:string;marcaId:string;referenciaId:string;dimensionId:string;estadoId:string;tipoVehiculo:string;ingresoDesde:string;ingresoHasta:string;minimoMuestra:number}
 export interface AnalyticsOption {id:string;nombre:string}
 export interface AnalyticsOptions {centros:AnalyticsOption[];marcas:AnalyticsOption[];referencias:AnalyticsOption[];dimensiones:AnalyticsOption[];estados:AnalyticsOption[];tiposVehiculo:string[]}
 export interface KmStats {muestra:number;promedio:number|null;mediana:number|null;desviacion:number|null;minimo:number|null;maximo:number|null}
@@ -12,11 +12,13 @@ export interface AnalyticsPosition {configuracion:string;tipoVehiculo:string;eje
 export interface AnalyticsMovement {id:string;codigo:string;serial:string;marca:string;referencia:string;estado:string;total:number;vehiculos:number;centros:number;posiciones:number;tipos:AnalyticsCount[]}
 export interface AnalyticsPage<T> {items:T[];pageNumber:number;pageSize:number;totalItems:number;totalPages:number}
 export interface AnalyticsRanking {ranking:AnalyticsPage<AnalyticsMovement>;tipos:AnalyticsCount[]}
-export type AnalyticsView='resumen'|'vida-util'|'marcas-referencias'|'posiciones'|'movimientos'|'centros';
+export type AnalyticsView='desgaste'|'resumen'|'vida-util'|'marcas-referencias'|'posiciones'|'movimientos'|'centros';
 
 @Injectable({providedIn:'root'})
 export class AnalyticsApi {
  private http=inject(HttpClient);
+ tires(filters:AnalyticsFilters,page:number,indicator:string){return this.http.get<AnalyticsPage<AnalyticsTire>>('/api/analitica/llantas',{params:this.params(filters,page).set('indicador',indicator)});}
+ wear(id:string){return this.http.get<AnalyticsWear>('/api/analitica/llantas/'+encodeURIComponent(id)+'/desgaste');}
  options(){return this.http.get<AnalyticsOptions>('/api/analitica/opciones');}
  params(filters:AnalyticsFilters,page=1,group='marca'){
   let params=new HttpParams().set('pagina',page).set('tamano',20).set('agrupar',group);
@@ -28,3 +30,7 @@ export class AnalyticsApi {
  positions(filters:AnalyticsFilters,page:number){return this.http.get<AnalyticsPage<AnalyticsPosition>>('/api/analitica/posiciones',{params:this.params(filters,page)});}
  movements(filters:AnalyticsFilters,page:number){return this.http.get<AnalyticsRanking>('/api/analitica/movimientos',{params:this.params(filters,page)});}
 }
+
+export interface AnalyticsTire {id:string;codigo:string;serial:string;centro:string;estado:string;alertas:number;profundidad:number|null;km:number|null}
+export interface AnalyticsMeasurement {lectura:{id:string;inspeccionId:string;fecha:string;posicionId:string;posicion:string;odometro:number|null;exterior:number|null;centro:number|null;interior:number|null};minima:number|null;tramoId:string|null;kmDesdeMontaje:number|null;calidad:string}
+export interface AnalyticsWear {id:string;codigo:string;totalLecturas:number;lecturasCompletas:number;lecturasConTramo:number;mediciones:AnalyticsMeasurement[];reglas:{codigo:string;operador:string;valor:number;unidad:string;alcance:string}[];pronostico:string;limitaciones:string[]}

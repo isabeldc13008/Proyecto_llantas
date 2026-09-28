@@ -60,6 +60,22 @@ public sealed class AnaliticaIntegrationTests(TestApplicationFactory factory) : 
             Assert.Equal(0, (await service.ResumenAsync(new() { MarcaId = brand.Id, IngresoDesde = new(2026, 2, 1) }, access, default)).Total);
             Assert.Equal(0, (await service.ResumenAsync(filter, new(false, []), default)).Total);
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.ResumenAsync(new() { CentroId = other.Id }, access, default));
+            var inspection = new Inspeccion { CentroId = center, VehiculoId = position.EjeVehiculo.VehiculoId, Estado = EstadoInspeccion.Finalizada, Kilometraje = 1000,
+                Detalles = [new() { LlantaId = missing.Id, PosicionVehiculoId = position.Id, ProfundidadExterior = 9, ProfundidadCentro = 8, ProfundidadInterior = 10 }] };
+            var hiddenInspection = new Inspeccion { CentroId = other.Id, VehiculoId = position.EjeVehiculo.VehiculoId, Estado = EstadoInspeccion.Finalizada, Kilometraje = 2000,
+                Detalles = [new() { LlantaId = missing.Id, PosicionVehiculoId = position.Id, ProfundidadExterior = 3, ProfundidadCentro = 3, ProfundidadInterior = 3 }] };
+            db.AddRange(inspection, hiddenInspection);
+            db.ParametrosAlerta.Add(new() { Codigo = "PRIVADO-" + key, CentroId = other.Id, Tipo = "PROFUNDIDAD_MINIMA", Valor = 5 });
+            await db.SaveChangesAsync();
+            var wear = await service.DesgasteAsync(missing.Id, access, default);
+            Assert.Equal(1, wear.TotalLecturas);Assert.Equal(1, wear.LecturasCompletas);Assert.Equal(0, wear.LecturasConTramo);
+            Assert.Equal(8m, Assert.Single(wear.Mediciones).Minima);Assert.Equal("Datos insuficientes", wear.Pronostico);
+            Assert.DoesNotContain(wear.Reglas, x => x.Codigo == "PRIVADO-" + key);
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => service.DesgasteAsync(hidden.Id, access, default));
+            Assert.Single((await service.LlantasAsync(new() { MarcaId = brand.Id, Buscar = missing.Codigo }, "medidas", access, default)).Items);
+            var finalList = await service.LlantasAsync(filter, "finalizadas", access, default);
+            Assert.Equal(summary.DisposicionFinal, finalList.TotalItems);Assert.Equal(finalized.Id, Assert.Single(finalList.Items).Id);
+            Assert.Empty((await service.LlantasAsync(filter, "todas", new(false, []), default)).Items);
             await tx.RollbackAsync();
         });
     }

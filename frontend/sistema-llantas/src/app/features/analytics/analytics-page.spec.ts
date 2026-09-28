@@ -14,13 +14,34 @@ describe('Analytics phase one',()=>{
  const group=(n=1):AnalyticsGroup=>({id:'brand',nombre:'Marca real',total:10,enOperacionTotal:9,finalizadasTotal:1,enOperacion:stats(n,1000),finalizadas:stats(1,2000),reparacionesPromedio:0,reencauchesPromedio:0,alertas:0,movimientos:2,muestraSuficiente:false});
  const paged=<T>(items:T[],page=1):AnalyticsPage<T>=>({items,pageNumber:page,pageSize:20,totalItems:41,totalPages:3});
  beforeEach(async()=>{
-  api=jasmine.createSpyObj('AnalyticsApi',['options','summary','groups','positions','movements']);
+  api=jasmine.createSpyObj('AnalyticsApi',['options','summary','groups','positions','movements','tires','wear']);
   api.options.and.returnValue(of({centros:[],marcas:[],referencias:[],dimensiones:[],estados:[],tiposVehiculo:[]}));
   api.summary.and.returnValue(of(summary()));api.groups.and.returnValue(of(paged([group()])));
+  api.tires.and.returnValue(of(paged([])));
   api.positions.and.returnValue(of(paged([])));api.movements.and.returnValue(of({ranking:paged([]),tipos:[]}));
-  await TestBed.configureTestingModule({imports:[AnalyticsPageComponent],providers:[{provide:AnalyticsApi,useValue:api}]}).compileComponents();
+  await TestBed.configureTestingModule({imports:[AnalyticsPageComponent],providers:[provideRouter([]),{provide:AuthService,useValue:{canModule:()=>false,has:()=>false}},{provide:AnalyticsApi,useValue:api}]}).compileComponents();
   fixture=TestBed.createComponent(AnalyticsPageComponent);page=fixture.componentInstance;
   fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+ });
+ it('requires both module access and the existing tire API permission for operational links',()=>{
+  const auth=TestBed.inject(AuthService);spyOn(auth,'canModule').and.returnValue(true);const permission=spyOn(auth,'has').and.returnValue(false);
+  expect(page.canOpenHistory()).toBeFalse();permission.and.callFake(p=>p==='llantas.consultar');expect(page.canOpenHistory()).toBeTrue();
+ });
+ it('drills into the exact indicator preserving applied filters',async()=>{
+  page.filters.centroId='allowed';await page.apply();await page.drill('alertas');
+  expect(api.tires).toHaveBeenCalledWith(jasmine.objectContaining({centroId:'allowed'}),1,'alertas');expect(page.view()).toBe('desgaste');
+ });
+ it('places position comparisons in the shared section',async()=>{
+  await page.selectView('vida-util');page.group='posicion';await page.load();expect(api.positions).toHaveBeenCalled();
+ });
+ it('shows insufficient data, observed readings and coverage without a life percentage',async()=>{
+  api.wear.and.returnValue(of({id:'t',codigo:'LL-1',totalLecturas:1,lecturasCompletas:1,lecturasConTramo:0,mediciones:[{lectura:{id:'r',inspeccionId:'i',fecha:'2026-01-01T00:00:00Z',posicionId:'p',posicion:'P1',odometro:100,exterior:0,centro:2,interior:3},minima:0,tramoId:null,kmDesdeMontaje:null,calidad:'Sin tramo'}],reglas:[],pronostico:'Datos insuficientes',limitaciones:['Continuidad no certificada']}));
+  await page.openWear('t');fixture.detectChanges();const text=fixture.nativeElement.textContent;
+  expect(text).toContain('Datos insuficientes');expect(text).toContain('0.0 mm');expect(text).toContain('1 / 1 lecturas completas');expect(text).toContain('No verificable');
+  expect(fixture.nativeElement.querySelector('a[href^="/llantas"]')).toBeNull();
+ });
+ it('does not display stale wear after changing the cohort',async()=>{
+  const late=new Subject<any>();api.wear.and.returnValue(late);const request=page.openWear('t');await page.load();late.next({id:'t'});late.complete();await request;expect(page.wear()).toBeNull();
  });
  it('loads only the active view and options',()=>{
   expect(api.summary).toHaveBeenCalledTimes(1);expect(api.options).toHaveBeenCalledTimes(1);
@@ -85,12 +106,12 @@ describe('Analytics phase one',()=>{
   api.summary.and.returnValue(throwError(()=>({userMessage:'Cohorte demasiado grande; acote filtros.'})));
   await page.load();fixture.detectChanges();expect(page.summary()).toBeNull();expect(fixture.nativeElement.textContent).toContain('acote filtros');
  });
-    for(const width of [1366,390])it('layout de Analítica sin overflow a '+width+'px',()=>{
+    for(const width of [1366,1024,768,390])it('layout de Analítica sin overflow a '+width+'px',()=>{
     const frame=document.createElement('iframe');frame.style.width=width+'px';frame.style.height='900px';document.body.appendChild(frame);
     try{const doc=frame.contentDocument!;const styles=Array.from(document.querySelectorAll('style')).map(x=>x.textContent).join('\n');doc.open();doc.write('<style>body{margin:0}*{box-sizing:border-box}'+styles+'</style><div style="margin-left:'+(width>900?245:0)+'px">'+fixture.nativeElement.outerHTML+'</div>');doc.close();expect(doc.documentElement.scrollWidth).toBeLessThanOrEqual(width+1);const cols=frame.contentWindow!.getComputedStyle(doc.querySelector('.kpis')!).gridTemplateColumns.split(' ').length;expect(cols).toBeLessThanOrEqual(width<=650?2:3);}finally{frame.remove();}
    });
-it('renders six distinct navigation choices and a responsive grid',()=>{
-  expect(fixture.nativeElement.querySelectorAll('nav button').length).toBe(6);
+it('renders four distinct navigation choices and a responsive grid',()=>{
+  expect(fixture.nativeElement.querySelectorAll('nav button').length).toBe(4);
   const columns=getComputedStyle(fixture.nativeElement.querySelector('.kpis')).gridTemplateColumns.split(' ').length;
   expect(columns).toBeLessThanOrEqual(window.innerWidth<=650?2:6);
   expect(fixture.nativeElement.querySelector('nav').getAttribute('aria-label')).toContain('Analítica');
