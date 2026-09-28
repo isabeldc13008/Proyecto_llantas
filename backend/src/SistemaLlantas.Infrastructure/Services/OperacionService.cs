@@ -135,7 +135,7 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
         return rows.FirstOrDefault();
     }
     private static TipoDestinoLlanta ParseDestino(string? value)=>Enum.TryParse<TipoDestinoLlanta>((value??"Otro").Replace("ó","o"),true,out var x)?x:TipoDestinoLlanta.Otro;
-    private static string EstadoDestino(TipoDestinoLlanta destino)=>destino switch{TipoDestinoLlanta.Reparacion=>"EN_REPARACION",TipoDestinoLlanta.Reencauche=>"EN_REENCAUCHE",TipoDestinoLlanta.DisposicionFinal=>"PEND_DISPOSICION",TipoDestinoLlanta.Traslado=>"EN_TRASLADO",_=>"DISPONIBLE"};
+    private static string EstadoDestino(TipoDestinoLlanta destino)=>destino switch{TipoDestinoLlanta.Reparacion=>"EN_REPARACION",TipoDestinoLlanta.Reencauche=>"EN_REENCAUCHE",TipoDestinoLlanta.DisposicionFinal=>"DISPOSICION_FINAL",TipoDestinoLlanta.Traslado=>"EN_TRASLADO",_=>"DISPONIBLE"};
     private async Task<EstadoLlanta> ObtenerEstadoAsync(string code,CancellationToken ct)
     {
         var legacy=code switch{"MONTADA"=>"MON","DISPONIBLE"=>"DIS","EN_REPARACION"=>"REP","EN_REENCAUCHE"=>"REE",_=>code};

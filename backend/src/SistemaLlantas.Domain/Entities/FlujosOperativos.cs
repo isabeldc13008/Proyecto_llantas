@@ -59,6 +59,8 @@ public sealed class OrdenServicioLlanta : EntidadAuditable
     public string UsuarioOpciona {get;set;}=string.Empty;
     public string? MotivoRechazo {get;set;}
     public string? Resultado {get;set;}
+    public Guid? LoteDisposicionFinalId {get;set;} public LoteDisposicionFinal? LoteDisposicionFinal {get;set;}
+    public string? EvaluadoPor {get;set;} public DateTimeOffset? FechaEvaluacion {get;set;} public DateTimeOffset? FechaDisposicion {get;set;}
     public Guid? LoteEnvioReparacionId {get;set;} public LoteEnvioReparacion? LoteEnvioReparacion {get;set;}
     public ICollection<EvidenciaFlujo> Evidencias {get;set;}=[];
 }

@@ -22,7 +22,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         var mounted=await q.CountAsync(x=>db.AsignacionesLlantaPosicion.Any(a=>a.LlantaId==x.Id&&a.Activo&&a.EsActiva),ct);
         var available=await q.CountAsync(x=>x.EstadoLlanta.PermiteMontaje&&!db.AsignacionesLlantaPosicion.Any(a=>a.LlantaId==x.Id&&a.Activo&&a.EsActiva),ct);
         var repair=await q.CountAsync(x=>x.EstadoLlanta.Codigo.Contains("REPAR"),ct);var retread=await q.CountAsync(x=>x.EstadoLlanta.Codigo.Contains("REENCAUCH"),ct);
-        var attention=await q.CountAsync(x=>db.AlertasInspeccion.Any(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO))||db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"),ct);
+        var attention=await q.CountAsync(x=>db.AlertasInspeccion.Any(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO))||db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"&&o.Estado!="RETORNADA_INVENTARIO"),ct);
         return new(total,mounted,available,repair,retread,attention);
     }
 
@@ -92,7 +92,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         if(!string.IsNullOrWhiteSpace(c.Vehiculo)){var vehicle=c.Vehiculo.Trim();q=q.Where(x=>db.AsignacionesLlantaPosicion.Any(a=>a.LlantaId==x.Id&&a.EsActiva&&(a.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(vehicle)||a.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(vehicle))));}
         if(c.KilometrajeMin.HasValue)q=q.Where(x=>x.KilometrajeAcumulado>=c.KilometrajeMin);if(c.KilometrajeMax.HasValue)q=q.Where(x=>x.KilometrajeAcumulado<=c.KilometrajeMax);
         if(c.InspeccionDesde.HasValue)q=q.Where(x=>db.InspeccionesDetalle.Any(d=>d.LlantaId==x.Id&&d.Inspeccion.FechaCreacion>=c.InspeccionDesde));if(c.InspeccionHasta.HasValue)q=q.Where(x=>db.InspeccionesDetalle.Any(d=>d.LlantaId==x.Id&&d.Inspeccion.FechaCreacion<=c.InspeccionHasta));
-        if(c.RequiereAtencion.HasValue)q=q.Where(x=>(db.AlertasInspeccion.Any(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO))||db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"))==c.RequiereAtencion);
+        if(c.RequiereAtencion.HasValue)q=q.Where(x=>(db.AlertasInspeccion.Any(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO))||db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"&&o.Estado!="RETORNADA_INVENTARIO"))==c.RequiereAtencion);
         if(!string.IsNullOrWhiteSpace(c.Search)){var s=c.Search.Trim();q=q.Where(x=>x.Codigo.Contains(s)||x.Serial.Contains(s)||x.Marca.Nombre.Contains(s)||x.Referencia.Nombre.Contains(s));}
         return q;
     }
@@ -112,7 +112,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         db.InspeccionesDetalle.Where(d=>d.LlantaId==x.Id).OrderByDescending(d=>d.Inspeccion.FechaCreacion).Select(d=>(DateTimeOffset?)d.Inspeccion.FechaCreacion).FirstOrDefault(),
         db.InspeccionesDetalle.Where(d=>d.LlantaId==x.Id).OrderByDescending(d=>d.Inspeccion.FechaCreacion).Select(d=>new[]{d.ProfundidadExterior,d.ProfundidadCentro,d.ProfundidadInterior}.Min()).FirstOrDefault(),
         db.OrdenesServicioLlanta.Count(o=>o.LlantaId==x.Id&&o.Activo&&o.Tipo==TipoServicioLlanta.Reparacion),db.AsignacionesLlantaPosicion.Count(a=>a.LlantaId==x.Id&&a.Activo),
-        db.AlertasInspeccion.Where(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO)).OrderByDescending(a=>a.Tipo.Contains("PROFUNDIDAD")).Select(a=>a.Tipo).FirstOrDefault()??db.OrdenesServicioLlanta.Where(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL").Select(o=>o.Tipo==TipoServicioLlanta.Reparacion?"Pendiente reparación":o.Tipo==TipoServicioLlanta.Reencauche?"Pendiente reencauche":"Atención requerida").FirstOrDefault()??"Normal",
+        db.AlertasInspeccion.Where(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO)).OrderByDescending(a=>a.Tipo.Contains("PROFUNDIDAD")).Select(a=>a.Tipo).FirstOrDefault()??db.OrdenesServicioLlanta.Where(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"&&o.Estado!="RETORNADA_INVENTARIO").Select(o=>o.Tipo==TipoServicioLlanta.Reparacion?"Pendiente reparación":o.Tipo==TipoServicioLlanta.Reencauche?"Pendiente reencauche":"Atención requerida").FirstOrDefault()??"Normal",
         x.Activo, Convert.ToBase64String(x.RowVersion));
 
     private async Task<List<LlantaResumenDto>> ConKilometrajeActivo(IReadOnlyList<LlantaResumenDto> items,CancellationToken ct)

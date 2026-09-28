@@ -26,3 +26,4 @@ appsettings.Development.local.json
 **/App_Data/
 glld-*.tar.gz
 qa_documentacion/*.png
+.pnpm-store/

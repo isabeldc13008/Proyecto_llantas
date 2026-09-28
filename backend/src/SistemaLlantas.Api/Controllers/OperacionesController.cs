@@ -67,7 +67,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
     [HttpPost("api/operaciones/solicitudes"),Authorize(Policy="Operaciones.Solicitar")]
     public async Task<ActionResult<SolicitudOperacionDto>> Solicitar(CrearSolicitudOperacionDto dto,CancellationToken ct)
     {
-        if(dto is null||string.IsNullOrWhiteSpace(dto.Tipo))throw new ValidacionException("El tipo de operación es obligatorio.");
+        if(EsDisposicionFinal(dto?.Tipo)||EsDisposicionFinal(dto?.TipoDestino)||EsDisposicionFinal(dto?.DestinoDesplazada))throw new ValidacionException("La disposición final debe gestionarse desde su módulo para garantizar evaluación técnica, aprobación, traslado, evidencia y cierre.");if(dto is null||string.IsNullOrWhiteSpace(dto.Tipo))throw new ValidacionException("El tipo de operación es obligatorio.");
         if(dto.Tipo.Length>50||(dto.TipoDestino?.Length??0)>50)throw new ValidacionException("El tipo de operación y destino admiten máximo 50 caracteres.");
         if(string.IsNullOrWhiteSpace(dto.Motivo)||dto.Motivo.Length>500)throw new ValidacionException("El motivo es obligatorio y admite máximo 500 caracteres.");
         if((dto.Observaciones?.Length??0)>1000)throw new ValidacionException("Las observaciones admiten máximo 1000 caracteres.");
@@ -132,7 +132,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
             if(item is null||!item.Activo)throw new SolicitudNoEncontradaException();
             if(!a.Autoriza(item.CentroId))throw new UnauthorizedAccessException("La solicitud está fuera de tus centros autorizados.");
             if(item.Estado!=EstadoSolicitudOperacion.PENDIENTE_APROBACION)throw new ConflictoException($"La solicitud ya fue procesada: {item.Estado}. Actualiza Autorizaciones.");
-            if(item.GrupoOperacionId.HasValue){await ResolverGrupo(item,dto,a,ct);var groupedResponse=await MapSolicitudAsync(item,ct);await tx.CommitAsync(ct);return groupedResponse;}
+            if(dto.Aprobar&&(EsDisposicionFinal(item.Tipo)||EsDisposicionFinal(item.TipoDestino)||EsDisposicionFinal(item.DestinoDesplazada)))throw new ValidacionException("La disposición final debe gestionarse desde su módulo con evaluación técnica.");if(item.GrupoOperacionId.HasValue){await ResolverGrupo(item,dto,a,ct);var groupedResponse=await MapSolicitudAsync(item,ct);await tx.CommitAsync(ct);return groupedResponse;}
             if(item.Solicitante==Usuario()&&!User.HasClaim("permiso","operaciones.aprobar_propia"))throw new UnauthorizedAccessException("No puede resolver su propia solicitud.");
             item.Aprobador=Usuario();item.FechaDecision=DateTimeOffset.UtcNow;
             if(!dto.Aprobar)
@@ -234,6 +234,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
         }
         x.Estado=EstadoSolicitudOperacion.EJECUTADO;x.UsuarioModificacion=Usuario();x.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);
     }
+    private static bool EsDisposicionFinal(string? valor)=>(Enum.TryParse<TipoDestinoLlanta>(valor,true,out var destino)&&destino==TipoDestinoLlanta.DisposicionFinal)||valor?.Replace(" ","").Replace("_","").Replace("ó","o").Replace("Ó","O").Contains("disposicion",StringComparison.OrdinalIgnoreCase)==true;
     private async Task<SolicitudOperacionDto> ObtenerSolicitud(Guid id,AlcanceCentros alcance,CancellationToken ct)
     {
         var item=await db.SolicitudesOperacion.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct);

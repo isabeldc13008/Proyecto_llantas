@@ -19,8 +19,8 @@
      @for(user of users();track user.id){<tr><td><b>{{user.username}}</b></td><td>{{user.nombre}}</td><td>{{user.rol}}</td><td><small>{{user.accesoGlobal?'Todos (permiso global)':(user.centros.join(' · ')||'Sin centros asignados')}}</small></td><td><div class="access-chips">@for(module of modules(user.rolId);track module){<span>{{module}}</span>}@empty{<small>Sin módulos visibles</small>}</div></td><td><span class="status" [class.off]="!user.activo">{{user.activo?'Activo':'Inactivo'}}</span></td><td><button class="link" (click)="editUser(user)">Editar</button></td></tr>}
     </tbody></table></div>
    } @else {
-    <div class="panel table"><table><thead><tr><th>Código</th><th>Nombre o configuración</th><th>Estado</th><th>Uso</th><th></th></tr></thead><tbody>
-     @for(record of records();track record.id){<tr><td><b>{{record.codigo}}</b></td><td>{{record.nombre}} @if(selected().key==='centros'){<small>Regional: {{record.padreNombre||'Sin regional asignada'}}</small>}</td><td><span class="status" [class.off]="!record.activo">{{record.activo?'Activo':'Inactivo'}}</span></td><td><small>{{selected().key==='marcas'||selected().key==='referencias'||selected().key==='dimensiones'?'Formulario de llantas':'Procesos operativos'}}</small></td><td><button class="link" (click)="edit(record)">Editar</button> <button class="link" (click)="toggle(record)">{{record.activo?'Inactivar':'Activar'}}</button></td></tr>} @empty {<tr><td colspan="5">No hay registros para este catálogo.</td></tr>}
+    <div class="panel table"><table><thead><tr><th>Código</th><th>Nombre o configuración</th>@if(selected().key==="centros"){<th>Regional</th><th>Relevancia</th>}<th>Estado</th><th>Uso</th><th></th></tr></thead><tbody>
+     @for(record of records();track record.id){<tr><td><b>{{record.codigo}}</b></td><td>{{record.nombre}}</td>@if(selected().key==='centros'){<td>{{record.padreNombre||'Sin regional asignada'}}</td><td>{{record.relevancia||'Sin relevancia'}}</td>}<td><span class="status" [class.off]="!record.activo">{{record.activo?'Activo':'Inactivo'}}</span></td><td><small>{{selected().key==='marcas'||selected().key==='referencias'||selected().key==='dimensiones'?'Formulario de llantas':'Procesos operativos'}}</small></td><td><button class="link" (click)="edit(record)">Editar</button> <button class="link" (click)="toggle(record)">{{record.activo?'Inactivar':'Activar'}}</button></td></tr>} @empty {<tr><td [attr.colspan]="selected().key==='centros'?7:5">No hay registros para este catálogo.</td></tr>}
     </tbody></table></div>
    }
   </main>
@@ -60,7 +60,7 @@
    <label>Código<input [(ngModel)]="codigo" placeholder="Ej. CONT"></label><label>Nombre o valor<input [(ngModel)]="nombre" placeholder="Nombre descriptivo"></label>
    @if(selected().key==='referencias'||selected().key==='centros'){<label>{{selected().key==='centros'?'Regional':'Marca relacionada'}}<select [(ngModel)]="parentId"><option value="">Selecciona {{selected().key==='centros'?'una regional':'una marca'}}</option>@for(brand of brands();track brand.id){<option [value]="brand.id">{{brand.codigo}} · {{brand.nombre}}</option>}</select></label>}
   }
-  <div class="actions"><button class="secondary" (click)="showForm=false">Cancelar</button><button class="primary" [disabled]="roleSaving" (click)="selected().key==='roles'?saveRole():selected().key==='usuarios'?saveUser():save()">Guardar</button></div>
+  @if(selected().key==='centros'){<label>Relevancia<select [(ngModel)]="relevancia"><option [ngValue]="null">Sin relevancia</option>@for(r of ['R1','R2','R3','R4'];track r){<option [ngValue]="r">{{r}}</option>}</select></label>}<div class="actions"><button class="secondary" (click)="showForm=false">Cancelar</button><button class="primary" [disabled]="roleSaving" (click)="selected().key==='roles'?saveRole():selected().key==='usuarios'?saveUser():save()">Guardar</button></div>
  </section></div>
 }
 @if(message){<div class="toast">✓ {{message}}</div>}

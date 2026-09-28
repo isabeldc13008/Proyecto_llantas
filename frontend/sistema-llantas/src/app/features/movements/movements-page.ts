@@ -90,7 +90,7 @@ export class MovementsPage implements OnInit {
   }catch(e:any){this.messageKind.set('error');this.message.set(e?.userMessage??'No fue posible registrar la solicitud.');}
   finally{this.busy.set(false);}
  }
- destinationType(){return this.type==='Montaje'||this.type==='Rotación'?'Posicion':this.type==='Reparación'?'Reparacion':this.type==='Disposición final'?'DisposicionFinal':this.type;}
+ destinationType(){return this.type==='Montaje'||this.type==='Rotación'?'Posicion':this.type==='Reparación'?'Reparacion':this.type;}
  async refresh(){
   const version=++this.refreshVersion;const vehicleId=this.vehicleId;
   const current=()=>version===this.refreshVersion&&vehicleId===this.vehicleId;

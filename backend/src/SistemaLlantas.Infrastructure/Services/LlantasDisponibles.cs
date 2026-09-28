@@ -10,5 +10,5 @@ public static class LlantasDisponibles
         && !db.ActividadesProgramadas.Any(a=>a.Activo&&a.Id!=actividadExcluir&&(!grupoExcluir.HasValue||a.GrupoProgramacionId!=grupoExcluir)&&a.LlantaId==x.Id&&(a.TipoActividad=="Montaje"||a.TipoActividad=="Cambio de juego"||a.TipoActividad=="Reemplazar llanta")&&a.Estado!=EstadoActividad.Cancelada&&a.Estado!=EstadoActividad.Cumplida)
         && !db.SolicitudesOperacion.Any(s=>s.Activo&&s.Id!=solicitudExcluir&&(!grupoExcluir.HasValue||s.GrupoOperacionId!=grupoExcluir)&&s.LlantaId==x.Id&&(s.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION||s.Estado==EstadoSolicitudOperacion.APROBADO))
         && !db.SolicitudesOperacion.Any(s=>s.Activo&&s.LlantaId==x.Id&&s.Tipo=="RESERVA"&&s.Estado==EstadoSolicitudOperacion.EJECUTADO)
-        && !db.OrdenesServicioLlanta.Any(o=>o.Activo&&o.LlantaId==x.Id&&o.Estado!="CERRADA"&&o.Estado!="RECHAZADA"));
+        && !db.OrdenesServicioLlanta.Any(o=>o.Activo&&o.LlantaId==x.Id&&o.Estado!="CERRADA"&&o.Estado!="RECHAZADA"&&o.Estado!="RETORNADA_INVENTARIO"));
 }
