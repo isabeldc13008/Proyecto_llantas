@@ -16,6 +16,30 @@ public sealed class ExistingDatabaseSchemaTests
         columns.Add(("dbo", "TBL_Usuario", "BDebeCambiarClave"), new[] { "dbo", "TBL_Usuario", "13", "BDebeCambiarClave", "bit", "1", "1", "0", "0" });
         foreach(var field in new[]{("SNombre","nvarchar","300","0"),("STipo","nvarchar","100","0"),("SDescripcion","nvarchar","2000","0"),("SOperador","nvarchar","4","0"),("SPrioridad","nvarchar","20","0"),("GCentroId","uniqueidentifier","16","1")})
             columns.Add(("dbo","TBL_ParametroAlerta",field.Item1),new[]{"dbo","TBL_ParametroAlerta","0",field.Item1,field.Item2,field.Item3,"0","0",field.Item4});
+        // Ampliaciones explícitas de las migraciones publicadas posteriores a la captura.
+        // No se derivan del modelo bajo prueba: nombres, tipos y nulabilidad siguen verificándose.
+        void AddColumn(string table, string name, string type, int length, bool nullable)
+            => columns.Add(("dbo", table, name), new[] { "dbo", table, "0", name, type, length.ToString(), "0", "0", nullable ? "1" : "0" });
+        // 20260918131215_AddScheduledMountSets
+        AddColumn("TBL_SolicitudOperacion", "GGrupoOperacionId", "uniqueidentifier", 16, true);
+        // 20260923182748_AddDisposalShipments
+        AddColumn("TBL_OrdenServicioLlanta", "DFechaDisposicion", "datetimeoffset", 10, true);
+        AddColumn("TBL_OrdenServicioLlanta", "DFechaEvaluacion", "datetimeoffset", 10, true);
+        AddColumn("TBL_OrdenServicioLlanta", "GLoteDisposicionFinalId", "uniqueidentifier", 16, true);
+        AddColumn("TBL_OrdenServicioLlanta", "SEvaluadoPor", "nvarchar", 300, true);
+        foreach (var field in new (string Name, string Type, int Length, bool Nullable)[]
+        {
+            ("GId", "uniqueidentifier", 16, false), ("SCodigo", "nvarchar", 60, false),
+            ("GCentroOrigenId", "uniqueidentifier", 16, false), ("GCentroDestinoId", "uniqueidentifier", 16, false),
+            ("SRelevanciaDestino", "nvarchar", 4, true), ("SEstado", "nvarchar", 80, false),
+            ("DFechaSalida", "datetimeoffset", 10, false), ("DFechaRecepcion", "datetimeoffset", 10, true),
+            ("SRemision", "nvarchar", 200, true), ("STransportador", "nvarchar", 300, true),
+            ("SObservaciones", "nvarchar", 2000, true), ("SReceptor", "nvarchar", 300, true),
+            ("DFechaCierre", "datetimeoffset", 10, true), ("SIdempotencyKey", "nvarchar", 200, false),
+            ("DFechaCreacion", "datetimeoffset", 10, false), ("SUsuarioCreacion", "nvarchar", -1, false),
+            ("DFechaModificacion", "datetimeoffset", 10, true), ("SUsuarioModificacion", "nvarchar", -1, true),
+            ("BActivo", "bit", 1, false), ("TRowVersion", "timestamp", 8, false)
+        }) AddColumn("TBL_LoteDisposicionFinal", field.Name, field.Type, field.Length, field.Nullable);
         var count = 0;
         foreach (var entity in db.Model.GetEntityTypes())
         {
@@ -36,7 +60,7 @@ public sealed class ExistingDatabaseSchemaTests
                 count++;
             }
         }
-        Assert.Equal(581,count);
+        Assert.Equal(606,count);
         Assert.False(db.Database.HasPendingModelChanges());
     }
 }
