@@ -66,3 +66,9 @@ app-vehicles-page>.configuration-catalog,app-vehicles-page>.layout .detail{borde
 @media(max-width:650px){app-bulk-import .bulk{overflow:hidden}}
 
 h1{font-family:var(--font-title)!important;font-weight:400!important;letter-spacing:-.02em}
+
+/* Contención real de controles y contenedores; los listados móviles conservan sus etiquetas. */
+html,body{max-width:100%;overflow-x:hidden}app-root,main,section,article,header,footer,nav,form,fieldset,label,dl,dd{min-width:0}
+button,input,select,textarea{max-width:100%;box-sizing:border-box}img,svg,video,canvas{max-width:100%}
+@media(max-width:900px){body:has(.shell.menu-open){overflow:hidden}}
+@media(max-width:650px){body:has(app-single-select-filter .open),body:has(.inspection-page .overlay){overflow:hidden}button,input:not([type=checkbox]):not([type=radio]),select{min-height:44px}button{white-space:normal;overflow-wrap:anywhere}input,select,textarea{font-size:16px}fieldset{min-inline-size:0}}

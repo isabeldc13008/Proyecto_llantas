@@ -2,6 +2,9 @@ import {TestBed,ComponentFixture} from '@angular/core/testing';
 import {HttpClient} from '@angular/common/http';
 import {provideRouter} from '@angular/router';
 import {of} from 'rxjs';
+import {App} from '../app';
+import {InspectionPage} from './inspection/inspection-page';
+import {SingleSelectFilter} from '../shared/single-select-filter';
 import {CatalogAdmin} from './admin/catalog-admin';
 import {AuthorizationsPage} from './authorizations/authorizations-page';
 import {RepairsPage} from './services/repairs-page';
@@ -18,16 +21,16 @@ const move:any={...request,id:'m1',numero:'MOV-20260918-123456',llantaId:'t1',or
 
 // Real iframe viewport: Chrome's top-level window has a minimum width above 390px.
 function viewport(fixture:ComponentFixture<any>,width:number,check?:(doc:Document)=>void){
- const frame=document.createElement('iframe');frame.style.cssText=`width:${width}px;height:1000px;border:0`;document.body.append(frame);
+ const frame=document.createElement('iframe');frame.style.cssText=`width:${width}px;height:${({320:568,360:800,390:844,412:915,768:1024,1366:768} as Record<number,number>)[width]??1000}px;border:0`;document.body.append(frame);
  try{const doc=frame.contentDocument!;const styles=Array.from(document.styleSheets).map(sheet=>{try{return Array.from(sheet.cssRules).map(rule=>rule.cssText).join('\n')}catch{return ''}}).join('\n');
- doc.open();doc.write(`<style>body{margin:0}*{box-sizing:border-box}${styles}</style><div style="display:grid;grid-template-columns:${width>900?'245px ':''}minmax(0,1fr)">${width>900?'<aside>Menú</aside>':''}<div style="min-width:0">${fixture.nativeElement.outerHTML}</div></div>`);doc.close();
+ doc.open();doc.write(`<style>body{margin:0}*{box-sizing:border-box}${styles}html,body{overflow-x:visible!important}</style>${fixture.componentInstance instanceof App?fixture.nativeElement.outerHTML:`<div style="display:grid;grid-template-columns:${width>900?'245px ':''}minmax(0,1fr)">${width>900?'<aside>Menú</aside>':''}<div style="min-width:0">${fixture.nativeElement.outerHTML}</div></div>`}`);doc.close();
  expect(doc.documentElement.scrollWidth).withContext('viewport '+width).toBeLessThanOrEqual(width);
  check?.(doc);
  }finally{frame.remove();}
 }
 
 describe('Organización visual de módulos operativos',()=>{
- beforeEach(()=>{TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{has:()=>true,isAdmin:()=>true,user:()=>({username:'otro'})}},{provide:CatalogsApi,useValue:{all:()=>of([])}},{provide:TiresApi,useValue:{list:()=>of({items:[]})}},{provide:HttpClient,useValue:{get:(url:string)=>of(url==='/api/usuarios/roles'?roles:url.includes('autorizaciones')||url.includes('/movimientos')||url.includes('/vehiculos')?{items:[],totalItems:0,pageNumber:1,pageSize:20,totalPages:0}:[])}}]});});
+ beforeEach(()=>{TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{has:()=>true,isAdmin:()=>true,isLoggedIn:()=>true,requiereCambioClave:()=>false,user:()=>({username:'otro',role:'ADMINISTRADOR'})}},{provide:CatalogsApi,useValue:{all:()=>of([])}},{provide:TiresApi,useValue:{list:()=>of({items:[]})}},{provide:HttpClient,useValue:{get:(url:string)=>of(url==='/api/usuarios/roles'?roles:url.includes('autorizaciones')||url.includes('/movimientos')||url.includes('/vehiculos')?{items:[],totalItems:0,pageNumber:1,pageSize:20,totalPages:0}:[])}}]});});
  async function create<T>(type:any):Promise<ComponentFixture<T>>{try{const f=TestBed.createComponent<T>(type);f.detectChanges();await f.whenStable();f.detectChanges();return f;}catch(e){throw new Error('Fixture '+type.name+': '+String(e));}}
  it('muestra módulos amigables y actualiza los chips al cambiar de rol',async()=>{
   const f=await create<CatalogAdmin>(CatalogAdmin),p=f.componentInstance;p.open();f.detectChanges();await f.whenStable();
@@ -38,7 +41,7 @@ describe('Organización visual de módulos operativos',()=>{
   select.value='r2';select.dispatchEvent(new Event('change'));f.detectChanges();await f.whenStable();f.detectChanges();
   text=f.nativeElement.querySelector('.role-access').textContent;expect(text).toContain('Inventario');expect(text).toContain('Analítica');expect(text).not.toContain('Vehículos');
  });
- for(const width of [1440,1366,1024,768,390]){
+ for(const width of [1440,1366,1024,768,412,390,360,320]){
   it('Administración: tabla y drawer contenidos a '+width,async()=>{
    const f=await create<CatalogAdmin>(CatalogAdmin),p=f.componentInstance;
    p.users.set([{id:'u1',username:long,nombre:long,activo:true,rolId:'r1',rol:'Operador',rolCodigo:'OPERADOR',centroIds:[],centros:[long],accesoGlobal:false}]);p.open();p.roleId='r1';
@@ -47,7 +50,7 @@ describe('Organización visual de módulos operativos',()=>{
   });
   it('Autorizaciones: tabla y grupo en modal contenidos a '+width,async()=>{
    const f=await create<AuthorizationsPage>(AuthorizationsPage),p=f.componentInstance;p.rows.set([request]);p.selected.set(request);p.groupRows.set([request,{...request,id:'s2',posicionDestino:'P2'}]);f.detectChanges();
-   viewport(f,width,doc=>{expect(doc.querySelectorAll('.position-change').length).toBe(2);const modal=doc.querySelector('.detail')!;expect(modal.getBoundingClientRect().right).toBeLessThanOrEqual(width);expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);const table=doc.querySelector('.table')!;expect(doc.defaultView!.getComputedStyle(table).overflowX).toBe('auto');});
+   viewport(f,width,doc=>{expect(doc.querySelectorAll('.position-change').length).toBe(2);const modal=doc.querySelector('.detail')!;expect(modal.getBoundingClientRect().right).toBeLessThanOrEqual(width);expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);const table=doc.querySelector('.table')!;expect(doc.defaultView!.getComputedStyle(table).overflowX).toBe(width<=650?'visible':'auto');if(width<=650){expect(doc.defaultView!.getComputedStyle(table.querySelector('tr')!).display).toBe('block');expect(table.querySelector('td')!.getAttribute('data-label')).toBe('Fecha');}});
   });
   it('Reparaciones: tarjetas y recepción contenidas a '+width,async()=>{
    const f=await create<RepairsPage>(RepairsPage),p=f.componentInstance;p.orders.set([{...request,id:'r1',estado:'OPCIONADA',kilometrajeAcumulado:100000,fechaOpcionada:'2026-09-18',marca:long,dimension:long,origen:long,evidencias:0}]);p.modal.set('receive');p.receiveRows.set([{orderId:'o1',llanta:long,selected:true,result:'REPARADA',cost:100,notes:long}]);f.detectChanges();
@@ -58,5 +61,22 @@ describe('Organización visual de módulos operativos',()=>{
    viewport(f,width,doc=>{const dialog=doc.querySelector('.detail')!;expect(dialog.scrollWidth).toBeLessThanOrEqual(dialog.clientWidth);expect(dialog.getBoundingClientRect().right).toBeLessThanOrEqual(width);expect(doc.defaultView!.getComputedStyle(doc.querySelector('.table-shell')!).overflowX).toBe('auto');});
   });
   it('Montajes: formulario contenido a '+width,async()=>{const f=await create<MovementsPage>(MovementsPage);viewport(f,width);});
+ }
+
+ for(const width of [320,360,390,412,768,1366]){
+  it('Inspecciones: modal y aviso contenidos a '+width,async()=>{
+   const f=TestBed.createComponent(InspectionPage),p=f.componentInstance;spyOn(p,'ngOnInit').and.resolveTo();p.openAssignment();p.assignmentMode.set('new');p.foundCatalogs.set({marcas:[],referencias:[],dimensiones:[],tipos:[]});p.notify('Error: '+long);f.detectChanges();
+   viewport(f,width,doc=>{const modal=doc.querySelector('.physical-modal')!;const bounds=modal.getBoundingClientRect();expect(bounds.left).toBeGreaterThanOrEqual(0);expect(bounds.right).toBeLessThanOrEqual(width);expect(bounds.bottom).toBeLessThanOrEqual(doc.defaultView!.innerHeight);expect(modal.scrollWidth).toBeLessThanOrEqual(modal.clientWidth);expect(doc.defaultView!.getComputedStyle(doc.querySelector('.toast')!).position).toBe('static');});
+   p.assignmentOpen.set(false);p.setTab('history');p.history.set([{id:'i',fecha:'2026-09-29',placa:'ABC123',numeroInterno:'456',centro:long,tecnico:long,kilometraje:100000,inspeccionadas:2,novedades:0,alertas:0,estado:'Borrador'}]);f.detectChanges();
+   viewport(f,width,doc=>{if(width<=650){const cells=doc.querySelectorAll('.history dl>div');expect(cells[0].getBoundingClientRect().left).toBe(cells[1].getBoundingClientRect().left);}});
+  });
+  it('Selector: hoja opaca contenida y sin búsqueda inicial a '+width,()=>{
+   const f=TestBed.createComponent(SingleSelectFilter);f.componentInstance.label='Centro';f.componentInstance.options=[{value:'c',label:long}];f.componentInstance.toggle();f.detectChanges();
+   viewport(f,width,doc=>{const sheet=doc.querySelector('.popover')!;expect(sheet.getBoundingClientRect().right).toBeLessThanOrEqual(width);expect(sheet.scrollWidth).toBeLessThanOrEqual(sheet.clientWidth);expect(doc.defaultView!.getComputedStyle(sheet).backgroundColor).toBe('rgb(255, 255, 255)');expect(doc.querySelector('input[type=search]')).toBeNull();});
+  });
+  it('Menú: permite alcanzar último enlace a '+width,()=>{
+   const f=TestBed.createComponent(App);f.componentInstance.menuOpen=width<=900;f.detectChanges();
+   viewport(f,width,doc=>{const menu=doc.querySelector('.nav-scroll')!;menu.scrollTop=menu.scrollHeight;const links=menu.querySelectorAll('a');expect(links.length).toBeGreaterThan(0);const last=links[links.length-1].getBoundingClientRect();expect(last.bottom).toBeLessThanOrEqual(menu.getBoundingClientRect().bottom);expect(doc.querySelector('aside')!.getBoundingClientRect().bottom).toBeLessThanOrEqual(doc.defaultView!.innerHeight);if(width<=900)expect(doc.querySelector('.content')!.hasAttribute('inert')).toBeTrue();});
+  });
  }
 });

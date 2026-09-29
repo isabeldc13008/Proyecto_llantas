@@ -1,0 +1,13 @@
+.toast{position:static;display:flex;align-items:center;gap:1rem;width:100%;max-width:100%;margin:0 0 1rem;box-sizing:border-box;box-shadow:none;animation:notice-in .18s ease-out}
+.toast span{flex:1;min-width:0;overflow-wrap:anywhere}.toast button{flex:0 0 44px;min-height:44px;border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;font-size:1.4rem}.toast.error{background:#fff4df;color:#795b17;border:1px solid #edc278}
+@keyframes notice-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.toast{animation:none}}
+.physical-modal .physical-choices,.new-tire-fields{display:grid;gap:.75rem;grid-template-columns:repeat(2,minmax(0,1fr))}
+.modal input[type=checkbox],.modal input[type=radio]{width:24px;min-width:24px;min-height:24px;flex:0 0 24px;margin:.2rem 0}.modal .physical-confirm{display:flex;align-items:center;gap:.75rem;min-height:44px}.modal select{width:100%;min-width:0;padding:.75rem;border:1px solid #cbdbe1;border-radius:10px;background:white}
+.modal,.history,.vehicle-summary,.editor{overflow-wrap:anywhere}.modal header>div,.tire-head>div{min-width:0}.modal header button{flex-shrink:0;min-width:44px;min-height:44px}.modal footer{flex-wrap:wrap}.lookup input{min-width:0}.lookup-results label{min-height:44px}.lookup-results label span{min-width:0}
+@media(max-width:650px){
+ .history dl,.vehicle-summary dl,.confirm dl{grid-template-columns:minmax(0,1fr);gap:.65rem}.history dl div{padding:.6rem;background:#f3f7f8;border-radius:8px}.history dt,.vehicle-summary dt,.confirm dt{font-size:.8rem}.history dd{font-size:.95rem}.history article>div span{font-size:.8rem}.history-filters{grid-template-columns:minmax(0,1fr)}
+ .metrics span{font-size:.8rem}.metrics b{font-size:1.65rem}.tabs{flex-wrap:wrap}.steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:.25rem}.steps li{font-size:.75rem}
+ .overlay{padding:.35rem;z-index:1100}.overlay .modal{width:100%;max-height:calc(100dvh - .7rem);overflow-y:auto;overscroll-behavior:contain;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom))}.physical-modal .physical-choices,.new-tire-fields{grid-template-columns:minmax(0,1fr)}
+ .editor>footer{position:static;flex-wrap:wrap}.continue{position:static}.tire-head{flex-wrap:wrap}.vehicle-results>button{gap:.5rem}.vehicle-results>button>span:nth-child(2){display:grid;grid-column:1/-1}.title span{overflow-wrap:anywhere}
+}

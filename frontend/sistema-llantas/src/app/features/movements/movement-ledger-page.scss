@@ -67,3 +67,6 @@ button:focus-visible,.table-shell:focus-visible{outline:3px solid #00a6d8;outlin
 @media(max-width:700px){.route{grid-template-columns:minmax(0,1fr)}:host ::ng-deep app-data-table-toolbar .data-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.detail>header{padding:1rem}}
 
 .detail{overflow-wrap:anywhere}.detail dl{grid-template-columns:repeat(2,minmax(0,1fr))}.detail a{min-width:0;max-width:100%}
+
+@media(max-width:650px){.ledger{padding:.75rem}.ledger>nav{flex-wrap:wrap}.ledger nav button{flex:1 1 120px;white-space:normal}.detail dl{grid-template-columns:minmax(0,1fr)}.pager{flex-wrap:wrap}}
+@media(max-width:360px){:host ::ng-deep app-data-table-toolbar .data-toolbar{grid-template-columns:minmax(0,1fr)}}

@@ -1,7 +1,8 @@
 @if (!auth.isLoggedIn() || auth.requiereCambioClave()) {
   <router-outlet />
 } @else {
-<div class="shell" [class.sidebar-collapsed]="sidebarCollapsed">
+<div class="shell" [class.sidebar-collapsed]="sidebarCollapsed" [class.menu-open]="menuOpen">
+  @if(menuOpen){<button class="menu-backdrop" aria-label="Cerrar menú" (click)="closeMobileMenu()"></button>}
   <aside [class.open]="menuOpen" [class.collapsed]="sidebarCollapsed">
     <div class="aside-head">
       <a class="brand" routerLink="/" aria-label="Ir al resumen">
@@ -57,7 +58,7 @@
     </div>
   </aside>
 
-  <div class="content">
+  <div class="content" [attr.inert]="menuOpen ? '' : null">
     <header class="topbar">
       <button class="menu" type="button" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed ? 'Mostrar menú lateral' : 'Ocultar menú lateral'">☰</button>
       <div class="context"><span>Fuente de datos</span><b>Servidor operativo</b></div>

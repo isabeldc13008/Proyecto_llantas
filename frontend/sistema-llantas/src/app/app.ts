@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 
@@ -30,6 +30,8 @@ export class App {
     }
   }
 
+  @HostListener('window:resize') onResize(){if(!window.matchMedia('(max-width: 900px)').matches)this.menuOpen=false;}
+  @HostListener('document:keydown.escape') escape(){this.menuOpen=false;}
   logout() {
     this.menuOpen = false;
     this.auth.logout();
