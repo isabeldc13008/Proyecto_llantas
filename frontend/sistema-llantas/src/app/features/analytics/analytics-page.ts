@@ -1,69 +1,34 @@
 import {CommonModule} from '@angular/common';
-import {Component,OnInit,inject,signal} from '@angular/core';
-import {RouterLink} from '@angular/router';
-import {AuthService} from '../../core/auth/auth.service';
+import {Component,OnInit,OnDestroy,inject,signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {firstValueFrom} from 'rxjs';
-import {AnalyticsApi,AnalyticsTire,AnalyticsWear,AnalyticsFilters,AnalyticsGroup,AnalyticsOptions,AnalyticsPage,AnalyticsPosition,AnalyticsRanking,AnalyticsSummary,AnalyticsView,KmStats} from './analytics-api';
-import {TireMetric} from './tire-metric';
-
-const defaults=():AnalyticsFilters=>({centroId:'',marcaId:'',referenciaId:'',dimensionId:'',estadoId:'',tipoVehiculo:'',ingresoDesde:'',ingresoHasta:'',minimoMuestra:5});
-@Component({selector:'app-analytics-page',imports:[CommonModule,FormsModule,TireMetric,RouterLink],templateUrl:'./analytics-page.html',styleUrl:'./analytics-page.scss'})
-export class AnalyticsPageComponent implements OnInit {
- private api=inject(AnalyticsApi);readonly auth=inject(AuthService);
- readonly tabs:{id:AnalyticsView;label:string;subtitle:string}[]=[
-  {id:'resumen',label:'Estado actual',subtitle:'Atención y disponibilidad de las llantas autorizadas'},
-  {id:'desgaste',label:'Desgaste y pronóstico',subtitle:'Mediciones reales, trazabilidad y calidad de la evidencia'},
-  {id:'vida-util',label:'Comparativos',subtitle:'Marca, referencia, dimensión, centro y posición en una sola sección'},
-  {id:'movimientos',label:'Movimientos',subtitle:'Actividad registrada y acceso a su trazabilidad'}
- ];
- view=signal<AnalyticsView>('resumen');loading=signal(false);error=signal('');optionsError=signal('');
- options=signal<AnalyticsOptions|null>(null);summary=signal<AnalyticsSummary|null>(null);
- groups=signal<AnalyticsPage<AnalyticsGroup>|null>(null);positions=signal<AnalyticsPage<AnalyticsPosition>|null>(null);movements=signal<AnalyticsRanking|null>(null);
- tires=signal<AnalyticsPage<AnalyticsTire>|null>(null);wear=signal<AnalyticsWear|null>(null);wearLoading=signal(false);wearError=signal('');indicator='todas';private wearVersion=0;
- filters=defaults();applied=defaults();group='marca';cohort:'enOperacion'|'finalizadas'='enOperacion';
- showFilters=false;showMethod=false;page=signal(1);private requestVersion=0;
- async ngOnInit(){await Promise.allSettled([this.loadOptions(),this.load()]);}
- async loadOptions(){this.optionsError.set('');try{this.options.set(await firstValueFrom(this.api.options()));}catch(e:any){this.optionsError.set(e?.userMessage??'No fue posible cargar las opciones de filtro.');}}
- async selectView(view:AnalyticsView){this.view.set(view);this.indicator='todas';this.group=view==='marcas-referencias'?'marca-referencia':'marca';await this.load(1);}
- async apply(){
-  if(this.filters.ingresoDesde&&this.filters.ingresoHasta&&this.filters.ingresoDesde>this.filters.ingresoHasta){this.error.set('La fecha inicial no puede ser posterior a la final.');return;}
-  if(!Number.isInteger(this.filters.minimoMuestra)||this.filters.minimoMuestra<1||this.filters.minimoMuestra>1000){this.error.set('La muestra mínima debe ser un entero entre 1 y 1.000.');return;}
-  this.applied={...this.filters};this.showFilters=false;await this.load(1);
- }
- async clear(){this.filters=defaults();await this.apply();}
- async load(page=1){
-  const version=++this.requestVersion;this.loading.set(true);this.error.set('');
-  this.summary.set(null);this.groups.set(null);this.positions.set(null);this.movements.set(null);this.tires.set(null);this.closeWear();
-  try{
-   const view=this.view();
-   if(view==='resumen'){const data=await firstValueFrom(this.api.summary(this.applied));if(version===this.requestVersion)this.summary.set(data);}
-   else if(view==='desgaste'){const data=await firstValueFrom(this.api.tires(this.applied,page,this.indicator));if(version===this.requestVersion)this.tires.set(data);}
-   else if(view==='posiciones'||view==='vida-util'&&this.group==='posicion'){const data=await firstValueFrom(this.api.positions(this.applied,page));if(version===this.requestVersion)this.positions.set(data);}
-   else if(view==='movimientos'){const data=await firstValueFrom(this.api.movements(this.applied,page));if(version===this.requestVersion)this.movements.set(data);}
-   else{const data=await firstValueFrom(this.api.groups(view,this.applied,page,this.group));if(version===this.requestVersion)this.groups.set(data);}
-   if(version===this.requestVersion)this.page.set(page);
-  }catch(e:any){if(version===this.requestVersion)this.error.set(e?.userMessage??e?.error?.message??'No fue posible consultar Analítica. Intenta nuevamente.');}
-  finally{if(version===this.requestVersion)this.loading.set(false);}
- }
- async drill(indicator:string){this.view.set('desgaste');this.indicator=indicator;await this.load(1);}
- closeWear(){++this.wearVersion;this.wear.set(null);this.wearError.set('');this.wearLoading.set(false);}
- async openWear(id:string){const version=++this.wearVersion;this.wear.set(null);this.wearError.set('');this.wearLoading.set(true);
-  try{const result=await firstValueFrom(this.api.wear(id));if(version===this.wearVersion)this.wear.set(result);}
-  catch(e:any){if(version===this.wearVersion)this.wearError.set(e?.userMessage??e?.error?.message??'No fue posible cargar las mediciones.');}
-  finally{if(version===this.wearVersion)this.wearLoading.set(false);}
- }
- indicatorLabel(){return ({todas:'Todas',montadas:'Montadas',disponibles:'Disponibles',reparacion:'En reparación',reencauche:'En reencauche',finalizadas:'Disposición final',alertas:'Con alertas abiertas','sin-km':'Sin recorrido verificable',incompletos:'Tramos incompletos',medidas:'Con medición completa'} as Record<string,string>)[this.indicator]??this.indicator;}
- canOpenHistory(){return this.auth.canModule('llantas')&&(this.auth.has('llantas.consultar')||this.auth.has('llantas.administrar'));}
- stats(group:AnalyticsGroup):KmStats{return group[this.cohort];}
- sufficient(group:AnalyticsGroup){return this.stats(group).muestra>=this.applied.minimoMuestra;}
- maxGroup(){return Math.max(1,...(this.groups()?.items??[]).filter(g=>this.sufficient(g)).map(g=>this.stats(g).promedio??0));}
- bar(group:AnalyticsGroup){return this.sufficient(group)?100*(this.stats(group).promedio??0)/this.maxGroup():0;}
- maxPosition(){return Math.max(1,...(this.positions()?.items??[]).filter(p=>p.muestraSuficiente).map(p=>p.kmPromedio??0));}
- heat(position:AnalyticsPosition){return position.muestraSuficiente&&position.kmPromedio!==null ? .08+.4*position.kmPromedio/this.maxPosition() : 0;}
- totalPages(){return this.tires()?.totalPages??this.groups()?.totalPages??this.positions()?.totalPages??this.movements()?.ranking.totalPages??0;}
- totalItems(){return this.tires()?.totalItems??this.groups()?.totalItems??this.positions()?.totalItems??this.movements()?.ranking.totalItems??0;}
- maxCount(values:{cantidad:number}[]){return Math.max(1,...values.map(x=>x.cantidad));}
- subtitle(){return this.tabs.find(x=>x.id===this.view())?.subtitle;}
- filterCount(){return Object.entries(this.applied).filter(([k,v])=>k!=='minimoMuestra'&&v!=='').length;}
+import {ActivatedRoute,Router} from '@angular/router';
+import {firstValueFrom,Subscription} from 'rxjs';
+import {AnalyticsApi,AnalyticsOptions,AnalyticsPage} from './analytics-api';
+import {MaintenanceFilters,MaintenanceQueueData,MaintenanceVehicle,maintenanceDefaults,evaluationText,classificationLabels} from './maintenance-models';
+import {MaintenanceQueue} from './maintenance-queue';
+import {TireEvidencePanel} from './tire-evidence-panel';
+@Component({selector:'app-analytics-page',imports:[CommonModule,FormsModule,MaintenanceQueue,TireEvidencePanel],templateUrl:'./analytics-page.html',styleUrl:'./analytics-page.scss'})
+export class AnalyticsPageComponent implements OnInit,OnDestroy{
+ private api=inject(AnalyticsApi);private route=inject(ActivatedRoute);private router=inject(Router);private version=0;private vehicleVersion=0;private routeSubscription?:Subscription;
+ filters=maintenanceDefaults();applied=maintenanceDefaults();page=signal(1);selectedId=signal('');data=signal<MaintenanceQueueData|null>(null);loading=signal(false);error=signal('');optionsError=signal('');vehicleError=signal('');options=signal<AnalyticsOptions|null>(null);vehicles=signal<AnalyticsPage<MaintenanceVehicle>|null>(null);showFilters=false;vehicleSearch='';vehicleLoading=signal(false);
+ evaluationText=evaluationText;labels=classificationLabels;
+ ngOnInit(){void this.loadOptions();this.routeSubscription=this.route.queryParamMap.subscribe(p=>{
+  const next=maintenanceDefaults();for(const key of Object.keys(next) as (keyof MaintenanceFilters)[]){const value=p.get(key);if(value!==null)(next as unknown as Record<string,string>)[key]=value;}
+  if(!['MONTADAS','TODAS'].includes(next.montaje))next.montaje='MONTADAS';if(!['COLA','TODAS','FUERA_COLA'].includes(next.vista))next.vista='COLA';if(next.clasificacion!=='CONDICION_POR_VERIFICAR')next.clasificacion='';
+  const parsed=Number(p.get('pagina')??1);const page=Number.isInteger(parsed)&&parsed>0&&parsed<=100000?parsed:1;
+  const changed=JSON.stringify(next)!==JSON.stringify(this.applied)||page!==this.page()||this.data()===null;
+  const centerChanged=next.centroId!==this.applied.centroId;this.filters={...next};this.applied={...next};this.page.set(page);this.selectedId.set(p.get('seleccion')??'');
+  if(changed)void this.load(page);if(centerChanged||!this.vehicles())void this.findVehicles();
+ });}
+ ngOnDestroy(){this.routeSubscription?.unsubscribe();this.version++;this.vehicleVersion++;}
+ async loadOptions(){this.optionsError.set('');try{this.options.set(await firstValueFrom(this.api.options()))}catch(e:any){this.optionsError.set(e?.userMessage??'No se pudieron cargar los filtros')}}
+ async load(page=this.page()){const version=++this.version;this.loading.set(true);this.error.set('');try{const data=await firstValueFrom(this.api.maintenance(this.applied,page));if(version===this.version)this.data.set(data)}catch(e:any){if(version===this.version){this.data.set(null);this.error.set(e?.userMessage??e?.error?.message??'No fue posible consultar mantenimiento')}}finally{if(version===this.version)this.loading.set(false)}}
+ async apply(){this.showFilters=false;const changed=JSON.stringify(this.filters)!==JSON.stringify(this.applied)||this.page()!==1||!!this.selectedId();await this.router.navigate([],{relativeTo:this.route,queryParams:{...this.filters,pagina:1,seleccion:null}});if(!changed)await this.load(1)}
+ async setView(view:MaintenanceFilters['vista']){this.filters.vista=view;this.filters.clasificacion='';await this.apply()}
+ async verifyOnly(){this.filters.vista='COLA';this.filters.clasificacion=this.filters.clasificacion?'':'CONDICION_POR_VERIFICAR';await this.apply()}
+ select(id:string){void this.router.navigate([],{relativeTo:this.route,queryParams:{seleccion:id},queryParamsHandling:'merge'});}
+ changePage(page:number){void this.router.navigate([],{relativeTo:this.route,queryParams:{pagina:page,seleccion:null},queryParamsHandling:'merge'});}
+ async clear(){this.filters=maintenanceDefaults();this.vehicleSearch='';await this.apply()}
+ async centerChanged(){this.filters.vehiculoId='';this.vehicleSearch='';await this.findVehicles()}
+ async findVehicles(page=1){const v=++this.vehicleVersion;this.vehicleLoading.set(true);this.vehicleError.set('');try{const data=await firstValueFrom(this.api.maintenanceVehicles(this.vehicleSearch,this.filters.centroId,page));if(v===this.vehicleVersion)this.vehicles.set(data)}catch(e:any){if(v===this.vehicleVersion)this.vehicleError.set(e?.userMessage??'No se pudieron consultar los vehículos')}finally{if(v===this.vehicleVersion)this.vehicleLoading.set(false)}}
 }

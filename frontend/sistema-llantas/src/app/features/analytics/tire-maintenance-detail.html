@@ -1,0 +1,11 @@
+<main class="detail"><a [routerLink]="back">Volver al centro de decisiones</a><h1>Detalle de mantenimiento</h1><app-tire-evidence-panel [tireId]="id" [full]="true"/>
+<section><h2>Historial operativo</h2><p>Actividades y eventos registrados. No equivalen a resolución del riesgo analítico.</p>
+@if(!canHistory){<p>Sin acceso al historial operativo. La evidencia de Analítica permanece disponible.</p>}
+@if(loading()){<p role="status">Consultando historial operativo…</p>}
+@if(error()){<p role="alert">{{error()}}</p><button (click)="loadHistory()">Reintentar</button>}
+@if(history();as h){
+ <h3>Montajes y desmontajes</h3><ol>@for(m of h.montajes;track $index){<li><b>{{m.fechaInicio|date:'dd/MM/yyyy HH:mm'}} — {{m.fechaFin?(m.fechaFin|date:'dd/MM/yyyy HH:mm'):'Montaje abierto'}}</b><p>{{m.vehiculo}} · {{m.placa}} · {{m.posicion}} · {{m.centro}}</p><small>Odómetro montaje {{m.kilometrajeInicio??'Sin dato'}} / desmontaje {{m.kilometrajeFin??'Sin dato'}} km. {{m.inconsistenciaKilometraje?'Recorrido no verificable':''}}</small></li>}@empty{<li>Sin montajes autorizados registrados.</li>}</ol>
+ <h3>Intervenciones</h3><ol>@for(s of h.servicios;track s.id){<li><b>{{s.tipo}} · {{s.estado}}</b><p>{{s.fecha|date:'dd/MM/yyyy'}} · {{s.motivo}}</p><small>Proveedor {{s.proveedor??'Sin dato'}} · Envío {{s.fechaEnvio?(s.fechaEnvio|date:'dd/MM/yyyy'):'Sin dato'}} · Retorno {{s.fechaRetorno?(s.fechaRetorno|date:'dd/MM/yyyy'):'Sin dato'}}</small></li>}@empty{<li>Sin intervenciones autorizadas registradas.</li>}</ol>
+ <details><summary>Movimientos registrados ({{h.movimientos.length}})</summary><ol>@for(m of h.movimientos;track m.id){<li><b>{{m.tipo}}</b><p>{{m.fecha|date:'dd/MM/yyyy HH:mm'}} · {{m.centro}} · {{m.motivo}}</p><small>{{m.posicionOrigen??'—'}} → {{m.posicionDestino??'—'}} · {{m.usuario}}</small></li>}@empty{<li>Sin movimientos autorizados.</li>}</ol></details>
+}
+</section></main>

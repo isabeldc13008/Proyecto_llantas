@@ -30,7 +30,7 @@ function viewport(fixture:ComponentFixture<any>,width:number,check?:(doc:Documen
 }
 
 describe('Organización visual de módulos operativos',()=>{
- beforeEach(()=>{TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{has:()=>true,isAdmin:()=>true,isLoggedIn:()=>true,requiereCambioClave:()=>false,user:()=>({username:'otro',role:'ADMINISTRADOR'})}},{provide:CatalogsApi,useValue:{all:()=>of([])}},{provide:TiresApi,useValue:{list:()=>of({items:[]})}},{provide:HttpClient,useValue:{get:(url:string)=>of(url==='/api/usuarios/roles'?roles:url.includes('autorizaciones')||url.includes('/movimientos')||url.includes('/vehiculos')?{items:[],totalItems:0,pageNumber:1,pageSize:20,totalPages:0}:[])}}]});});
+ beforeEach(()=>{TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{has:()=>true,canModule:()=>true,hasOperationalScope:()=>true,isAdmin:()=>true,isLoggedIn:()=>true,requiereCambioClave:()=>false,user:()=>({username:'otro',role:'ADMINISTRADOR'})}},{provide:CatalogsApi,useValue:{all:()=>of([])}},{provide:TiresApi,useValue:{list:()=>of({items:[]})}},{provide:HttpClient,useValue:{get:(url:string)=>of(url==='/api/usuarios/roles'?roles:url.includes('autorizaciones')||url.includes('/movimientos')||url.includes('/vehiculos')?{items:[],totalItems:0,pageNumber:1,pageSize:20,totalPages:0}:[])}}]});});
  async function create<T>(type:any):Promise<ComponentFixture<T>>{try{const f=TestBed.createComponent<T>(type);f.detectChanges();await f.whenStable();f.detectChanges();return f;}catch(e){throw new Error('Fixture '+type.name+': '+String(e));}}
  it('muestra módulos amigables y actualiza los chips al cambiar de rol',async()=>{
   const f=await create<CatalogAdmin>(CatalogAdmin),p=f.componentInstance;p.open();f.detectChanges();await f.whenStable();
@@ -80,3 +80,5 @@ describe('Organización visual de módulos operativos',()=>{
   });
  }
 });
+
+

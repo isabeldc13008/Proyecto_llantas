@@ -78,7 +78,7 @@ describe('InspectionPage vehicle search', () => {
     page.notify('Anterior');page.changeStage('summary');expect(page.message()).toBe('');page.ngOnDestroy();
   }));
   it('el botón del aviso cierra sin bloquear las acciones',()=>{
-    const f=TestBed.createComponent(InspectionPage);spyOn(f.componentInstance,'ngOnInit').and.resolveTo();f.componentInstance.notify('Error');f.detectChanges();
+    spyOn(InspectionPage.prototype,'ngOnInit').and.resolveTo();const f=TestBed.createComponent(InspectionPage);f.componentInstance.notify('Error');f.detectChanges();
     const button=f.nativeElement.querySelector('.toast button');expect(button.getAttribute('aria-label')).toBe('Cerrar mensaje');button.click();f.detectChanges();expect(f.nativeElement.querySelector('.toast')).toBeNull();
   });
   it('registra nueva por endpoint limitado y continúa leyendo la misma posición',async()=>{
@@ -90,7 +90,7 @@ describe('InspectionPage vehicle search', () => {
     const req=http.expectOne('/api/inspecciones/i/llantas-encontradas');expect(req.request.body.centroId).toBe('c');expect(req.request.body.llantaAnteriorId).toBeNull();http.expectNone('/api/llantas');
     req.flush({...context,ejes:[{...context.ejes[0],posiciones:[{...context.ejes[0].posiciones[0],llanta:{id:'n',codigo:'N',estado:'MONTADA',marca:'M',referencia:'R',dimension:'D'}}]}]});await pending;
     expect(page.assignmentOpen()).toBeFalse();expect(page.selected().id).toBe('p');expect(page.selected().tire).toBe('N');expect(page.selected().state).toBe('normal');expect(page.selected().saved).toBeFalse();
-    Object.assign(page.selected(),{outer:11,center:11,inner:11,condition:'cond',recommendation:'rec'});const save=page.savePosition();const put=http.expectOne('/api/inspecciones/i/posiciones/p');expect(put.request.body.profundidadCentro).toBe(11);put.flush({});await save;expect(page.selected().saved).toBeTrue();page.ngOnDestroy();
+    Object.assign(page.selected(),{outer:11,center:11,inner:11,condition:'cond',recommendation:'rec'});const save=page.savePosition();await Promise.resolve();await Promise.resolve();const put=http.expectOne('/api/inspecciones/i/posiciones/p');expect(put.request.body.profundidadCentro).toBe(11);put.flush({});await save;expect(page.selected().saved).toBeTrue();page.ngOnDestroy();
   });
   it('una corrección regularizada no vuelve a quedar pendiente al abrir borrador',async()=>{
     const page=TestBed.runInInjectionContext(()=>new InspectionPage());page.vehicles.set([{id:'v',internal:'1',plate:'P',type:'Camión',centerId:'c',centerCode:'C',centerName:'Centro',regional:''}]);
@@ -100,3 +100,5 @@ describe('InspectionPage vehicle search', () => {
     expect(page.selected().state).toBe('normal');expect(page.selected().identification).toBe('confirmed');
   });
 });
+
+

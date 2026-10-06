@@ -1,0 +1,14 @@
+<div class="chart-heading"><h3>Evolución de profundidad</h3><label>Lectura<select [(ngModel)]="axis"><option value="minima">Mínima calculada</option><option value="exterior">Exterior</option><option value="centro">Central</option><option value="interior">Interior</option></select></label></div>
+@if(mediciones.length){
+ <svg viewBox="0 0 620 220" role="img" aria-label="Profundidad observada por fecha de registro. Consulte los valores en la tabla de mediciones.">
+  <line x1="45" x2="585" y1="170" y2="170" class="axis"/><line x1="45" x2="45" y1="30" y2="170" class="axis"/>
+  <text x="4" y="35">{{maximum()|number:'1.0-1'}} mm</text><text x="16" y="175">0</text>
+  @for(s of segments();track $index){<line class="data-segment" [attr.x1]="s.a.x" [attr.y1]="s.a.y" [attr.x2]="s.b.x" [attr.y2]="s.b.y"/>}
+  @for(p of points();track p.m.lectura.id){@if(p.value!==null){<circle [attr.cx]="p.x" [attr.cy]="p.y" r="4"><title>{{p.m.lectura.fecha|date:'dd/MM/yyyy HH:mm'}} · {{p.value}} mm · {{p.m.calidad}}</title></circle>}}
+  <text x="45" y="198">{{points()[0].m.lectura.fecha|date:'dd/MM/yy'}}</text><text x="580" y="198" text-anchor="end">{{points()[points().length-1].m.lectura.fecha|date:'dd/MM/yy'}}</text>
+ </svg>
+ <p class="caption">Fecha de registro · mm observados. Los cortes separan tramos o evidencia incompleta. No es un pronóstico.</p>
+ <details><summary>Mediciones y evidencia ({{mediciones.length}})</summary><div class="table-scroll"><table><thead><tr><th>Fecha de registro</th><th>Exterior</th><th>Central</th><th>Interior</th><th>Mínima</th><th>Km desde montaje</th><th>Evidencia</th></tr></thead><tbody>
+ @for(m of mediciones;track m.lectura.id){<tr><td>{{m.lectura.fecha|date:'dd/MM/yyyy HH:mm'}}</td><td>{{m.lectura.exterior??'Sin dato'}}</td><td>{{m.lectura.centro??'Sin dato'}}</td><td>{{m.lectura.interior??'Sin dato'}}</td><td>{{m.minima??'No evaluable'}}</td><td>{{m.kmDesdeMontaje===null?'No verificable':(m.kmDesdeMontaje|number:'1.0-0')}}</td><td>{{m.calidad}}<small>Inspección {{m.lectura.inspeccionId}} · Posición {{m.lectura.posicion}} · Odómetro {{m.lectura.odometro??'Sin dato'}}</small></td></tr>}
+ </tbody></table></div></details>
+}@else{<p class="caption">Sin mediciones finalizadas en el historial autorizado.</p>}

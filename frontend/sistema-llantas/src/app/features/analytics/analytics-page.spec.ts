@@ -1,134 +1,15 @@
-import {ComponentFixture,TestBed} from '@angular/core/testing';
+import {TestBed,ComponentFixture} from '@angular/core/testing';
+import {provideRouter,Router} from '@angular/router';
 import {of,Subject,throwError} from 'rxjs';
-import {provideRouter,ActivatedRouteSnapshot,Router} from '@angular/router';
-import {AnalyticsApi,AnalyticsGroup,AnalyticsPage,AnalyticsSummary,KmStats} from './analytics-api';
+import {AnalyticsApi} from './analytics-api';
 import {AnalyticsPageComponent} from './analytics-page';
-import {TireMetric} from './tire-metric';
-import {AuthService} from '../../core/auth/auth.service';
-import {roleGuard} from '../../core/auth/role.guard';
-
-describe('Analytics phase one',()=>{
- let fixture:ComponentFixture<AnalyticsPageComponent>,page:AnalyticsPageComponent,api:jasmine.SpyObj<AnalyticsApi>;
- const stats=(n=0,value:number|null=null):KmStats=>({muestra:n,promedio:value,mediana:value,desviacion:n?0:null,minimo:value,maximo:value});
- const summary=(total=2):AnalyticsSummary=>({total,montadas:1,disponibles:1,enReparacion:0,enReencauche:0,disposicionFinal:0,conAlertas:0,sinKm:1,conTramosIncompletos:0,profundidadPromedio:null,muestraProfundidad:0,movimientosPromedio:0,enOperacion:stats(1,1000),finalizadas:stats(),estados:[{nombre:'Disponible',cantidad:1}]});
- const group=(n=1):AnalyticsGroup=>({id:'brand',nombre:'Marca real',total:10,enOperacionTotal:9,finalizadasTotal:1,enOperacion:stats(n,1000),finalizadas:stats(1,2000),reparacionesPromedio:0,reencauchesPromedio:0,alertas:0,movimientos:2,muestraSuficiente:false});
- const paged=<T>(items:T[],page=1):AnalyticsPage<T>=>({items,pageNumber:page,pageSize:20,totalItems:41,totalPages:3});
- beforeEach(async()=>{
-  api=jasmine.createSpyObj('AnalyticsApi',['options','summary','groups','positions','movements','tires','wear']);
-  api.options.and.returnValue(of({centros:[],marcas:[],referencias:[],dimensiones:[],estados:[],tiposVehiculo:[]}));
-  api.summary.and.returnValue(of(summary()));api.groups.and.returnValue(of(paged([group()])));
-  api.tires.and.returnValue(of(paged([])));
-  api.positions.and.returnValue(of(paged([])));api.movements.and.returnValue(of({ranking:paged([]),tipos:[]}));
-  await TestBed.configureTestingModule({imports:[AnalyticsPageComponent],providers:[provideRouter([]),{provide:AuthService,useValue:{canModule:()=>false,has:()=>false}},{provide:AnalyticsApi,useValue:api}]}).compileComponents();
-  fixture=TestBed.createComponent(AnalyticsPageComponent);page=fixture.componentInstance;
-  fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
- });
- it('requires both module access and the existing tire API permission for operational links',()=>{
-  const auth=TestBed.inject(AuthService);spyOn(auth,'canModule').and.returnValue(true);const permission=spyOn(auth,'has').and.returnValue(false);
-  expect(page.canOpenHistory()).toBeFalse();permission.and.callFake(p=>p==='llantas.consultar');expect(page.canOpenHistory()).toBeTrue();
- });
- it('drills into the exact indicator preserving applied filters',async()=>{
-  page.filters.centroId='allowed';await page.apply();await page.drill('alertas');
-  expect(api.tires).toHaveBeenCalledWith(jasmine.objectContaining({centroId:'allowed'}),1,'alertas');expect(page.view()).toBe('desgaste');
- });
- it('places position comparisons in the shared section',async()=>{
-  await page.selectView('vida-util');page.group='posicion';await page.load();expect(api.positions).toHaveBeenCalled();
- });
- it('shows insufficient data, observed readings and coverage without a life percentage',async()=>{
-  api.wear.and.returnValue(of({id:'t',codigo:'LL-1',totalLecturas:1,lecturasCompletas:1,lecturasConTramo:0,mediciones:[{lectura:{id:'r',inspeccionId:'i',fecha:'2026-01-01T00:00:00Z',posicionId:'p',posicion:'P1',odometro:100,exterior:0,centro:2,interior:3},minima:0,tramoId:null,kmDesdeMontaje:null,calidad:'Sin tramo'}],reglas:[],pronostico:'Datos insuficientes',limitaciones:['Continuidad no certificada']}));
-  await page.openWear('t');fixture.detectChanges();const text=fixture.nativeElement.textContent;
-  expect(text).toContain('Datos insuficientes');expect(text).toContain('0.0 mm');expect(text).toContain('1 / 1 lecturas completas');expect(text).toContain('No verificable');
-  expect(fixture.nativeElement.querySelector('a[href^="/llantas"]')).toBeNull();
- });
- it('does not display stale wear after changing the cohort',async()=>{
-  const late=new Subject<any>();api.wear.and.returnValue(late);const request=page.openWear('t');await page.load();late.next({id:'t'});late.complete();await request;expect(page.wear()).toBeNull();
- });
- it('loads only the active view and options',()=>{
-  expect(api.summary).toHaveBeenCalledTimes(1);expect(api.options).toHaveBeenCalledTimes(1);
-  expect(api.groups).not.toHaveBeenCalled();expect(api.movements).not.toHaveBeenCalled();
- });
- it('renders real zero, missing data and measurement coverage distinctly',()=>{
-  const text=fixture.nativeElement.textContent;
-  expect(text).toContain('Sin dato');expect(text).toContain('Movimientos por llanta');
-  expect(text).toContain('cobertura');expect(text).not.toContain('km restantes');
-  expect(page.summary()?.movimientosPromedio).toBe(0);
-  const ring=fixture.nativeElement.querySelector('app-tire-metric [role="img"]');
-  expect(ring.getAttribute('aria-label')).toContain('1 de 2');expect(ring.getAttribute('aria-label')).toContain('No es una estimación');
- });
- it('keeps summary available if filter options fail',async()=>{
-  api.options.and.returnValue(throwError(()=>new Error('Unavailable')));await page.ngOnInit();
-  expect(page.summary()?.total).toBe(2);expect(page.optionsError()).not.toBe('');
- });
- it('shows a genuine empty state',async()=>{
-  api.summary.and.returnValue(of(summary(0)));await page.load();fixture.detectChanges();
-  expect(fixture.nativeElement.textContent).toContain('No hay llantas en esta cohorte');expect(fixture.nativeElement.querySelector('.kpis')).toBeNull();
- });
- it('passes all applied filters to the next page and switches views without stale results',async()=>{
-  page.filters={centroId:'c',marcaId:'m',referenciaId:'r',dimensionId:'d',estadoId:'e',tipoVehiculo:'Camión',ingresoDesde:'2026-01-01',ingresoHasta:'2026-09-17',minimoMuestra:3};
-  await page.apply();await page.selectView('posiciones');await page.load(2);
-  expect(api.positions).toHaveBeenCalledWith(jasmine.objectContaining(page.filters),2);expect(page.summary()).toBeNull();
-  page.filters.centroId='not-applied';await page.load(3);
-  expect(api.positions.calls.mostRecent().args[0].centroId).toBe('c');
- });
- it('rejects reversed dates and fractional sample minimum before querying',async()=>{
-  const count=api.summary.calls.count();page.filters.ingresoDesde='2026-09-17';page.filters.ingresoHasta='2026-01-01';await page.apply();
-  expect(api.summary.calls.count()).toBe(count);expect(page.error()).toContain('fecha');
-  page.filters.ingresoHasta='';page.filters.minimoMuestra=1.5;await page.apply();expect(page.error()).toContain('entero');
- });
- it('separates finalized and ongoing cohorts and suppresses low-sample bars',async()=>{
-  await page.selectView('vida-util');fixture.detectChanges();
-  expect(fixture.nativeElement.textContent).toContain('Muestra insuficiente');expect(page.bar(group())).toBe(0);
-  page.cohort='finalizadas';expect(page.stats(group()).promedio).toBe(2000);
-  page.applied.minimoMuestra=1;expect(page.sufficient(group())).toBeTrue();
- });
- it('keeps a real zero in the comparison statistics',async()=>{
-  const zero={...group(5),enOperacion:stats(5,0)};api.groups.and.returnValue(of(paged([zero])));
-  await page.selectView('marcas-referencias');fixture.detectChanges();
-  expect(fixture.nativeElement.textContent).toContain('0 km');expect(fixture.nativeElement.textContent).not.toContain('Muestra insuficiente');
- });
- it('does not present configuration heat as wear or combine unknown P1 positions',async()=>{
-  api.positions.and.returnValue(of(paged([{configuracion:'Configuración A',tipoVehiculo:'Camión',eje:1,tipoEje:'Direccional',posicion:'P1 · Izquierda',llantas:1,muestraKm:1,tramos:2,tramosValidos:2,kmPromedio:100,diasPromedio:5,muestraSuficiente:false}])));
-  await page.selectView('posiciones');fixture.detectChanges();
-  const text=fixture.nativeElement.textContent;expect(text).toContain('Configuración A');expect(text).toContain('no significa mayor desgaste');
-  expect(page.heat(page.positions()!.items[0])).toBe(0);
- });
- it('retains real backend movement types and distinct-count explanations',async()=>{
-  api.movements.and.returnValue(of({ranking:paged([{id:'t',codigo:'LL-1',serial:'SER',marca:'M',referencia:'R',estado:'Disponible',total:4,vehiculos:2,centros:1,posiciones:3,tipos:[{nombre:'ROTACION',cantidad:4}]}]),tipos:[{nombre:'ROTACION',cantidad:4}]}));
-  await page.selectView('movimientos');fixture.detectChanges();expect(fixture.nativeElement.textContent).toContain('ROTACION');
-  expect(fixture.nativeElement.textContent).toContain('una vez por llanta');
- });
- it('ignores a late response from an old tab',async()=>{
-  const late=new Subject<AnalyticsSummary>();api.summary.and.returnValue(late);
-  const old=page.load();await page.selectView('centros');late.next(summary(100));late.complete();await old;
-  expect(page.view()).toBe('centros');expect(page.summary()).toBeNull();expect(page.groups()).not.toBeNull();
- });
- it('clears stale data and preserves the error message on failure',async()=>{
-  api.summary.and.returnValue(throwError(()=>({userMessage:'Cohorte demasiado grande; acote filtros.'})));
-  await page.load();fixture.detectChanges();expect(page.summary()).toBeNull();expect(fixture.nativeElement.textContent).toContain('acote filtros');
- });
-    for(const width of [1366,1024,768,390])it('layout de Analítica sin overflow a '+width+'px',()=>{
-    const frame=document.createElement('iframe');frame.style.width=width+'px';frame.style.height='900px';document.body.appendChild(frame);
-    try{const doc=frame.contentDocument!;const styles=Array.from(document.querySelectorAll('style')).map(x=>x.textContent).join('\n');doc.open();doc.write('<style>body{margin:0}*{box-sizing:border-box}'+styles+'</style><div style="margin-left:'+(width>900?245:0)+'px">'+fixture.nativeElement.outerHTML+'</div>');doc.close();expect(doc.documentElement.scrollWidth).toBeLessThanOrEqual(width+1);const cols=frame.contentWindow!.getComputedStyle(doc.querySelector('.kpis')!).gridTemplateColumns.split(' ').length;expect(cols).toBeLessThanOrEqual(width<=650?2:3);}finally{frame.remove();}
-   });
-it('renders four distinct navigation choices and a responsive grid',()=>{
-  expect(fixture.nativeElement.querySelectorAll('nav button').length).toBe(4);
-  const columns=getComputedStyle(fixture.nativeElement.querySelector('.kpis')).gridTemplateColumns.split(' ').length;
-  expect(columns).toBeLessThanOrEqual(window.innerWidth<=650?2:6);
-  expect(fixture.nativeElement.querySelector('nav').getAttribute('aria-label')).toContain('Analítica');
- });
-});
-
-describe('Analytics access and tire visualization',()=>{
- it('uses the existing module guard without granting dashboard users analytics',()=>{
-  const auth={canModule:jasmine.createSpy().and.returnValue(false),has:()=>false,user:()=>null};
-  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:auth}]});
-  const route={routeConfig:{path:'analitica'}} as ActivatedRouteSnapshot;
-  const result=TestBed.runInInjectionContext(()=>roleGuard(route,{} as any));
-  expect(TestBed.inject(Router).serializeUrl(result as any)).toBe('/sin-acceso');expect(auth.canModule).toHaveBeenCalledWith('analitica');
-  auth.canModule.and.returnValue(true);expect(TestBed.runInInjectionContext(()=>roleGuard(route,{} as any))).toBeTrue();
- });
- it('does not turn an absent kilometre value into zero or remaining life',()=>{
-  const ring=new TireMetric();expect(ring.value).toBeNull();expect(ring.percent).toBe(0);
-  expect(ring.description).toContain('sin dato');ring.total=10;ring.measured=4;expect(ring.percent).toBe(40);
- });
+import {MaintenanceQueueData} from './maintenance-models';
+const response=():MaintenanceQueueData=>({generadoEn:'2026-10-05T10:00:00Z',alcance:{} as any,totalEnAlcance:2,totalEnCola:1,totalEvaluacionCompleta:{estado:'NO_EVALUABLE',valor:null,motivos:[]},conteos:[{clasificacion:'ATENCION_INMEDIATA',resultado:{estado:'NO_EVALUABLE',valor:null,motivos:[]}},{clasificacion:'CONDICION_POR_VERIFICAR',resultado:{estado:'PARCIAL',valor:0,motivos:[]}}],limitaciones:[],pagina:{items:[],pageNumber:1,pageSize:20,totalItems:0,totalPages:0},concentracion:[]});
+describe('Maintenance decision center',()=>{
+ let api:jasmine.SpyObj<AnalyticsApi>,fixture:ComponentFixture<AnalyticsPageComponent>;
+ beforeEach(async()=>{api=jasmine.createSpyObj('AnalyticsApi',['options','maintenance','maintenanceVehicles']);api.options.and.returnValue(of({centros:[],marcas:[],referencias:[],dimensiones:[],estados:[],tiposVehiculo:[]}));api.maintenance.and.returnValue(of(response()));api.maintenanceVehicles.and.returnValue(of({items:[],pageNumber:1,pageSize:20,totalItems:0,totalPages:0}));await TestBed.configureTestingModule({imports:[AnalyticsPageComponent],providers:[provideRouter([]),{provide:AnalyticsApi,useValue:api}]}).compileComponents();fixture=TestBed.createComponent(AnalyticsPageComponent);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges()});
+ it('requests mounted tires and the review queue by default',()=>{expect(api.maintenance).toHaveBeenCalledWith(jasmine.objectContaining({montaje:'MONTADAS',vista:'COLA'}),1)});
+ it('shows unavailable classification instead of zero and preserves an evaluated zero',()=>{const el:HTMLElement=fixture.nativeElement;expect(el.textContent).toContain('No evaluable');expect(el.querySelector('.count')?.textContent?.trim()).toBe('0')});
+ it('ignores stale queue responses after changing filters',async()=>{const older=new Subject<MaintenanceQueueData>();api.maintenance.and.returnValue(older);const first=fixture.componentInstance.load();api.maintenance.and.returnValue(of({...response(),totalEnAlcance:9}));await fixture.componentInstance.load();older.next({...response(),totalEnAlcance:99});older.complete();await first;expect(fixture.componentInstance.data()?.totalEnAlcance).toBe(9)});
+ it('shows a query error rather than a successful empty count',async()=>{api.maintenance.and.returnValue(throwError(()=>({userMessage:'Consulta fallida'})));await fixture.componentInstance.load();fixture.detectChanges();expect(fixture.componentInstance.data()).toBeNull();expect(fixture.nativeElement.textContent).toContain('Consulta fallida')});
 });

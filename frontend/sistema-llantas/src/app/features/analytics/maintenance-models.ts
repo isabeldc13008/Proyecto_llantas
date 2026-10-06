@@ -1,0 +1,15 @@
+import {AnalyticsPage} from './analytics-api';
+export interface Evaluation<T>{estado:'EVALUADO'|'PARCIAL'|'NO_EVALUABLE'|'PENDIENTE_CONFIGURACION';valor:T|null;motivos:string[]}
+export interface MaintenanceFilters{buscar:string;centroId:string;vehiculoId:string;marcaId:string;referenciaId:string;dimensionId:string;tipoVehiculo:string;montaje:'MONTADAS'|'TODAS';vista:'COLA'|'TODAS'|'FUERA_COLA';clasificacion:string}
+export const maintenanceDefaults=():MaintenanceFilters=>({buscar:'',centroId:'',vehiculoId:'',marcaId:'',referenciaId:'',dimensionId:'',tipoVehiculo:'',montaje:'MONTADAS',vista:'COLA',clasificacion:''});
+export interface Reference{id:string;nombre:string}
+export interface MaintenanceReason{codigo:string;descripcion:string;fecha:string|null;fuente:{tipo:string;id:string}|null}
+export interface MaintenanceAction{tipo:'REVISAR_ALERTA'|'INSPECCIONAR'|'PROGRAMAR_EVALUACION'|'VER_HISTORIAL';llantaId:string;vehiculoId:string|null;posicionId:string|null;alertaId:string|null}
+export interface MeasurementSummary{lecturaId:string;inspeccionId:string;fechaRegistro:string;exterior:number|null;centro:number|null;interior:number|null;minima:number|null;completa:boolean;odometro:number|null}
+export interface MaintenanceRow{id:string;codigo:string;serial:string;centro:Reference;estadoOperativo:Reference;ubicacion:{estado:string;asignacionId:string|null;vehiculo:Reference|null;placa:string|null;posicion:Reference|null};clasificacion:Evaluation<string>;enCola:boolean;motivoPrincipal:MaintenanceReason|null;motivosSecundarios:MaintenanceReason[];ultimaLectura:MeasurementSummary|null;ultimaCompleta:MeasurementSummary|null;vigencia:Evaluation<boolean>;alertasActivas:number;fechaAlertaActivaMasAntigua:string|null;acciones:MaintenanceAction[]}
+export interface MaintenanceQueueData{generadoEn:string;alcance:MaintenanceFilters;totalEnAlcance:number;totalEnCola:number;totalEvaluacionCompleta:Evaluation<number>;conteos:{clasificacion:string;resultado:Evaluation<number>}[];limitaciones:string[];pagina:AnalyticsPage<MaintenanceRow>;concentracion:{codigo:string;nombre:string;llantas:number}[]}
+export interface MaintenanceVehicle{id:string;placa:string;numeroInterno:string;centroId:string}
+export interface ObservedAlert{id:string;inspeccionId:string;tipo:string;descripcion:string;fechaRegistro:string;estadoAdministrativo:string;estadoInspeccion:string;severidad:Evaluation<string>}
+export interface MaintenanceDetail{generadoEn:string;llanta:MaintenanceRow;alertas:AnalyticsPage<ObservedAlert>;reglasProfundidad:{codigo:string;operador:string;valor:number;unidad:string;alcance:string}[];pronostico:Evaluation<number>;resolucionRiesgo:Evaluation<boolean>}
+export function evaluationText(value:Evaluation<unknown>):string{return value.valor!==null?String(value.valor):value.estado==='PENDIENTE_CONFIGURACION'?'Pendiente de configuración':'No evaluable'}
+export const classificationLabels:Record<string,string>={ATENCION_INMEDIATA:'Atención inmediata',INTERVENCION_PROXIMA:'Intervención próxima',SEGUIMIENTO:'Seguimiento',CONDICION_POR_VERIFICAR:'Condición por verificar',SIN_SENALES:'Sin señales de intervención'};

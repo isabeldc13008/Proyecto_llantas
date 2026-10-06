@@ -16,6 +16,8 @@ public sealed class GuardarProgramacionDto
     public DateTimeOffset Fin {get;init;}
     [Required] public Guid CentroId {get;init;}
     public Guid? VehiculoId {get;init;}
+    public Guid? LlantaId {get;init;}
+    public Guid? PosicionVehiculoId {get;init;}
     [Required] public Guid TecnicoUsuarioId {get;init;}
     [Required,StringLength(20)] public string Prioridad {get;init;}="Media";
     [StringLength(1000)] public string? Observaciones {get;init;}

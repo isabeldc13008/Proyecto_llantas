@@ -1,0 +1,29 @@
+@if(!tireId){<div class="placeholder"><h2>La evidencia explica la decisión</h2><p>Selecciona una llanta de la cola para revisar sus mediciones, motivos e historial.</p></div>}
+@if(loading()){<p role="status">Consultando evidencia…</p>}
+@if(error()){<p role="alert">{{error()}}</p><button (click)="load()">Reintentar evidencia</button>}
+@if(detail();as d){
+ <header><div><small>Evidencia de la llanta</small><h2>{{d.llanta.codigo}}</h2><p>{{d.llanta.serial}} · {{d.llanta.centro.nombre}}</p></div>@if(!full){<a [routerLink]="['/analitica/llantas',tireId]" [queryParams]="{volver:router.url}">Detalle completo</a>}</header>
+ <p>{{d.llanta.ubicacion.vehiculo?.nombre??'Ubicación no disponible'}} · {{d.llanta.ubicacion.placa}} · {{d.llanta.ubicacion.posicion?.nombre??'Sin posición inequívoca'}}</p>
+ <div class="decision"><strong>{{d.llanta.clasificacion.valor?labels[d.llanta.clasificacion.valor]:evaluationText(d.llanta.clasificacion)}}</strong><p>{{d.llanta.motivoPrincipal?.descripcion??'Sin motivo observado para la cola. La condición integral no es evaluable.'}}</p></div>
+ @if(d.llanta.motivosSecundarios.length){<ul>@for(m of d.llanta.motivosSecundarios;track m.codigo){<li>{{m.descripcion}} @if(m.fecha){<small>{{m.fecha|date:'dd/MM/yyyy HH:mm'}}</small>}</li>}</ul>}
+ <section class="measurement"><h3>Última medición finalizada</h3>
+ @if(d.llanta.ultimaLectura;as m){<p>{{m.fechaRegistro|date:'dd/MM/yyyy HH:mm'}} · Fecha de registro</p><dl><div><dt>Exterior</dt><dd>{{m.exterior===null?'Sin dato':(m.exterior|number:'1.1-2')+' mm'}}</dd></div><div><dt>Central</dt><dd>{{m.centro===null?'Sin dato':(m.centro|number:'1.1-2')+' mm'}}</dd></div><div><dt>Interior</dt><dd>{{m.interior===null?'Sin dato':(m.interior|number:'1.1-2')+' mm'}}</dd></div></dl><p><b>Mínima: {{m.minima===null?'No evaluable':(m.minima|number:'1.1-2')+' mm'}}</b></p><small>Inspección {{m.inspeccionId}}</small>
+ }@else{<p>Sin medición finalizada en el historial autorizado.</p>}
+ @if(d.llanta.ultimaCompleta;as c){@if(c.lecturaId!==d.llanta.ultimaLectura?.lecturaId){<aside class="older"><b>Última medición completa anterior</b><p>{{c.fechaRegistro|date:'dd/MM/yyyy HH:mm'}} · Mínima {{c.minima|number:'1.1-2'}} mm</p><small>Exterior {{c.exterior}} / Central {{c.centro}} / Interior {{c.interior}} mm. Existe una lectura incompleta posterior.</small></aside>}}
+ <p class="muted">Vigencia: {{evaluationText(d.llanta.vigencia)}}</p></section>
+ <div class="actions">@for(a of d.llanta.acciones;track a.tipo){@if(navigation.allowed(a)){<button (click)="navigation.open(a)">{{navigation.label(a)}}</button>}}</div>
+}
+@if(wearLoading()){<p role="status">Consultando evolución…</p>}
+@if(wearError()){<p role="alert">{{wearError()}}</p><button (click)="load()">Reintentar historial</button>}
+@if(wear();as w){<section class="evolution"><app-tire-depth-chart [mediciones]="w.mediciones"/></section>}
+@if(detail();as d){
+ <section class="capability"><h3>Pronóstico</h3><p>{{evaluationText(d.pronostico)}} · No disponible en V1.</p><small>Sin estimaciones en kilómetros ni días.</small></section>
+ @if(full){
+  <section><h3>Alertas y gestión administrativa</h3><p class="muted">El cierre administrativo no demuestra resolución del motivo.</p>@if(alertsError()){<p role="alert">{{alertsError()}}</p>}
+   @for(a of d.alertas.items;track a.id){<article class="alert-row"><strong>{{a.tipo}}</strong><span>{{a.estadoAdministrativo}}</span><p>{{a.descripcion}}</p><small>{{a.fechaRegistro|date:'dd/MM/yyyy HH:mm'}} · Inspección {{a.estadoInspeccion}} · {{a.inspeccionId}}</small><small>Severidad: {{evaluationText(a.severidad)}}</small></article>}@empty{<p>Sin alertas en el historial autorizado.</p>}
+   @if(d.alertas.totalPages>1){<div class="pager"><button [disabled]="alertsLoading()||d.alertas.pageNumber<=1" (click)="alerts(d.alertas.pageNumber-1)">Anteriores</button><span>{{d.alertas.pageNumber}} / {{d.alertas.totalPages}}</span><button [disabled]="alertsLoading()||d.alertas.pageNumber>=d.alertas.totalPages" (click)="alerts(d.alertas.pageNumber+1)">Siguientes</button></div>}
+  </section>
+  <section><h3>Resolución del motivo</h3><p>{{evaluationText(d.resolucionRiesgo)}}</p><p class="muted">{{d.resolucionRiesgo.motivos.join('. ')}}</p></section>
+  <details><summary>Reglas registradas y límites de interpretación</summary><p>Referencias del centro actual; no se aplican retroactivamente ni se elige una regla entre varias.</p><ul>@for(r of d.reglasProfundidad;track r.codigo){<li>{{r.codigo}}: {{r.operador}} {{r.valor}} {{r.unidad}} · {{r.alcance}}</li>}@empty{<li>Sin reglas de profundidad registradas para este alcance.</li>}</ul></details>
+ }
+}

@@ -1,3 +1,4 @@
+import {provideRouter} from '@angular/router';
 import {TestBed} from '@angular/core/testing';
 import {provideHttpClient} from '@angular/common/http';
 import {provideHttpClientTesting,HttpTestingController} from '@angular/common/http/testing';
@@ -6,7 +7,19 @@ import {AuthService} from '../../core/auth/auth.service';
 import {VehicleDetail} from '../vehicles/vehicles-api';
 describe('Programar montaje asignado',()=>{
  let c:SchedulingPage;let http:HttpTestingController;
- beforeEach(()=>{TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),{provide:AuthService,useValue:{has:()=>true}}]});c=TestBed.createComponent(SchedulingPage).componentInstance;http=TestBed.inject(HttpTestingController);c.openMount();});afterEach(()=>http.verify());
+ beforeEach(()=>{TestBed.configureTestingModule({providers:[provideRouter([]),provideHttpClient(),provideHttpClientTesting(),{provide:AuthService,useValue:{has:()=>true}}]});c=TestBed.createComponent(SchedulingPage).componentInstance;http=TestBed.inject(HttpTestingController);c.openMount();});afterEach(()=>http.verify());
+ it('carga contexto de mantenimiento sin depender del permiso de Vehículos',async()=>{
+  const context=spyOn(c,'applyMaintenanceContext').and.resolveTo();
+  const pending=c.ngOnInit();
+  http.expectOne(r=>r.url==='/api/catalogos/centros').flush({items:[],totalPages:1});
+  http.expectOne(r=>r.url==='/api/operaciones/vehiculos').flush({items:[]});
+  http.expectNone(r=>r.url==='/api/vehiculos');
+  http.expectOne('/api/programacion/tecnicos').flush([]);
+  http.expectOne('/api/programacion/necesidades').flush([]);
+  await Promise.resolve();await Promise.resolve();await Promise.resolve();
+  http.expectOne('/api/programacion').flush([]);
+  await pending;expect(context).toHaveBeenCalled();
+ });
  it('no avanza sin llanta asignada',()=>{c.mountStep.set(3);c.mountNext();expect(c.mountStep()).toBe(3);expect(c.message()).toContain('Asigna');});
  it('conserva llanta, posición y ocupante esperado al guardar',async()=>{c.form.vehicleId='v';c.form.centroId='c';c.form.tecnicoUsuarioId='tech';c.form.inicio='2026-10-01T10:00';c.form.fin='2026-10-01T11:00';c.mountReason='Cambio';c.mountRows=[{posicionId:'p',llantaId:'new',llantaActualId:'old'}];const pending=c.saveMount();const req=http.expectOne('/api/programacion');expect(req.request.body.asignaciones).toEqual(c.mountRows);expect(req.request.body.motivo).toBe('Cambio');req.flush({id:'saved'});await Promise.resolve();await Promise.resolve();http.expectOne('/api/programacion').flush([]);await pending;expect(c.mountModal()).toBeFalse();});
  it('cambiar vehículo elimina asignaciones anteriores',async()=>{c.mountRows=[{posicionId:'p',llantaId:'new',llantaActualId:'old'}];const pending=c.pickMountVehicle('v');expect(c.mountRows).toEqual([]);http.expectOne('/api/operaciones/vehiculos/v').flush({id:'v',centroId:'c',ejes:[]} as unknown as VehicleDetail);await pending;expect(c.form.centroId).toBe('c');});
@@ -14,3 +27,5 @@ describe('Programar montaje asignado',()=>{
  it('rechaza nuevo juego de una fila sin enviar',async()=>{c.form.tipo='Cambio de juego';c.mountRows=[{posicionId:'p',llantaId:'new',llantaActualId:'old'}];await c.saveMount();http.expectNone(r=>r.method==='POST');expect(c.message()).toContain('dos posiciones');});
  it('reemplazo individual solo avanza con una posición ocupada',()=>{c.form.tipo='Reemplazar llanta';c.mountStep.set(3);c.mountRows=[{posicionId:'p',llantaId:'new',llantaActualId:null}];c.mountNext();expect(c.mountStep()).toBe(3);c.mountRows[0].llantaActualId='old';c.mountNext();expect(c.mountStep()).toBe(4);});
 });
+
+

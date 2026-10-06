@@ -37,6 +37,10 @@ public sealed record RankingMovimientos(Pagina<MovimientoAnalitica> Ranking, IRe
 
 public interface IAnaliticaService
 {
+    Task<ColaMantenimiento> MantenimientoAsync(FiltroMantenimiento filtro, AlcanceCentros alcance, CancellationToken ct);
+    Task<DetalleMantenimiento> DetalleMantenimientoAsync(Guid id, AlcanceCentros alcance, CancellationToken ct);
+    Task<Pagina<AlertaObservada>> AlertasMantenimientoAsync(Guid id, int pagina, int tamano, AlcanceCentros alcance, CancellationToken ct);
+    Task<Pagina<ReferenciaVehiculo>> VehiculosMantenimientoAsync(string? buscar, Guid? centroId, int pagina, int tamano, AlcanceCentros alcance, CancellationToken ct);
     Task<Pagina<LlantaAnalitica>> LlantasAsync(FiltroAnalitica filtro, string indicador, AlcanceCentros alcance, CancellationToken ct);
     Task<DesgasteAnalitica> DesgasteAsync(Guid id, AlcanceCentros alcance, CancellationToken ct);
     Task<OpcionesAnalitica> OpcionesAsync(AlcanceCentros alcance, CancellationToken ct);

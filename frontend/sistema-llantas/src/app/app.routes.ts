@@ -20,6 +20,7 @@ const protectedRoutes:Routes=[
  {path:'disposicion-final',loadChildren:()=>import('./features/disposition/disposition.routes').then(m=>m.DISPOSITION_ROUTES)},
  {path:'historial',data:demo('Historial de llantas','Línea de tiempo','Consulta cronológica de inspecciones, movimientos y servicios.','Buscar llanta','historial'),loadComponent:page},
  {path:'carga-masiva',loadComponent:()=>import('./features/bulk-import/bulk-import-page').then(m=>m.BulkImportPage)},
+ {path:'analitica/llantas/:id',loadComponent:()=>import('./features/analytics/tire-maintenance-detail').then(m=>m.TireMaintenanceDetail)},
  {path:'analitica',loadComponent:()=>import('./features/analytics/analytics-page').then(m=>m.AnalyticsPageComponent)},
  {path:'administracion',loadComponent:()=>import('./features/admin/catalog-admin').then(m=>m.CatalogAdmin)},
  {path:'auditoria',data:demo('Auditoría','Gobierno de datos','Quién cambió qué, cuándo, desde dónde y con qué resultado.','Exportar auditoría','auditoria'),loadComponent:page},

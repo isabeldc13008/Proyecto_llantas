@@ -1,0 +1,9 @@
+<div class="table-scroll"><table><thead><tr><th>Revisión</th><th>Vehículo / posición</th><th>Llanta</th><th>Motivo y evidencia</th></tr></thead><tbody>
+@for(t of pagina.items;track t.id){<tr [class.selected]="selectedId===t.id">
+ <td><span class="reason" [class.verify]="t.alertasActivas===0">{{t.alertasActivas>0?'Revisar alertas':t.enCola?'Por verificar':'Fuera de cola'}}</span><small>{{t.alertasActivas>0?'Severidad no evaluable':t.enCola?'Evidencia incompleta':'Clasificación no evaluable'}}</small></td>
+ <td><b>{{t.ubicacion.vehiculo?.nombre??(t.ubicacion.estado==='AMBIGUA'?'Ubicación ambigua':'Sin asignación')}}</b><small>{{t.ubicacion.placa}} · {{t.ubicacion.posicion?.nombre??'—'}}</small></td>
+ <td><button class="select-tire" (click)="selected.emit(t.id)" [attr.aria-pressed]="selectedId===t.id" [attr.aria-label]="'Ver evidencia de '+t.codigo">{{t.codigo}}</button><small>{{t.serial}}</small><small>{{t.centro.nombre}}</small></td>
+ <td><p>{{t.motivoPrincipal?.descripcion??'Sin motivo observado para esta cola; no equivale a condición segura'}}</p><small>Última lectura: {{t.ultimaLectura?(t.ultimaLectura.fechaRegistro|date:'dd/MM/yyyy'):'Sin medición'}}</small><b class="depth">{{t.ultimaLectura?.minima===null||!t.ultimaLectura?'Mínima no evaluable':(t.ultimaLectura.minima|number:'1.1-2')+' mm'}}</b>@if(t.motivosSecundarios.length){<small>{{t.motivosSecundarios.length}} motivos adicionales en detalle</small>}</td>
+</tr>}@empty{<tr><td colspan="4" class="empty">No hay llantas para esta selección. La ausencia de resultados no certifica su condición.</td></tr>}
+</tbody></table></div>
+<footer><span>{{pagina.totalItems}} resultados · página {{pagina.pageNumber}} de {{pagina.totalPages||1}}</span><div><button (click)="pageChanged.emit(pagina.pageNumber-1)" [disabled]="pagina.pageNumber<=1">Anterior</button><button (click)="pageChanged.emit(pagina.pageNumber+1)" [disabled]="pagina.pageNumber>=pagina.totalPages">Siguiente</button></div></footer>

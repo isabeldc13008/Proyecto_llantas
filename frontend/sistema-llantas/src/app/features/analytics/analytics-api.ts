@@ -1,5 +1,6 @@
 import {HttpClient,HttpParams} from '@angular/common/http';
 import {inject,Injectable} from '@angular/core';
+import {MaintenanceDetail,MaintenanceFilters,MaintenanceQueueData,MaintenanceVehicle,ObservedAlert} from './maintenance-models';
 
 export interface AnalyticsFilters {buscar?:string;centroId:string;marcaId:string;referenciaId:string;dimensionId:string;estadoId:string;tipoVehiculo:string;ingresoDesde:string;ingresoHasta:string;minimoMuestra:number}
 export interface AnalyticsOption {id:string;nombre:string}
@@ -17,6 +18,11 @@ export type AnalyticsView='desgaste'|'resumen'|'vida-util'|'marcas-referencias'|
 @Injectable({providedIn:'root'})
 export class AnalyticsApi {
  private http=inject(HttpClient);
+ maintenance(filters:MaintenanceFilters,page=1){return this.http.get<MaintenanceQueueData>('/api/analitica/mantenimiento',{params:this.maintenanceParams(filters).set('pagina',page).set('tamano',20)});}
+ maintenanceDetail(id:string){return this.http.get<MaintenanceDetail>('/api/analitica/mantenimiento/llantas/'+encodeURIComponent(id));}
+ maintenanceAlerts(id:string,page=1){return this.http.get<AnalyticsPage<ObservedAlert>>('/api/analitica/mantenimiento/llantas/'+encodeURIComponent(id)+'/alertas',{params:{pagina:page,tamano:20}});}
+ maintenanceVehicles(buscar='',centroId='',page=1){return this.http.get<AnalyticsPage<MaintenanceVehicle>>('/api/analitica/mantenimiento/vehiculos',{params:this.maintenanceParams({buscar,centroId}).set('pagina',page).set('tamano',20)});}
+ private maintenanceParams(filters:object){let params=new HttpParams();for(const[k,v]of Object.entries(filters))if(v!==''&&v!=null)params=params.set(k,v);return params;}
  tires(filters:AnalyticsFilters,page:number,indicator:string){return this.http.get<AnalyticsPage<AnalyticsTire>>('/api/analitica/llantas',{params:this.params(filters,page).set('indicador',indicator)});}
  wear(id:string){return this.http.get<AnalyticsWear>('/api/analitica/llantas/'+encodeURIComponent(id)+'/desgaste');}
  options(){return this.http.get<AnalyticsOptions>('/api/analitica/opciones');}
