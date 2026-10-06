@@ -8,7 +8,7 @@ using SistemaLlantas.Domain.Entities;
 namespace SistemaLlantas.Api.Controllers;
 public sealed partial class ServiciosLlantaController
 {
- public sealed record CrearLoteDisposicionDto(IReadOnlyList<Guid> OrdenIds,Guid CentroOrigenId,Guid CentroDestinoId,DateTimeOffset FechaSalida,string? Remision,string? Transportador,string? Observaciones,string IdempotencyKey);
+ public sealed record CrearLoteDisposicionDto(IReadOnlyList<Guid> OrdenIds,Guid CentroOrigenId,Guid CentroDestinoId,DateTimeOffset FechaSalida,string? Remision,string? Transportador,string? Observaciones,string IdempotencyKey,string? Placa=null);
  public sealed record RecibirDisposicionDto(IReadOnlyList<Guid> OrdenIds);
  public sealed record CerrarLoteDisposicionDto(IReadOnlyList<Guid> OrdenIds,Guid ProveedorId,string Observaciones);
  public sealed record ItemDisposicionDto(Guid OrdenId,Guid LlantaId,string Llanta,string Estado,string? Resultado,string? Concepto,string? Tecnico,DateTimeOffset? FechaEvaluacion,string? Aprobador,DateTimeOffset? FechaAprobacion,DateTimeOffset? FechaRecepcion,DateTimeOffset? FechaDisposicion,string? Empresa,int Evidencias);
@@ -26,7 +26,7 @@ public sealed partial class ServiciosLlantaController
  {
   ValidarSeleccionDisposicion(dto.OrdenIds);
   if(dto.CentroOrigenId==Guid.Empty||dto.CentroDestinoId==Guid.Empty||dto.FechaSalida==default||string.IsNullOrWhiteSpace(dto.IdempotencyKey)||dto.IdempotencyKey.Length>100)throw new ValidacionException("Selecciona origen, destino, fecha de salida y clave de operación válidos.");
-  if((dto.Remision?.Length??0)>100||(dto.Transportador?.Length??0)>150||(dto.Observaciones?.Length??0)>1000)throw new ValidacionException("Remisión: máximo 100 caracteres; transportador: 150; observaciones: 1000.");
+  if((dto.Placa?.Length??0)>20||(dto.Remision?.Length??0)>100||(dto.Transportador?.Length??0)>150||(dto.Observaciones?.Length??0)>1000)throw new ValidacionException("Remisión: máximo 100 caracteres; transportador: 150; observaciones: 1000.");
   var a=User.AlcanceCentros();if(!a.Autoriza(dto.CentroOrigenId))throw new UnauthorizedAccessException("Centro origen fuera de alcance.");
   var id=await db.Database.CreateExecutionStrategy().ExecuteAsync(async()=>
   {
@@ -34,7 +34,7 @@ public sealed partial class ServiciosLlantaController
    var existing=await db.LotesDisposicionFinal.Include(l=>l.Ordenes).SingleOrDefaultAsync(l=>l.IdempotencyKey==dto.IdempotencyKey,ct);
    if(existing is not null)
    {
-    if(!existing.Activo||existing.CentroOrigenId!=dto.CentroOrigenId||existing.CentroDestinoId!=dto.CentroDestinoId||existing.FechaSalida!=dto.FechaSalida||existing.Remision!=dto.Remision||existing.Transportador!=dto.Transportador||existing.Observaciones!=dto.Observaciones||!existing.Ordenes.Select(o=>o.Id).ToHashSet().SetEquals(dto.OrdenIds))throw new ConflictoException("La clave de operación ya corresponde a otro envío.");
+    if(!existing.Activo||existing.CentroOrigenId!=dto.CentroOrigenId||existing.CentroDestinoId!=dto.CentroDestinoId||existing.FechaSalida!=dto.FechaSalida||existing.Placa!=dto.Placa||existing.Remision!=dto.Remision||existing.Transportador!=dto.Transportador||existing.Observaciones!=dto.Observaciones||!existing.Ordenes.Select(o=>o.Id).ToHashSet().SetEquals(dto.OrdenIds))throw new ConflictoException("La clave de operación ya corresponde a otro envío.");
     await tx.CommitAsync(ct);return existing.Id;
    }
    var destino=await db.Centros.SingleOrDefaultAsync(c=>c.Id==dto.CentroDestinoId&&c.Activo,ct)??throw new ValidacionException("El centro destino no existe o está inactivo.");
@@ -56,7 +56,7 @@ public sealed partial class ServiciosLlantaController
    }
    var prefix=$"DSP-{DateTimeOffset.UtcNow.Year}-";var last=await db.LotesDisposicionFinal.Where(l=>l.Codigo.StartsWith(prefix)).OrderByDescending(l=>l.Codigo.Length).ThenByDescending(l=>l.Codigo).Select(l=>l.Codigo).FirstOrDefaultAsync(ct);
    var sequence=last is null?1:int.Parse(last[prefix.Length..])+1;
-   var lot=new LoteDisposicionFinal{Codigo=$"{prefix}{sequence:0000}",CentroOrigenId=dto.CentroOrigenId,CentroDestinoId=destino.Id,RelevanciaDestino=destino.Relevancia,FechaSalida=dto.FechaSalida,Remision=dto.Remision,Transportador=dto.Transportador,Observaciones=dto.Observaciones,IdempotencyKey=dto.IdempotencyKey,UsuarioCreacion=User.Username()};db.LotesDisposicionFinal.Add(lot);
+   var lot=new LoteDisposicionFinal{Codigo=$"{prefix}{sequence:0000}",CentroOrigenId=dto.CentroOrigenId,CentroDestinoId=destino.Id,RelevanciaDestino=destino.Relevancia,FechaSalida=dto.FechaSalida,Placa=dto.Placa,Remision=dto.Remision,Transportador=dto.Transportador,Observaciones=dto.Observaciones,IdempotencyKey=dto.IdempotencyKey,UsuarioCreacion=User.Username()};db.LotesDisposicionFinal.Add(lot);
    var traslado=new AlcanceCentros(false,new[]{dto.CentroOrigenId,dto.CentroDestinoId});
    foreach(var o in orders)
    {
@@ -82,18 +82,7 @@ public sealed partial class ServiciosLlantaController
  }
  [HttpPost("disposicion/lotes/{id:guid}/cerrar"),Authorize(Policy="ServiciosLlanta.Gestionar")]
  public Task<LoteDisposicionDto> CerrarLoteDisposicion(Guid id,CerrarLoteDisposicionDto dto,CancellationToken ct)
- {
-  ValidarSeleccionDisposicion(dto.OrdenIds);
-  if(string.IsNullOrWhiteSpace(dto.Observaciones)||dto.Observaciones.Length>1000)throw new ValidacionException("El concepto de cierre es obligatorio (máximo 1000 caracteres).");
-  return CambiarLoteDisposicion(id,async lot=>
-  {
-   if(!await db.ProveedoresServicio.AnyAsync(p=>p.Id==dto.ProveedorId&&p.Activo&&(p.Tipo=="DisposicionFinal"||p.Tipo==""),ct))throw new ValidacionException("Selecciona una empresa receptora activa de disposición final.");
-   var orders=SeleccionarOrdenes(lot,dto.OrdenIds);
-   foreach(var o in orders){if(o.Estado!="PENDIENTE_DISPOSICION"||o.Resultado!="DISPOSICION"||!o.FechaRecepcion.HasValue)throw new ConflictoException($"{o.Llanta.Codigo}: no está recibida y pendiente de disposición.");if(o.Llanta.CentroId!=lot.CentroDestinoId)throw new ConflictoException($"{o.Llanta.Codigo}: no está en el destino del lote.");await ValidarDesmontada(o,ct);if(!o.Evidencias.Any(e=>e.Activo&&e.MimeType.StartsWith("image/")))throw new ValidacionException($"{o.Llanta.Codigo}: falta evidencia fotográfica.");}
-   foreach(var o in orders){await operaciones.MoverAsync(new(){LlantaId=o.LlantaId,TipoDestino="DisposicionFinal",Motivo=$"Disposición final {lot.Codigo}",Observaciones=dto.Observaciones},User.Username(),User.AlcanceCentros(),ct);o.Estado="DISPOSICION_FINAL";o.ProveedorId=dto.ProveedorId;o.FechaDisposicion=DateTimeOffset.UtcNow;o.UsuarioModificacion=User.Username();o.FechaModificacion=DateTimeOffset.UtcNow;}
-   ActualizarEstadoLote(lot);
-  },ct);
- }
+  =>throw new ValidacionException("Complete el despacho a Sistema Verde y adjunte las actas firmadas de cada origen para cerrar la disposición final.");
  public static void ValidarSeleccionDisposicion(IReadOnlyList<Guid>? ids){if(ids is null||ids.Count==0||ids.Count>500||ids.Contains(Guid.Empty)||ids.Distinct().Count()!=ids.Count)throw new ValidacionException("Selecciona entre 1 y 500 órdenes válidas, sin repetir.");}
  private static List<OrdenServicioLlanta> SeleccionarOrdenes(LoteDisposicionFinal lot,IReadOnlyList<Guid> ids){var orders=lot.Ordenes.Where(o=>o.Activo&&o.Llanta.Activo&&ids.Contains(o.Id)).ToList();if(orders.Count!=ids.Count)throw new ConflictoException("Una orden no está activa o no pertenece al lote.");return orders;}
  private static void ActualizarEstadoLote(LoteDisposicionFinal lot)

@@ -48,6 +48,11 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<ProveedorServicio> ProveedoresServicio => Set<ProveedorServicio>();
     public DbSet<OrdenServicioLlanta> OrdenesServicioLlanta => Set<OrdenServicioLlanta>();
     public DbSet<LoteDisposicionFinal> LotesDisposicionFinal => Set<LoteDisposicionFinal>();
+    public DbSet<DespachoDisposicion> DespachosDisposicion => Set<DespachoDisposicion>();
+    public DbSet<DespachoDisposicionItem> DespachosDisposicionItems => Set<DespachoDisposicionItem>();
+    public DbSet<ActaDisposicion> ActasDisposicion => Set<ActaDisposicion>();
+    public DbSet<SoporteActaDisposicion> SoportesActaDisposicion => Set<SoporteActaDisposicion>();
+    public DbSet<NovedadDisposicion> NovedadesDisposicion => Set<NovedadDisposicion>();
     public DbSet<LoteEnvioReparacion> LotesEnvioReparacion => Set<LoteEnvioReparacion>();
     public DbSet<EvidenciaFlujo> EvidenciasFlujo => Set<EvidenciaFlujo>();
     public DbSet<CargaMasiva> CargasMasivas => Set<CargaMasiva>();

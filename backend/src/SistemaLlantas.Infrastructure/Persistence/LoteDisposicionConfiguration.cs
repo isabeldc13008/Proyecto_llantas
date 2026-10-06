@@ -11,6 +11,7 @@ public sealed class LoteDisposicionConfiguration:IEntityTypeConfiguration<LoteDi
   b.Property(x=>x.CentroOrigenId).HasColumnName("GCentroOrigenId");b.Property(x=>x.CentroDestinoId).HasColumnName("GCentroDestinoId");
   b.Property(x=>x.RelevanciaDestino).HasColumnName("SRelevanciaDestino").HasMaxLength(2);
   b.Property(x=>x.Estado).HasColumnName("SEstado").HasMaxLength(40);
+  b.Property(x=>x.Placa).HasColumnName("SPlaca").HasMaxLength(20);
   b.Property(x=>x.FechaSalida).HasColumnName("DFechaSalida");b.Property(x=>x.FechaRecepcion).HasColumnName("DFechaRecepcion");b.Property(x=>x.FechaCierre).HasColumnName("DFechaCierre");
   b.Property(x=>x.Remision).HasColumnName("SRemision").HasMaxLength(100);b.Property(x=>x.Transportador).HasColumnName("STransportador").HasMaxLength(150);b.Property(x=>x.Observaciones).HasColumnName("SObservaciones").HasMaxLength(1000);
   b.Property(x=>x.Receptor).HasColumnName("SReceptor").HasMaxLength(150);b.Property(x=>x.IdempotencyKey).HasColumnName("SIdempotencyKey").HasMaxLength(100);

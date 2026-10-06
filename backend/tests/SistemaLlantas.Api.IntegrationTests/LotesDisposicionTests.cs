@@ -28,9 +28,9 @@ public sealed partial class MountAuthorizationInspectionTests
   await Assert.ThrowsAsync<ConflictoException>(()=>c.RecibirLoteDisposicion(lote.Id,new([ids[0]]),Ct));
   await Assert.ThrowsAsync<ValidacionException>(()=>c.CerrarLoteDisposicion(lote.Id,new([ids[0]],empresa.Id,"Cierre"),Ct));
   db.ChangeTracker.Clear();db.EvidenciasFlujo.Add(new(){OrdenServicioLlantaId=ids[0],NombreArchivo="foto.jpg",MimeType="image/jpeg",Ubicacion="qa",Hash="qa"});await db.SaveChangesAsync();
-  Assert.Equal("EN_DISPOSICION",(await c.CerrarLoteDisposicion(lote.Id,new([ids[0]],empresa.Id,"Cierre"),Ct)).Estado);
+  await Assert.ThrowsAsync<ValidacionException>(()=>c.CerrarLoteDisposicion(lote.Id,new([ids[0]],empresa.Id,"Cierre"),Ct));
   await c.RecibirLoteDisposicion(lote.Id,new([ids[1]]),Ct);db.ChangeTracker.Clear();db.EvidenciasFlujo.Add(new(){OrdenServicioLlantaId=ids[1],NombreArchivo="foto.jpg",MimeType="image/jpeg",Ubicacion="qa",Hash="qa"});await db.SaveChangesAsync();
-  var closed=await c.CerrarLoteDisposicion(lote.Id,new([ids[1]],empresa.Id,"Cierre"),Ct);Assert.Equal("CERRADO",closed.Estado);Assert.NotNull(closed.FechaCierre);Assert.All(closed.Items,i=>{Assert.Equal("DISPOSICION_FINAL",i.Estado);Assert.Equal("tecnico",i.Tecnico);Assert.NotNull(i.FechaDisposicion);});
+  await Assert.ThrowsAsync<ValidacionException>(()=>c.CerrarLoteDisposicion(lote.Id,new([ids[1]],empresa.Id,"Cierre"),Ct));var received=(await c.LotesDisposicion(Ct)).Single(x=>x.Id==lote.Id);Assert.Equal("RECIBIDO",received.Estado);Assert.All(received.Items,i=>Assert.Equal("PENDIENTE_DISPOSICION",i.Estado));
  }
  [Theory][InlineData("centro")][InlineData("montada")][InlineData("pendiente")][InlineData("inactiva")][InlineData("traslado")]
  public async Task Disposicion_LoteInvalidoNoEnviaNinguna(string caso)

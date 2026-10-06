@@ -17,7 +17,7 @@ const protectedRoutes:Routes=[
  {path:'movimientos',loadComponent:()=>import('./features/movements/movement-ledger-page').then(m=>m.MovementLedgerPage)},
  {path:'reparaciones',loadComponent:()=>import('./features/services/repairs-page').then(m=>m.RepairsPage)},
  {path:'reencauches',data:{serviceType:'Reencauche'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
- {path:'disposicion-final',data:{serviceType:'DisposicionFinal'},loadComponent:()=>import('./features/services/service-workflow-page').then(m=>m.ServiceWorkflowPage)},
+ {path:'disposicion-final',loadChildren:()=>import('./features/disposition/disposition.routes').then(m=>m.DISPOSITION_ROUTES)},
  {path:'historial',data:demo('Historial de llantas','Línea de tiempo','Consulta cronológica de inspecciones, movimientos y servicios.','Buscar llanta','historial'),loadComponent:page},
  {path:'carga-masiva',loadComponent:()=>import('./features/bulk-import/bulk-import-page').then(m=>m.BulkImportPage)},
  {path:'analitica',loadComponent:()=>import('./features/analytics/analytics-page').then(m=>m.AnalyticsPageComponent)},

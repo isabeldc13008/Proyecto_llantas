@@ -44,6 +44,7 @@ public static class DependencyInjection
                 sql => sql.EnableRetryOnFailure()));
 
         services.AddScoped<ILlantaService, LlantaService>();
+        services.AddScoped<SistemaLlantas.Application.Disposicion.IDisposicionService, DisposicionService>();
         services.AddScoped<ICatalogoService, CatalogoService>();
         services.AddScoped<ICicloVidaLlantaService, CicloVidaLlantaService>();
         services.AddScoped<IInspeccionService, InspeccionService>();
