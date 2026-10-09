@@ -1,7 +1,7 @@
 export interface Ref{id:string;nombre:string}
 export interface Page<T>{items:T[];pageNumber:number;pageSize:number;totalItems:number;totalPages:number}
-export interface Filter{buscar?:string;centroId?:string;estado?:string;pageNumber?:number;pageSize?:number}
-export interface Order{ordenId:string;llantaId:string;codigo:string;serial:string;marca:string;referencia:string;dimension:string;centroOrigen:Ref;ubicacionRegistrada:Ref;estado:string;etiqueta:string;fechaPendiente:string|null;responsable:string|null;loteId:string|null;despachoId:string|null}
+export interface Filter{buscar?:string;centroId?:string;estado?:string;pageNumber?:number;pageSize?:number;centroIds?:string[];llantaIds?:string[];estados?:string[];conEvidencia?:boolean;desde?:string;hasta?:string;ordenarPor?:string;descendente?:boolean;soloPendientes?:boolean;llantaTexto?:string;centroTexto?:string;estadoTexto?:string}
+export interface Order{evidencias?:number;ordenId:string;llantaId:string;codigo:string;serial:string;marca:string;referencia:string;dimension:string;centroOrigen:Ref;ubicacionRegistrada:Ref;estado:string;etiqueta:string;fechaPendiente:string|null;responsable:string|null;loteId:string|null;despachoId:string|null}
 export interface Event{tipo:string;etiqueta:string;estadoVisual:string;fecha:string|null;responsable:string|null;observacion:string|null;referencia:string|null}
 export interface Evidence{id:string;nombreArchivo:string;mimeType:string;tamanoBytes:number;fecha:string;responsable?:string}
 export interface Detail{orden:Order;motivo:string;concepto:string|null;resultado:string|null;eventos:Event[];evidencias:Evidence[];accionesPermitidas:string[]}
@@ -21,3 +21,8 @@ export function remainingAfterReceipt(expected:number,previous:number,selected:n
 export function localDate(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 export function failure(e:any){return e?.userMessage??e?.error?.message??e?.message??'No fue posible completar la operación. Intenta nuevamente.'}
 export function safeDispositionReturn(value:string|null,fallback='/disposicion-final/bandeja'){return value&&/^\/disposicion-final\/(bandeja|lotes|despachos)(?:\?|$)/.test(value)?value:fallback}
+
+export interface EligibleTire{id:string;codigo:string;serial:string;centro:string;vehiculo:string|null;posicion:string|null}
+export interface Facet{valor:string;etiqueta:string}
+
+

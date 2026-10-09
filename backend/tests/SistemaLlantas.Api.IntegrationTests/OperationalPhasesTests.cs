@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Hosting;
@@ -40,11 +40,63 @@ public sealed class OperationalPhasesTests:IClassFixture<TestApplicationFactory>
  [Fact]
  public async Task DisposicionFinal_EvaluacionTecnica_Reutilizable_RetornaInventario()
  {
-  _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var db=scope.ServiceProvider.GetRequiredService<LlantasDbContext>();var strategy=db.Database.CreateExecutionStrategy();await strategy.ExecuteAsync(async()=>
+  _ = factory.CreateClient();
+  await using var scope = factory.Services.CreateAsyncScope();
+  var sp = scope.ServiceProvider;
+  var db = sp.GetRequiredService<LlantasDbContext>();
+
+  // Llanta exclusiva del caso; la fábrica elimina la base al terminar la clase.
+  var sample = await db.Llantas.AsNoTracking().FirstAsync();
+  var state = await db.EstadosLlanta.FirstAsync(x =>
+      x.Activo && x.PermiteMontaje && !x.EsDisposicionFinal &&
+      (x.Codigo == "DIS" || x.Codigo == "DISPONIBLE"));
+  var suffix = Guid.NewGuid().ToString("N");
+  var tire = new Llanta("QA-REUTIL-" + suffix, "SER-REUTIL-" + suffix)
   {
-   await using var tx=await db.Database.BeginTransactionAsync();var tire=await db.Llantas.AsNoTracking().FirstAsync(x=>!db.AsignacionesLlantaPosicion.Any(a=>a.LlantaId==x.Id&&a.EsActiva)&&!db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&!new[]{"CERRADA","RECHAZADA","NO_REPARABLE","DISPOSICION_FINAL","RETORNADA_INVENTARIO"}.Contains(o.Estado)));var controller=new ServiciosLlantaController(db,scope.ServiceProvider.GetRequiredService<IOperacionService>(),scope.ServiceProvider.GetRequiredService<ICicloVidaLlantaService>(),scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>()){ControllerContext=Context("qa-tecnico","centros.ver_todos","servicios_llanta.consultar","servicios_llanta.gestionar","servicios_llanta.aprobar_propia")};
-   var created=await controller.Crear(new("DisposicionFinal",tire.Id,null,null,"Candidata a disposición","Evaluación requerida"),CancellationToken.None);var pending=Assert.IsType<ServiciosLlantaController.OrdenDto>(Assert.IsType<CreatedResult>(created.Result).Value);Assert.Equal("PENDIENTE_EVALUACION_TECNICA",pending.Estado);var evaluated=await controller.EvaluarDisposicion(pending.Id,new(true,"La carcasa y el remanente permiten continuar en operación."),CancellationToken.None);Assert.Equal("RETORNADA_INVENTARIO",evaluated.Estado);Assert.Equal("REUTILIZABLE",evaluated.Resultado);var stored=await db.OrdenesServicioLlanta.SingleAsync(x=>x.Id==pending.Id);Assert.Equal("REUTILIZABLE",stored.Resultado);await tx.RollbackAsync();
-  });
+      CentroId = sample.CentroId,
+      MarcaId = sample.MarcaId,
+      ReferenciaId = sample.ReferenciaId,
+      DimensionId = sample.DimensionId,
+      TipoLlantaId = sample.TipoLlantaId,
+      EstadoLlantaId = state.Id,
+      ProfundidadInicial = 16,
+      UbicacionActual = "Inventario",
+      UsuarioCreacion = "qa-tecnico"
+  };
+  db.Llantas.Add(tire);
+  await db.SaveChangesAsync();
+
+  var controller = new ServiciosLlantaController(
+      db, sp.GetRequiredService<IOperacionService>(),
+      sp.GetRequiredService<ICicloVidaLlantaService>(),
+      sp.GetRequiredService<IWebHostEnvironment>())
+  {
+      ControllerContext = Context("qa-tecnico", "centros.ver_todos",
+          "servicios_llanta.consultar", "servicios_llanta.gestionar",
+          "servicios_llanta.aprobar_propia")
+  };
+
+  // El controlador administra su propia transacción.
+  var created = await controller.Crear(new("DisposicionFinal", tire.Id,
+      null, null, "Candidata a disposición", "Evaluación requerida"), CancellationToken.None);
+  var pending = Assert.IsType<ServiciosLlantaController.OrdenDto>(
+      Assert.IsType<CreatedResult>(created.Result).Value);
+  Assert.Equal("PENDIENTE_EVALUACION_TECNICA", pending.Estado);
+
+  var evaluated = await controller.EvaluarDisposicion(pending.Id,
+      new(true, "La carcasa y el remanente permiten continuar en operación."), CancellationToken.None);
+  Assert.Equal("RETORNADA_INVENTARIO", evaluated.Estado);
+  Assert.Equal("REUTILIZABLE", evaluated.Resultado);
+
+  db.ChangeTracker.Clear();
+  var stored = await db.OrdenesServicioLlanta.AsNoTracking().SingleAsync(x => x.Id == pending.Id);
+  Assert.Equal("RETORNADA_INVENTARIO", stored.Estado);
+  Assert.Equal("REUTILIZABLE", stored.Resultado);
+  var returned = await db.Llantas.AsNoTracking().Include(x => x.EstadoLlanta)
+      .SingleAsync(x => x.Id == tire.Id);
+  Assert.Equal("Inventario", returned.UbicacionActual);
+  Assert.True(returned.EstadoLlanta.PermiteMontaje);
+  Assert.False(await db.AsignacionesLlantaPosicion.AnyAsync(x => x.LlantaId == tire.Id && x.EsActiva));
  }
 
  [Fact]

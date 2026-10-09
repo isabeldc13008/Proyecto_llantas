@@ -11,6 +11,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.AddApplicationAuthentication();
 builder.Services.AddAuthorization(o =>
 {
+    o.AddPolicy("Inventario.Consultar", p =>
+    p.RequireAuthenticatedUser()
+     .RequireClaim("permiso", "modulos.inventario.consultar"));
     o.AddPolicy("Dashboard.Consultar",p=>p.RequireClaim("permiso","modulos.resumen.consultar"));
     o.AddPolicy("Analitica.Consultar",p=>p.RequireAuthenticatedUser().RequireClaim("permiso","modulos.analitica.consultar"));
     o.AddPolicy("Llantas.Consultar", p => p.RequireClaim("permiso", "llantas.consultar", "llantas.administrar"));

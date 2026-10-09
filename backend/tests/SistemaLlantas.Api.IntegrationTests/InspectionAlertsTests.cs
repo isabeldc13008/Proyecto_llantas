@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -117,8 +117,13 @@ public sealed class InspectionAlertsTests : IClassFixture<TestApplicationFactory
         Assert.All(allowed, x => Assert.Equal(vehicle.CentroId, x.CentroId));
         var denied = await service.ObtenerVehiculosAsync("qa", false, vehicle.Placa, new(false, [Guid.NewGuid()]), CancellationToken.None);
         Assert.Empty(denied);
-        var contextual = await service.ObtenerVehiculosAsync("tecnico", true, vehicle.Placa, new(false, [Guid.NewGuid()]), CancellationToken.None, true);
+        var contextual = await service.ObtenerVehiculosAsync("tecnico", true, vehicle.Placa, new(false, [vehicle.CentroId]), CancellationToken.None, true);
         Assert.Contains(contextual, x => x.Id == vehicle.Id);
+        // El indicador contextual tampoco debe saltarse el alcance del usuario.
+        var contextualDenegado = await service.ObtenerVehiculosAsync(
+            "tecnico", true, vehicle.Placa,
+            new(false, [Guid.NewGuid()]), CancellationToken.None, true);
+        Assert.Empty(contextualDenegado);
     }
 
     [Fact]

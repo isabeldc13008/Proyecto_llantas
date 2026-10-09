@@ -1,10 +1,12 @@
 import {inject,Injectable} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
-import {Detail,Dispatch,Filter,Lot,Order,Page,Provider,Summary,Ref} from './disposition-models';
+import {Detail,Dispatch,Filter,Lot,Order,Page,Provider,Summary,Ref,EligibleTire,Facet} from './disposition-models';
 @Injectable({providedIn:'root'})
 export class DispositionApi{
  private http=inject(HttpClient);private base='/api/disposicion';
- private params(f:Filter){let p=new HttpParams();Object.entries(f).forEach(([k,v])=>{if(v!==undefined&&v!=='')p=p.set(k,v)});return p}
+ private params(f:Filter){let p=new HttpParams();Object.entries(f).forEach(([k,v])=>{if(v!==undefined&&(v!==''||k.endsWith('Texto'))){if(Array.isArray(v)){v.forEach(item=>p=p.append(k,item))}else p=p.set(k,v)}});return p}
+ facets(column:string,text:string,page:number,f:Filter){return this.http.get<Page<Facet>>(this.base+'/ordenes/filtros',{params:this.params(f).set('columna',column).set('texto',text).set('pagina',page)})}
+ proposals(items:{ordenId:string;llantaId:string}[],motivo:string,observacion:string,origen='PROPUESTA',posicionOrigenId?:string){return this.http.post<{ordenId:string;llantaId:string}[]>(this.base+'/propuestas',{items,motivo,observacion,origen,posicionOrigenId})}
  summary(f:Filter){return this.http.get<Summary>(this.base+'/resumen',{params:this.params(f)})}
  orders(f:Filter){return this.http.get<Page<Order>>(this.base+'/ordenes',{params:this.params(f)})}
  detail(id:string){return this.http.get<Detail>(this.base+'/ordenes/'+id)}
@@ -14,7 +16,7 @@ export class DispositionApi{
  dispatches(f:Filter){return this.http.get<Page<Dispatch>>(this.base+'/despachos',{params:this.params(f)})}
  dispatch(id:string){return this.http.get<Dispatch>(this.base+'/despachos/'+id)}
  providers(){return this.http.get<Provider[]>('/api/servicios-llanta/proveedores')}
- tires(buscar:string,pageNumber=1){return this.http.get<Page<Ref>>(this.base+'/llantas',{params:{buscar,pageNumber}})}
+ tires(buscar:string,pageNumber=1){return this.http.get<Page<EligibleTire>>(this.base+'/llantas',{params:{buscar,pageNumber}})}
  createLot(body:unknown){return this.http.post<{id:string}>('/api/servicios-llanta/disposicion/lotes',body)}
  receive(id:string,ordenIds:string[]){return this.http.post('/api/servicios-llanta/disposicion/lotes/'+id+'/recibir',{ordenIds})}
  createDispatch(body:unknown){return this.http.post<Dispatch>(this.base+'/despachos',body)}
@@ -31,3 +33,6 @@ export class DispositionApi{
  createOrder(llantaId:string,motivo:string){return this.http.post<{id:string}>('/api/servicios-llanta',{tipo:'DisposicionFinal',llantaId,motivo,proveedorId:null,costo:null,observaciones:null})}
 }
 export function downloadBlob(blob:Blob,name:string){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+
+
+

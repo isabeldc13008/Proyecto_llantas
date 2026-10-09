@@ -1,3 +1,4 @@
+import {SingleSelectFilter} from '../../shared/single-select-filter';
 import {Component,inject,signal,OnInit,computed} from '@angular/core';
 import {DatePipe} from '@angular/common';
 import {FormsModule} from '@angular/forms';
@@ -7,7 +8,7 @@ import {DispositionApi} from './disposition-api';
 import {Center,Order,Page,Provider,actaCount,failure,localDate} from './disposition-models';
 import {CatalogsApi} from '../../core/services/catalogs-api';
 import {AuthService} from '../../core/auth/auth.service';
-@Component({selector:'app-disposition-lot-editor',imports:[DatePipe,FormsModule,RouterLink],templateUrl:'./disposition-lot-editor.html',styleUrl:'./disposition-shared.scss'})
+@Component({selector:'app-disposition-lot-editor',imports:[SingleSelectFilter,DatePipe,FormsModule,RouterLink],templateUrl:'./disposition-lot-editor.html',styleUrl:'./disposition-shared.scss'})
 export class DispositionLotEditor implements OnInit{
  private api=inject(DispositionApi);private catalogs=inject(CatalogsApi);private route=inject(ActivatedRoute);private router=inject(Router);auth=inject(AuthService);
  dispatch=this.route.snapshot.data['kind']==='despachos';center=this.route.snapshot.queryParamMap.get('centroId')??'';search='';centers=signal<Center[]>([]);providers=signal<Provider[]>([]);page=signal<Page<Order>|null>(null);selected=signal<Order[]>([]);loading=signal(false);busy=signal(false);error=signal('');key=crypto.randomUUID();private version=0;
@@ -25,4 +26,6 @@ export class DispositionLotEditor implements OnInit{
  allVisible(){return !!this.page()?.items.length&&this.page()!.items.every(o=>this.has(o.ordenId))}
  outside(){return this.selected().filter(o=>!this.page()?.items.some(r=>r.ordenId===o.ordenId)).length}
  async create(){if(this.busy()||!this.selected().length||!this.form.date)return;this.busy.set(true);this.error.set('');try{const common={ordenIds:this.selected().map(o=>o.ordenId),fechaSalida:new Date(this.form.date).toISOString(),transportador:this.form.carrier,placa:this.form.plate,remision:this.form.remission||null,observaciones:this.form.notes||null,idempotencyKey:this.key};const request=this.dispatch?this.api.createDispatch({...common,centroR1Id:this.center,proveedorId:this.form.provider}):this.api.createLot({...common,centroOrigenId:this.center,centroDestinoId:this.form.destination});const result=await firstValueFrom(request);await this.router.navigate(['/disposicion-final',this.dispatch?'despachos':'lotes',result.id])}catch(e){this.error.set(failure(e))}finally{this.busy.set(false)}}
+ centerOptions(){return (this.dispatch?this.r1s():this.centers()).map(c=>({value:c.id,label:c.nombre}))} r1Options(){return this.r1s().map(c=>({value:c.id,label:c.nombre}))} providerOptions(){return this.providers().map(c=>({value:c.id,label:c.nombre}))}
 }
+

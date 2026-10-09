@@ -19,3 +19,5 @@ aside .brand small,aside .nav-label{color:#b5d9c5}aside nav a{color:#e0f0e6}asid
 
 .aside-head{flex-shrink:0}.menu-backdrop{display:none}.topbar>*{min-width:0}
 @media(max-width:900px){.shell.menu-open .menu-backdrop{display:block;position:fixed;inset:0;z-index:19;border:0;border-radius:0;background:#07141699}.aside-toggle,.menu{width:44px;height:44px;min-width:44px;min-height:44px}.aside-toggle{flex-basis:44px}nav a{min-height:44px}.topbar{gap:.5rem}.user>div{flex-shrink:0}}
+
+main[hidden]{display:none!important}:host>div:not(.shell)>div>main{min-height:100dvh}

@@ -19,6 +19,7 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
     {
         var x=await db.ActividadesProgramadas.Include(a=>a.Centro).Include(a=>a.Vehiculo).Include(a=>a.TecnicoUsuario).SingleOrDefaultAsync(a=>a.Id==id&&a.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(a.CentroId)),ct)??throw new KeyNotFoundException("Actividad no encontrada.");
         if(x.TecnicoId!=usuario&&x.TecnicoId!=usuario+".local"&&x.TecnicoUsuario?.Username!=usuario) throw new UnauthorizedAccessException("La actividad está asignada a otro técnico.");
+        if(x.LlantaId.HasValue)await ReglaLlantaTerminal.ValidarAsync(db,[x.LlantaId.Value],ct);
         if(x.Estado is EstadoActividad.Cumplida or EstadoActividad.Cancelada) throw new ConflictoException("La actividad no se puede iniciar.");
         x.Estado=EstadoActividad.EnEjecucion; x.FechaInicioReal??=DateTimeOffset.UtcNow; x.UsuarioModificacion=usuario; await db.SaveChangesAsync(ct);
         return new(x.Id,x.TipoActividad,x.FechaProgramada,x.Centro.Nombre,x.VehiculoId,x.Vehiculo==null?"Sin vehículo":$"Interno {x.Vehiculo.NumeroInterno} - {x.Vehiculo.Placa}",x.Prioridad,x.Estado.ToString(),x.TipoActividad=="Inspección"?$"/inspecciones?actividadId={x.Id}&vehiculoId={x.VehiculoId}":$"/montajes?actividadId={x.Id}&vehiculoId={x.VehiculoId}",x.FechaFinReal);
@@ -53,6 +54,7 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
     private async Task ValidarMontajeCoreAsync(Guid llantaId, Guid posicionId, decimal? kilometraje, AlcanceCentros alcance, CancellationToken ct)
     {
         KilometrajeOperacion.Validar(kilometraje,null);
+        await ReglaLlantaTerminal.ValidarAsync(db,[llantaId],ct);
         var tire = await db.Llantas.Include(x=>x.EstadoLlanta).SingleOrDefaultAsync(x=>x.Id==llantaId && x.Activo && x.Centro.Activo && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)),ct)
             ?? throw new ConflictoException("La llanta ya no está activa o disponible en los centros autorizados.");
         var position = await db.PosicionesVehiculo.Include(x=>x.EjeVehiculo).ThenInclude(x=>x.Vehiculo).SingleOrDefaultAsync(x=>x.Id==posicionId && x.Activo && x.EjeVehiculo.Activo && x.EjeVehiculo.Vehiculo.Activo && x.EjeVehiculo.Vehiculo.Centro.Activo && (alcance.VerTodos || alcance.CentroIds.Contains(x.EjeVehiculo.Vehiculo.CentroId)),ct)
@@ -67,6 +69,7 @@ public sealed partial class OperacionService(LlantasDbContext db) : IOperacionSe
 
     private async Task<MovimientoDto> MoverCoreAsync(EjecutarMovimientoDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct,bool inspeccion=false)
     {
+        await ReglaLlantaTerminal.ValidarAsync(db,[dto.LlantaId],ct);
         if((dto.PosicionOrigenId.HasValue||dto.PosicionDestinoId.HasValue)&&!dto.KilometrajeVehiculo.HasValue)throw new ValidacionException("Ingresa el kilometraje actual para continuar.");
         await using var tx=db.Database.CurrentTransaction is null?await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable,ct):null;
         if(dto.PosicionDestinoId.HasValue && !dto.PosicionOrigenId.HasValue) await ValidarMontajeCoreAsync(dto.LlantaId,dto.PosicionDestinoId.Value,dto.KilometrajeVehiculo,alcance,ct);
@@ -159,3 +162,4 @@ public static class KilometrajeOperacion
  }
  private static string Formato(decimal valor)=>valor.ToString("#,0.##",System.Globalization.CultureInfo.GetCultureInfo("es-CO"));
 }
+

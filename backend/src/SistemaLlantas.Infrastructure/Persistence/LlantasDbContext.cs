@@ -69,6 +69,7 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        await SistemaLlantas.Infrastructure.Services.ReglaLlantaTerminal.ValidarCambiosAsync(this,cancellationToken);
         var cambios = ChangeTracker.Entries<EntidadAuditable>()
             .Where(x => x.State is EntityState.Added or EntityState.Modified)
             .Select(x => new Auditoria
@@ -84,3 +85,4 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
 
     private static bool EsSensible(string nombre) => nombre.Contains("password", StringComparison.OrdinalIgnoreCase) || nombre.Contains("token", StringComparison.OrdinalIgnoreCase);
 }
+

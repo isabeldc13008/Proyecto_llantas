@@ -3,6 +3,7 @@ namespace SistemaLlantas.Application.Disposicion;
 
 public interface IDisposicionService
 {
+    Task<Pagina<ValorFiltroDisposicion>> FiltrosAsync(string columna,string? buscar,int pagina,ConsultaDisposicion filtro,AlcanceCentros alcance,CancellationToken ct);
     Task<ResumenDisposicionDto> ResumenAsync(ConsultaDisposicion filtro,AlcanceCentros alcance,CancellationToken ct);
     Task<Pagina<OrdenDisposicionDto>> OrdenesAsync(ConsultaDisposicion filtro,AlcanceCentros alcance,CancellationToken ct);
     Task<DetalleDisposicionDto?> DetalleAsync(Guid ordenId,AlcanceCentros alcance,CancellationToken ct);
@@ -20,3 +21,4 @@ public interface IDisposicionService
     Task RegistrarNovedadAsync(Guid loteId,CrearNovedadDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task ResolverNovedadAsync(Guid id,ResolverNovedadDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
 }
+

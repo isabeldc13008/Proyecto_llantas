@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -73,7 +73,35 @@ public sealed partial class MountAuthorizationInspectionTests(TestApplicationFac
  [Theory][InlineData(true)][InlineData(false)]public async Task Aprobar_RevalidaPosicionYLlanta(bool occupiedPosition)
  {
   _=factory.CreateClient();await using var scope=factory.Services.CreateAsyncScope();var sp=scope.ServiceProvider;var db=sp.GetRequiredService<LlantasDbContext>();var(t,v,p)=await Setup(db);var request=Created(await Operations(sp,db,v.CentroId).Solicitar(Request(t,p),Ct));var(other,_,otherPosition)=await Setup(db);
-  await sp.GetRequiredService<IOperacionService>().MoverAsync(new(){LlantaId=occupiedPosition?other.Id:t.Id,PosicionDestinoId=occupiedPosition?p.Id:otherPosition.Id,TipoDestino="Posicion",Motivo="Otra operación",KilometrajeVehiculo=1000},"qa-other",new(true,[]),Ct);
+  if (occupiedPosition)
+  {
+   await sp.GetRequiredService<IOperacionService>().MoverAsync(new(){LlantaId=other.Id,PosicionDestinoId=p.Id,TipoDestino="Posicion",Motivo="Otra operación",KilometrajeVehiculo=1000},"qa-other",new(true,[]),Ct);
+  }
+  else
+  {
+   // Simular un cambio externo ya persistido. El servicio normal rechaza mover
+   // esta llanta porque la solicitud pendiente ya la tiene comprometida.
+   var movimiento = new Movimiento
+   {
+    Numero = "QA-EXTERNO-" + Guid.NewGuid().ToString("N")[..16],
+    Tipo = "MONTAJE", CentroId = t.CentroId, Motivo = "Preparación de revalidación", Usuario = "qa-other",
+    Detalles = [new() { LlantaId = t.Id, PosicionDestinoId = otherPosition.Id, TipoDestino = TipoDestinoLlanta.Posicion }]
+   };
+   db.Movimientos.Add(movimiento);
+   db.AsignacionesLlantaPosicion.Add(new()
+   {
+    LlantaId = t.Id, PosicionVehiculoId = otherPosition.Id,
+    MovimientoOrigenId = movimiento.Id, EsActiva = true,
+    FechaInicio = DateTimeOffset.UtcNow, KilometrajeMontaje = 1000
+   });
+   otherPosition.LlantaActualId = t.Id;
+   t.EstadoLlantaId = await db.EstadosLlanta
+    .Where(x => x.Activo && (x.Codigo == "MON" || x.Codigo == "MONTADA"))
+    .Select(x => x.Id).FirstAsync();
+   t.UbicacionActual = "Montaje externo de prueba";
+   await db.SaveChangesAsync();
+   Assert.True(await db.AsignacionesLlantaPosicion.AnyAsync(x => x.LlantaId == t.Id && x.EsActiva));
+  }
   await Assert.ThrowsAsync<ConflictoException>(()=>Operations(sp,db,v.CentroId,"qa-admin").Resolver(request.Id,new(true,null),Ct));db.ChangeTracker.Clear();Assert.Equal(EstadoSolicitudOperacion.PENDIENTE_APROBACION,(await db.SolicitudesOperacion.SingleAsync(x=>x.Id==request.Id)).Estado);
  }
  [Theory][InlineData(false)][InlineData(true)]public async Task Inspeccion_AsignaLlantaGlobal_TrasladaYRegistraMontaje(bool otherCenter)

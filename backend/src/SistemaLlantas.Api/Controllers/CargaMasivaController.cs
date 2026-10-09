@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using SistemaLlantas.Application.Llantas;
 using System.Text;
@@ -79,8 +79,8 @@ public sealed class CargaMasivaController(LlantasDbContext db,IVehiculoService v
    var state=Resolve(states,"Estado");
    if(!codes.Add(Value("CodigoLlanta")))Error("CodigoLlanta","Identificador duplicado en el archivo o en el sistema.");
    if(!serials.Add(Value("Serial")))Error("Serial","Serial duplicado en el archivo o en el sistema.");
-   var parsed=decimal.TryParse(Value("ProfundidadInicial"),NumberStyles.Number,CultureInfo.InvariantCulture,out var depth);
-   if(!parsed)Error("ProfundidadInicial","Debe ser un número entre 0 y 100.");
+   var parsed=decimal.TryParse(Value("ProfundidadInicial"),NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out var depth);
+   if(!parsed || depth < 0m || depth > 100m)Error("ProfundidadInicial","Debe ser un número entre 0 y 100.");
    var dto=new GuardarLlantaDto{
     Codigo=Value("CodigoLlanta").ToUpperInvariant(),Serial=Value("Serial").ToUpperInvariant(),
     MarcaId=brand?.Id??Guid.Empty,ReferenciaId=reference?.Id??Guid.Empty,
