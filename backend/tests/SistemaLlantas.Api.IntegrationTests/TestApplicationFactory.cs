@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
@@ -336,9 +336,23 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>
 
         if (renames.Count > 0)
         {
-            await db.Database.ExecuteSqlRawAsync(
-                string.Join(Environment.NewLine, renames.Distinct())
-            );
+            var timeoutAnterior = db.Database.GetCommandTimeout();
+
+            try
+            {
+                db.Database.SetCommandTimeout(180);
+
+                foreach (var bloque in renames.Distinct().Chunk(25))
+                {
+                    await db.Database.ExecuteSqlRawAsync(
+                        string.Join(Environment.NewLine, bloque)
+                    );
+                }
+            }
+            finally
+            {
+                db.Database.SetCommandTimeout(timeoutAnterior);
+            }
         }
     }
 
