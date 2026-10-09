@@ -8,6 +8,7 @@ public sealed partial class OperacionService
  public Task ValidarAsignacionesAsync(Guid vehiculoId,IReadOnlyList<AsignacionMontajeDto> filas,AlcanceCentros alcance,Guid? grupoExcluir,CancellationToken ct)=>ValidarAsignacionesCoreAsync(vehiculoId,filas,alcance,grupoExcluir,ct);
  private async Task ValidarAsignacionesCoreAsync(Guid vehiculoId,IReadOnlyList<AsignacionMontajeDto> filas,AlcanceCentros alcance,Guid? grupoExcluir,CancellationToken ct,Guid? solicitudExcluir=null,Guid? actividadExcluir=null)
  {
+  await ReglaLlantaTerminal.ValidarAsync(db,filas.Select(f=>f.LlantaId).Concat(filas.Where(f=>f.LlantaActualId.HasValue).Select(f=>f.LlantaActualId!.Value)),ct);
   AsignacionesMontaje.Validar(filas);
   var vehicle=await db.Vehiculos.SingleOrDefaultAsync(v=>v.Id==vehiculoId&&v.Activo&&v.Centro.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(v.CentroId)),ct)??throw new ValidacionException("Vehículo inactivo o fuera del alcance.");
   var ids=filas.Select(f=>f.PosicionId).ToArray();
@@ -72,3 +73,4 @@ public sealed partial class OperacionService
   ActualizarOdometro(vehicle,kilometraje);await db.SaveChangesAsync(ct);
  }
 }
+

@@ -1,3 +1,4 @@
+import {Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -7,7 +8,7 @@ export interface AuthUser{name:string;username:string;role:UserRole;roleName:str
 interface LoginResponse extends AuthUser{accessToken:string;expiresAt:string}
 @Injectable({providedIn:'root'})
 export class AuthService {
- private readonly http=inject(HttpClient);
+ private readonly http=inject(HttpClient);private readonly router=inject(Router);
  readonly user=signal<AuthUser|null>(null); readonly loginError=signal('');
  private token=''; private expiresAt=0;
  private readonly sessionKey='glld_session';
@@ -39,7 +40,7 @@ export class AuthService {
  private validToken(){if(this.token&&Date.now()<this.expiresAt)return true;if(this.token||this.expiresAt||this.user())this.clearSession();return false;}
  async accessToken():Promise<string>{return this.validToken()?this.token:'';}
  clearSession(){this.generation++;this.token='';this.expiresAt=0;this.user.set(null);try{localStorage.removeItem(this.sessionKey);localStorage.removeItem('access_token');}catch{/* Storage can be unavailable; the in-memory session is still cleared. */}}
- logout(){this.clearSession();}
+ logout(){this.clearSession();this.loginError.set('');void this.router.navigateByUrl('/acceso',{replaceUrl:true});}
  isLoggedIn(){return this.validToken()&&this.user()!==null}
  requiereCambioClave(){return this.user()?.requiereCambioClave===true}
  async cambiarClave(actual:string,nueva:string,confirmacion:string){await firstValueFrom(this.http.post('/api/auth/cambiar-clave',{actual,nueva,confirmacion}));this.user.set(await firstValueFrom(this.http.get<AuthUser>('/api/auth/me')))}
@@ -49,3 +50,4 @@ export class AuthService {
  canModule(module:string){return this.has(`modulos.${module}.consultar`)}
  hasOperationalScope(){const u=this.user();return !!u&&(u.canViewAllCenters||(u.centerIds?.length??0)>0)}
 }
+

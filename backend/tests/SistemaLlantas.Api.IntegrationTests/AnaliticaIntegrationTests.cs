@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SistemaLlantas.Application.Analitica;
 using SistemaLlantas.Application.Common;
@@ -31,7 +31,7 @@ public sealed class AnaliticaIntegrationTests(TestApplicationFactory factory) : 
                 Marca = brand, Referencia = reference, DimensionId = seed.DimensionId, TipoLlantaId = seed.TipoLlantaId,
                 CentroId = c, EstadoLlanta = final ? disposed : seed.EstadoLlanta, FechaIngreso = new(2026, 1, 1)
             };
-            var operating = Tire("A", center);var finalized = Tire("B", center, true);var missing = Tire("C", center);var invalid = Tire("D", center);var hidden = Tire("E", other.Id);
+            var operating = Tire("A", center);var finalized = Tire("B", center);var missing = Tire("C", center);var invalid = Tire("D", center);var hidden = Tire("E", other.Id);
             db.Llantas.AddRange(operating, finalized, missing, invalid, hidden);await db.SaveChangesAsync();
             Movimiento Trip(Llanta tire, decimal start, decimal end, string type, bool duplicate = false)
             {
@@ -45,6 +45,9 @@ public sealed class AnaliticaIntegrationTests(TestApplicationFactory factory) : 
             Trip(operating, 100, 400, "MONTAJE", true);Trip(operating, 400, 900, "ROTACION");Trip(finalized, 0, 2000, "MONTAJE");Trip(invalid, -100, 100, "MONTAJE");Trip(hidden, 0, 9000, "MONTAJE");
             db.Movimientos.Add(new Movimiento { Numero = "HIDDEN-" + key, Tipo = "OCULTO", CentroId = other.Id, Motivo = "Otro alcance", Detalles = [new() { LlantaId = operating.Id, TipoDestino = TipoDestinoLlanta.Inventario }] });
             db.OrdenesServicioLlanta.AddRange(new() { LlantaId = operating.Id, CentroOrigenId = center, Tipo = TipoServicioLlanta.Reparacion, Estado = "CERRADA", Motivo = "Terminada" }, new() { LlantaId = operating.Id, CentroOrigenId = center, Tipo = TipoServicioLlanta.Reparacion, Estado = "OPCIONADA", Motivo = "Pendiente" });
+            await db.SaveChangesAsync();
+            // Cargar el historial antes de pasar la llanta a su estado terminal.
+            finalized.EstadoLlanta = disposed;
             await db.SaveChangesAsync();
             var service = new AnaliticaService(db);var access = new AlcanceCentros(false, [center]);var filter = new FiltroAnalitica { MarcaId = brand.Id, MinimoMuestra = 2 };
             var summary = await service.ResumenAsync(filter, access, default);

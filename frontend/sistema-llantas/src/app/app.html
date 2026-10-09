@@ -1,7 +1,5 @@
-@if (!auth.isLoggedIn() || auth.requiereCambioClave()) {
-  <router-outlet />
-} @else {
-<div class="shell" [class.sidebar-collapsed]="sidebarCollapsed" [class.menu-open]="menuOpen">
+<div [class.shell]="showShell()" [class.sidebar-collapsed]="sidebarCollapsed" [class.menu-open]="menuOpen">
+  @if(showShell()) {
   @if(menuOpen){<button class="menu-backdrop" aria-label="Cerrar menú" (click)="closeMobileMenu()"></button>}
   <aside [class.open]="menuOpen" [class.collapsed]="sidebarCollapsed">
     <div class="aside-head">
@@ -56,21 +54,21 @@
         @if(auth.canModule('auditoria')){<a routerLink="/auditoria" routerLinkActive="active" title="Auditoría">☷ <span>Auditoría</span></a>}
       </nav>
     </div>
-  </aside>
+  </aside>}
 
-  <div class="content" [attr.inert]="menuOpen ? '' : null">
-    <header class="topbar">
+  <div [class.content]="showShell()" [attr.inert]="showShell() && menuOpen ? '' : null">
+    @if(showShell()){<header class="topbar">
       <button class="menu" type="button" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed ? 'Mostrar menú lateral' : 'Ocultar menú lateral'">☰</button>
       <div class="context"><span>Fuente de datos</span><b>Servidor operativo</b></div>
       <div class="user"><div>{{auth.user()?.initials}}</div><span><b>{{auth.user()?.name}}</b><small>{{auth.user()?.roleName}}</small></span></div>
       <button class="logout" (click)="logout()">Salir</button>
-    </header>
-    <main>
-      @if(!auth.hasOperationalScope()){
+    </header>}
+    <main [hidden]="hideProtected()">
+      @if(showShell() && !auth.hasOperationalScope()){
         <div class="scope-warning" role="status"><b>Usuario sin centros asignados</b><span>Puedes iniciar sesión, pero no verás información operativa hasta que un administrador te asigne uno o varios centros.</span></div>
       }
       <router-outlet />
     </main>
   </div>
 </div>
-}
+

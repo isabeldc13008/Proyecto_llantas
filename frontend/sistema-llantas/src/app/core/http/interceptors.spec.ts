@@ -8,7 +8,7 @@ import { authInterceptor, apiErrorInterceptor } from './interceptors';
 describe('API session boundary',()=>{
  let http:HttpClient;let backend:HttpTestingController;let auth:jasmine.SpyObj<AuthService>;
  beforeEach(()=>{
-  auth=jasmine.createSpyObj('AuthService',['accessToken','clearSession']);auth.accessToken.and.resolveTo('test-token');
+  auth=jasmine.createSpyObj('AuthService',['accessToken','clearSession','logout']);auth.accessToken.and.resolveTo('test-token');
   TestBed.configureTestingModule({providers:[provideRouter([]),provideHttpClient(withInterceptors([authInterceptor,apiErrorInterceptor])),provideHttpClientTesting(),{provide:AuthService,useValue:auth}]});
   http=TestBed.inject(HttpClient);backend=TestBed.inject(HttpTestingController);
  });
@@ -23,7 +23,7 @@ describe('API session boundary',()=>{
   const navigation=spyOn(TestBed.inject(Router),'navigateByUrl').and.resolveTo(true);
   http.get('/api/llantas').subscribe({error:()=>{}});await Promise.resolve();
   const req=backend.expectOne('/api/llantas');expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
-  req.flush({}, {status:401,statusText:'Unauthorized'});expect(auth.clearSession).toHaveBeenCalled();expect(navigation).toHaveBeenCalledWith('/acceso');
+  req.flush({}, {status:401,statusText:'Unauthorized'});expect(auth.logout).toHaveBeenCalled();
  });
  it('keeps the session and explains a 403',async()=>{
   let message='';http.get('/api/llantas').subscribe({error:e=>message=e.userMessage});await Promise.resolve();
@@ -31,3 +31,4 @@ describe('API session boundary',()=>{
   expect(auth.clearSession).not.toHaveBeenCalled();expect(message).toContain('permiso');
  });
 });
+

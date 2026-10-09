@@ -47,6 +47,7 @@ public sealed class CicloVidaLlantaService(LlantasDbContext db,ILlantaService ll
  }
  private async Task TrasladarCentroCoreAsync(Guid id,TrasladarLlantaDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct)
  {
+  await ReglaLlantaTerminal.ValidarAsync(db,[id],ct);
   if(!alcance.Autoriza(dto.CentroDestinoId))throw new UnauthorizedAccessException("El centro destino no está autorizado.");if(string.IsNullOrWhiteSpace(dto.Motivo))throw new ValidacionException("El motivo es obligatorio.");
   await using var tx=db.Database.CurrentTransaction is null?await db.Database.BeginTransactionAsync(ct):null;var tire=await db.Llantas.SingleOrDefaultAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct)??throw new KeyNotFoundException("Llanta no encontrada.");if(tire.CentroId==dto.CentroDestinoId)throw new ValidacionException("El centro destino debe ser diferente.");if(await db.AsignacionesLlantaPosicion.AnyAsync(x=>x.LlantaId==id&&x.EsActiva,ct))throw new ConflictoException("Debe desmontar la llanta antes de trasladarla entre centros.");if(!await db.Centros.AnyAsync(x=>x.Id==dto.CentroDestinoId&&x.Activo,ct))throw new ValidacionException("El centro destino no existe o está inactivo.");
   var transitState=await db.EstadosLlanta.FirstOrDefaultAsync(x=>x.Activo&&x.Codigo=="EN_TRASLADO",ct)??throw new ValidacionException("No está configurado el estado EN_TRASLADO.");
@@ -76,4 +77,5 @@ public sealed class CicloVidaLlantaService(LlantasDbContext db,ILlantaService ll
   if(!await db.Llantas.AnyAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct))throw new KeyNotFoundException("Llanta no encontrada.");var activePosition=await db.AsignacionesLlantaPosicion.Where(x=>x.LlantaId==id&&x.EsActiva).Select(x=>(Guid?)x.PosicionVehiculoId).SingleOrDefaultAsync(ct);var positions=await db.PosicionesVehiculo.Where(x=>x.LlantaActualId==id||x.Id==activePosition).ToListAsync(ct);foreach(var position in positions){position.LlantaActualId=position.Id==activePosition?id:null;position.FechaModificacion=DateTimeOffset.UtcNow;position.UsuarioModificacion=usuario;}await db.SaveChangesAsync(ct);
  }
 }
+
 

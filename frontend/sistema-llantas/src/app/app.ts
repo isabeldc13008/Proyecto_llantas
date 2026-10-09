@@ -1,5 +1,7 @@
+import {toSignal} from '@angular/core/rxjs-interop';
+import {filter,map} from 'rxjs';
 import { Component, HostListener, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 
 @Component({
@@ -14,6 +16,9 @@ export class App {
 
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly currentUrl=toSignal(this.router.events.pipe(filter(e=>e instanceof NavigationEnd),map(e=>(e as NavigationEnd).urlAfterRedirects)),{initialValue:this.router.url});
+  showShell(){return !!this.auth.user()&&!this.auth.requiereCambioClave()}
+  hideProtected(){return !this.auth.user()&&this.currentUrl().split('?')[0]!=='/acceso'}
 
   toggleSidebar() {
     if (window.matchMedia('(max-width: 900px)').matches) {
@@ -35,6 +40,7 @@ export class App {
   logout() {
     this.menuOpen = false;
     this.auth.logout();
-    void this.router.navigateByUrl('/acceso');
+
   }
 }
+

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { provideRouter, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Router, provideRouter, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { authGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 
@@ -11,9 +11,10 @@ describe('Password authentication', () => {
  beforeEach(() => {
   localStorage.removeItem("glld_session");
   TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([])]});
-  auth=TestBed.inject(AuthService); http=TestBed.inject(HttpTestingController);
+  spyOn(TestBed.inject(Router),"navigateByUrl").and.resolveTo(true);auth=TestBed.inject(AuthService); http=TestBed.inject(HttpTestingController);
  });
  afterEach(() => {http.verify();localStorage.removeItem("glld_session");});
+ it('logout immediately clears authentication and centrally replaces the route',()=>{localStorage.setItem('glld_session','test');auth.user.set({permissions:['secret'],centerIds:['one']} as any);auth.logout();expect(auth.user()).toBeNull();expect(localStorage.getItem('glld_session')).toBeNull();expect(TestBed.inject(Router).navigateByUrl).toHaveBeenCalledWith('/acceso',{replaceUrl:true});});
  it('initializes without requesting external configuration', async () => {
   await auth.initialize(); expect(auth.isLoggedIn()).toBeFalse();
  });
@@ -75,3 +76,4 @@ describe('Password authentication', () => {
   expect(await auth.accessToken()).toBe('');expect(auth.user()).toBeNull();expect(localStorage.getItem('glld_session')).toBeNull();
  });
 });
+

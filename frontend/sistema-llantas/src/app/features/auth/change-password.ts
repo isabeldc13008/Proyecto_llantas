@@ -25,5 +25,6 @@ export class ChangePassword {
   catch(error:any){this.error=error?.error?.message??error?.userMessage??'No se pudo cambiar la contraseña.';}
   finally{this.actual='';this.nueva='';this.confirmacion='';this.busy=false}
  }
- logout(){this.actual='';this.nueva='';this.confirmacion='';this.auth.logout();void this.router.navigateByUrl('/acceso')}
+ logout(){this.actual='';this.nueva='';this.confirmacion='';this.auth.logout()}
 }
+

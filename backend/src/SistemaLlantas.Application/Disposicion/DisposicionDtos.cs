@@ -1,7 +1,7 @@
 using SistemaLlantas.Application.Common;
 namespace SistemaLlantas.Application.Disposicion;
 
-public sealed record ConsultaDisposicion(string? Buscar=null, Guid? CentroId=null, string? Estado=null, int PageNumber=1, int PageSize=20, DateTimeOffset? Desde=null, DateTimeOffset? Hasta=null)
+public sealed record ConsultaDisposicion(string? Buscar=null, Guid? CentroId=null, string? Estado=null, int PageNumber=1, int PageSize=20, DateTimeOffset? Desde=null, DateTimeOffset? Hasta=null, Guid[]? CentroIds=null, Guid[]? LlantaIds=null, string[]? Estados=null, bool? ConEvidencia=null, string? OrdenarPor=null, bool Descendente=false, bool SoloPendientes=false, string? LlantaTexto=null, string? CentroTexto=null, string? EstadoTexto=null)
 {
     public int Pagina=>Math.Max(1,PageNumber);
     public int Tamano=>Math.Clamp(PageSize,1,100);
@@ -10,7 +10,7 @@ public sealed record ReferenciaDisposicion(Guid Id,string Nombre);
 public sealed record ContadorDisposicion(string Clave,string Etiqueta,string Unidad,int Cantidad,string Ruta);
 public sealed record AtencionDisposicion(string Codigo,string Centro,string Motivo,DateTimeOffset? Fecha,string Ruta);
 public sealed record ResumenDisposicionDto(DateTimeOffset GeneradoEn,IReadOnlyList<ContadorDisposicion> Contadores,IReadOnlyList<AtencionDisposicion> Atencion);
-public sealed record OrdenDisposicionDto(Guid OrdenId,Guid LlantaId,string Codigo,string Serial,string Marca,string Referencia,string Dimension,ReferenciaDisposicion CentroOrigen,ReferenciaDisposicion UbicacionRegistrada,string Estado,string Etiqueta,DateTimeOffset? FechaPendiente,string? Responsable,Guid? LoteId,Guid? DespachoId);
+public sealed record OrdenDisposicionDto(Guid OrdenId,Guid LlantaId,string Codigo,string Serial,string Marca,string Referencia,string Dimension,ReferenciaDisposicion CentroOrigen,ReferenciaDisposicion UbicacionRegistrada,string Estado,string Etiqueta,DateTimeOffset? FechaPendiente,string? Responsable,Guid? LoteId,Guid? DespachoId,int Evidencias=0);
 public sealed record EventoDisposicion(string Tipo,string Etiqueta,string EstadoVisual,DateTimeOffset? Fecha,string? Responsable,string? Observacion,string? Referencia);
 public sealed record EvidenciaDisposicion(Guid Id,string NombreArchivo,string MimeType,long TamanoBytes,DateTimeOffset Fecha);
 public sealed record DetalleDisposicionDto(OrdenDisposicionDto Orden,string Motivo,string? Concepto,string? Resultado,IReadOnlyList<EventoDisposicion> Eventos,IReadOnlyList<EvidenciaDisposicion> Evidencias,IReadOnlyList<string> AccionesPermitidas);
@@ -26,3 +26,9 @@ public sealed record DespachoDisposicionDto(Guid Id,string Codigo,ReferenciaDisp
 public sealed record ArchivoSoporte(string Ruta,string MimeType,string NombreArchivo);
 public sealed record CrearNovedadDto(Guid? OrdenId,string Observacion);
 public sealed record ResolverNovedadDto(string Observacion);
+public sealed record ValorFiltroDisposicion(string Valor,string Etiqueta);
+public sealed record LlantaElegibleDisposicion(Guid Id,string Codigo,string Serial,string Centro,string? Vehiculo,string? Posicion);
+public sealed record ItemPropuestaDisposicion(Guid OrdenId,Guid LlantaId);
+public sealed record CrearPropuestasDisposicion(IReadOnlyList<ItemPropuestaDisposicion> Items,string Motivo,string? Observacion,string Origen="PROPUESTA",Guid? PosicionOrigenId=null);
+
+

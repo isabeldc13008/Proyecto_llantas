@@ -1,16 +1,16 @@
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
+
 import { AuthService } from '../auth/auth.service';
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { from, switchMap, catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (!req.url.startsWith('/api/') || req.url === '/api/auth/login') return next(req);
-  const auth=inject(AuthService); const router=inject(Router);
+  const auth=inject(AuthService);
   return from(auth.accessToken()).pipe(
     switchMap(token=>next(token?req.clone({setHeaders:{Authorization:`Bearer ${token}`}}):req)),
     catchError(error=>{
-      if(error.status===401){auth.clearSession();void router.navigateByUrl('/acceso');}
+      if(error.status===401){auth.logout();}
       return throwError(()=>error);
     })
   );
@@ -28,3 +28,4 @@ export const apiErrorInterceptor: HttpInterceptorFn = (req, next) => next(req).p
       : `No fue posible completar la operación (HTTP ${error.status}).`);
   return throwError(() => ({ ...error, userMessage:message }));
 }));
+

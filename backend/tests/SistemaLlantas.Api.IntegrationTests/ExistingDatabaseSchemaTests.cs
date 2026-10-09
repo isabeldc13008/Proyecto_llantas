@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SistemaLlantas.Infrastructure.Persistence;
 namespace SistemaLlantas.Api.IntegrationTests;
@@ -40,6 +40,75 @@ public sealed class ExistingDatabaseSchemaTests
             ("DFechaModificacion", "datetimeoffset", 10, true), ("SUsuarioModificacion", "nvarchar", -1, true),
             ("BActivo", "bit", 1, false), ("TRowVersion", "timestamp", 8, false)
         }) AddColumn("TBL_LoteDisposicionFinal", field.Name, field.Type, field.Length, field.Nullable);
+        // 20261006162816_AddDisposicionSistemaVerde: contrato tomado de la migración.
+        AddColumn("TBL_DespachoDisposicion", "Id", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicion", "Codigo", "nvarchar", 100, false);
+        AddColumn("TBL_DespachoDisposicion", "CentroR1Id", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicion", "ProveedorId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicion", "FechaSalida", "datetimeoffset", 10, false);
+        AddColumn("TBL_DespachoDisposicion", "Transportador", "nvarchar", 300, false);
+        AddColumn("TBL_DespachoDisposicion", "Placa", "nvarchar", 40, false);
+        AddColumn("TBL_DespachoDisposicion", "Remision", "nvarchar", 200, true);
+        AddColumn("TBL_DespachoDisposicion", "Observaciones", "nvarchar", 2000, true);
+        AddColumn("TBL_DespachoDisposicion", "Estado", "nvarchar", 60, false);
+        AddColumn("TBL_DespachoDisposicion", "IdempotencyKey", "nvarchar", 200, false);
+        AddColumn("TBL_DespachoDisposicion", "SolicitudHash", "nvarchar", 128, false);
+        AddColumn("TBL_DespachoDisposicion", "FechaCierre", "datetimeoffset", 10, true);
+        AddColumn("TBL_DespachoDisposicion", "CerradoPor", "nvarchar", 300, true);
+        AddColumn("TBL_DespachoDisposicion", "FechaCreacion", "datetimeoffset", 10, false);
+        AddColumn("TBL_DespachoDisposicion", "UsuarioCreacion", "nvarchar", 300, false);
+        AddColumn("TBL_DespachoDisposicion", "FechaModificacion", "datetimeoffset", 10, true);
+        AddColumn("TBL_DespachoDisposicion", "UsuarioModificacion", "nvarchar", 300, true);
+        AddColumn("TBL_DespachoDisposicion", "Activo", "bit", 1, false);
+        AddColumn("TBL_DespachoDisposicion", "RowVersion", "timestamp", 8, false);
+        AddColumn("TBL_NovedadDisposicion", "Id", "uniqueidentifier", 16, false);
+        AddColumn("TBL_NovedadDisposicion", "LoteId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_NovedadDisposicion", "OrdenId", "uniqueidentifier", 16, true);
+        AddColumn("TBL_NovedadDisposicion", "Observacion", "nvarchar", 2000, false);
+        AddColumn("TBL_NovedadDisposicion", "FechaResolucion", "datetimeoffset", 10, true);
+        AddColumn("TBL_NovedadDisposicion", "ResueltaPor", "nvarchar", 300, true);
+        AddColumn("TBL_NovedadDisposicion", "Resolucion", "nvarchar", 2000, true);
+        AddColumn("TBL_NovedadDisposicion", "FechaCreacion", "datetimeoffset", 10, false);
+        AddColumn("TBL_NovedadDisposicion", "UsuarioCreacion", "nvarchar", 300, false);
+        AddColumn("TBL_NovedadDisposicion", "FechaModificacion", "datetimeoffset", 10, true);
+        AddColumn("TBL_NovedadDisposicion", "UsuarioModificacion", "nvarchar", 300, true);
+        AddColumn("TBL_NovedadDisposicion", "Activo", "bit", 1, false);
+        AddColumn("TBL_NovedadDisposicion", "RowVersion", "timestamp", 8, false);
+        AddColumn("TBL_ActaDisposicion", "Id", "uniqueidentifier", 16, false);
+        AddColumn("TBL_ActaDisposicion", "DespachoId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_ActaDisposicion", "CentroOrigenId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_ActaDisposicion", "Codigo", "nvarchar", 100, false);
+        AddColumn("TBL_ActaDisposicion", "SnapshotJson", "nvarchar", -1, false);
+        AddColumn("TBL_ActaDisposicion", "FechaCreacion", "datetimeoffset", 10, false);
+        AddColumn("TBL_ActaDisposicion", "UsuarioCreacion", "nvarchar", 300, false);
+        AddColumn("TBL_ActaDisposicion", "FechaModificacion", "datetimeoffset", 10, true);
+        AddColumn("TBL_ActaDisposicion", "UsuarioModificacion", "nvarchar", 300, true);
+        AddColumn("TBL_ActaDisposicion", "Activo", "bit", 1, false);
+        AddColumn("TBL_ActaDisposicion", "RowVersion", "timestamp", 8, false);
+        AddColumn("TBL_DespachoDisposicionItem", "Id", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicionItem", "DespachoId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicionItem", "OrdenId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicionItem", "LoteEntradaId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_DespachoDisposicionItem", "FechaCreacion", "datetimeoffset", 10, false);
+        AddColumn("TBL_DespachoDisposicionItem", "UsuarioCreacion", "nvarchar", 300, false);
+        AddColumn("TBL_DespachoDisposicionItem", "FechaModificacion", "datetimeoffset", 10, true);
+        AddColumn("TBL_DespachoDisposicionItem", "UsuarioModificacion", "nvarchar", 300, true);
+        AddColumn("TBL_DespachoDisposicionItem", "Activo", "bit", 1, false);
+        AddColumn("TBL_DespachoDisposicionItem", "RowVersion", "timestamp", 8, false);
+        AddColumn("TBL_SoporteActaDisposicion", "Id", "uniqueidentifier", 16, false);
+        AddColumn("TBL_SoporteActaDisposicion", "ActaId", "uniqueidentifier", 16, false);
+        AddColumn("TBL_SoporteActaDisposicion", "NombreArchivo", "nvarchar", 510, false);
+        AddColumn("TBL_SoporteActaDisposicion", "MimeType", "nvarchar", 200, false);
+        AddColumn("TBL_SoporteActaDisposicion", "TamanoBytes", "bigint", 8, false);
+        AddColumn("TBL_SoporteActaDisposicion", "Hash", "nvarchar", 128, false);
+        AddColumn("TBL_SoporteActaDisposicion", "Ubicacion", "nvarchar", 1000, false);
+        AddColumn("TBL_SoporteActaDisposicion", "FechaCreacion", "datetimeoffset", 10, false);
+        AddColumn("TBL_SoporteActaDisposicion", "UsuarioCreacion", "nvarchar", 300, false);
+        AddColumn("TBL_SoporteActaDisposicion", "FechaModificacion", "datetimeoffset", 10, true);
+        AddColumn("TBL_SoporteActaDisposicion", "UsuarioModificacion", "nvarchar", 300, true);
+        AddColumn("TBL_SoporteActaDisposicion", "Activo", "bit", 1, false);
+        AddColumn("TBL_SoporteActaDisposicion", "RowVersion", "timestamp", 8, false);
+        AddColumn("TBL_LoteDisposicionFinal", "SPlaca", "nvarchar", 40, true);
         var count = 0;
         foreach (var entity in db.Model.GetEntityTypes())
         {
@@ -60,7 +129,7 @@ public sealed class ExistingDatabaseSchemaTests
                 count++;
             }
         }
-        Assert.Equal(606,count);
+        Assert.Equal(674,count);
         Assert.False(db.Database.HasPendingModelChanges());
     }
 }

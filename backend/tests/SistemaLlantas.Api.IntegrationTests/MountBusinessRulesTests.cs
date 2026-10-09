@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +55,25 @@ public sealed partial class MountAuthorizationInspectionTests
         Guid requestId;Guid? activityId=null;string user=Technician;
         if(programmed)
         {
-            var tech=await db.UsuariosSistema.Include(x=>x.Centros).FirstAsync(x=>x.Activo&&x.Rol.Codigo=="TECNICO"&&x.Centros.Any(c=>c.Activo&&c.CentroId==v.CentroId));user=tech.Username;
+            var tech = await db.UsuariosSistema.SingleAsync(x =>
+                x.Username == "tecnico-pruebas" && x.Activo && x.Rol.Codigo == "TECNICO");
+            // Preparar el alcance del centro concreto usado por este escenario.
+            if (!await db.UsuariosCentros.AnyAsync(x =>
+                x.UsuarioId == tech.Id && x.CentroId == v.CentroId && x.Activo))
+            {
+                var asignacion = await db.UsuariosCentros.SingleOrDefaultAsync(x =>
+                    x.UsuarioId == tech.Id && x.CentroId == v.CentroId);
+                if (asignacion is null)
+                    db.UsuariosCentros.Add(new UsuarioCentro
+                    {
+                        UsuarioId = tech.Id, CentroId = v.CentroId,
+                        Activo = true, UsuarioCreacion = "qa-mount"
+                    });
+                else
+                    asignacion.Activo = true;
+                await db.SaveChangesAsync();
+            }
+            user = tech.Username;
             var start=DateTimeOffset.UtcNow.AddDays(7);
             var plan=await sp.GetRequiredService<IProgramacionService>().CrearAsync(new(){Tipo="Reemplazar llanta",CentroId=v.CentroId,VehiculoId=v.Id,TecnicoUsuarioId=tech.Id,Inicio=start,Fin=start.AddHours(1),Motivo="Reemplazo",Asignaciones=[new(p.Id,incoming.Id,old.Id)]},"planner",new(true,[]),Ct);
             activityId=plan.Id;requestId=await db.SolicitudesOperacion.Where(x=>x.ActividadProgramadaId==plan.Id).Select(x=>x.Id).SingleAsync();

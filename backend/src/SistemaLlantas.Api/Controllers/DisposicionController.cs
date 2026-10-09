@@ -1,3 +1,5 @@
+using SistemaLlantas.Infrastructure.Services;
+using SistemaLlantas.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SistemaLlantas.Api.Security;
@@ -9,16 +11,17 @@ using SistemaLlantas.Infrastructure.Persistence;
 namespace SistemaLlantas.Api.Controllers;
 
 [ApiController,Route("api/disposicion"),Authorize(Policy="ServiciosLlanta.Consultar")]
-public sealed class DisposicionController(IDisposicionService service,LlantasDbContext db):ControllerBase
+public sealed partial class DisposicionController(IDisposicionService service,LlantasDbContext db):ControllerBase
 {
     [HttpGet("llantas")]
     public async Task<IActionResult> Llantas([FromQuery]string? buscar,[FromQuery]int pageNumber=1,CancellationToken ct=default)
     {
-        var a=User.AlcanceCentros();var q=db.Llantas.AsNoTracking().Where(t=>t.Activo&&!t.EstadoLlanta.EsDisposicionFinal&&(a.VerTodos||a.CentroIds.Contains(t.CentroId)));
-        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(t=>t.Codigo.Contains(term)||t.Serial.Contains(term));}
-        var page=Math.Max(1,pageNumber);var total=await q.CountAsync(ct);var items=await q.OrderBy(t=>t.Codigo).ThenBy(t=>t.Id).Skip((page-1)*20).Take(20).Select(t=>new ReferenciaDisposicion(t.Id,t.Codigo+" · "+t.Serial+" · "+t.Centro.Nombre)).ToListAsync(ct);
-        return Ok(new Pagina<ReferenciaDisposicion>(items,page,20,total));
+        var a=User.AlcanceCentros();var q=ElegibilidadDisposicion.Consulta(db).AsNoTracking().Where(t=>a.VerTodos||a.CentroIds.Contains(t.CentroId));
+        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(t=>t.Codigo.Contains(term)||t.Serial.Contains(term)||t.Centro.Nombre.Contains(term)||db.AsignacionesLlantaPosicion.Any(m=>m.LlantaId==t.Id&&m.EsActiva&&(m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(term)||m.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        var page=Math.Max(1,pageNumber);var total=await q.CountAsync(ct);var items=await q.OrderBy(t=>t.Codigo).ThenBy(t=>t.Id).Skip((page-1)*20).Take(20).Select(t=>new LlantaElegibleDisposicion(t.Id,t.Codigo,t.Serial,t.Centro.Nombre,db.AsignacionesLlantaPosicion.Where(m=>m.EsActiva&&m.LlantaId==t.Id).Select(m=>m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa).FirstOrDefault(),db.AsignacionesLlantaPosicion.Where(m=>m.EsActiva&&m.LlantaId==t.Id).Select(m=>m.PosicionVehiculo.Codigo).FirstOrDefault())).ToListAsync(ct);
+        return Ok(new Pagina<LlantaElegibleDisposicion>(items,page,20,total));
     }
+    [HttpGet("ordenes/filtros")] public Task<Pagina<ValorFiltroDisposicion>> Filtros([FromQuery]string columna,[FromQuery]string? texto,[FromQuery]int pagina,[FromQuery]ConsultaDisposicion filtro,CancellationToken ct)=>service.FiltrosAsync(columna,texto,pagina,filtro,User.AlcanceCentros(),ct);
     [HttpGet("resumen")] public Task<ResumenDisposicionDto> Resumen([FromQuery]ConsultaDisposicion filtro,CancellationToken ct)=>service.ResumenAsync(filtro,User.AlcanceCentros(),ct);
     [HttpGet("ordenes")] public Task<Pagina<OrdenDisposicionDto>> Ordenes([FromQuery]ConsultaDisposicion filtro,CancellationToken ct)=>service.OrdenesAsync(filtro,User.AlcanceCentros(),ct);
     [HttpGet("ordenes/{id:guid}")] public async Task<IActionResult> Detalle(Guid id,CancellationToken ct)
@@ -51,3 +54,4 @@ public sealed class DisposicionController(IDisposicionService service,LlantasDbC
     [HttpPost("novedades/{id:guid}/resolver"),Authorize(Policy="ServiciosLlanta.Gestionar")]
     public async Task<IActionResult> Resolver(Guid id,ResolverNovedadDto dto,CancellationToken ct){await service.ResolverNovedadAsync(id,dto,User.Username(),User.AlcanceCentros(),ct);return NoContent();}
 }
+

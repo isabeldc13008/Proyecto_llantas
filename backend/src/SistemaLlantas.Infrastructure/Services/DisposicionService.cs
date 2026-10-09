@@ -14,10 +14,18 @@ public sealed partial class DisposicionService(LlantasDbContext db,IOperacionSer
         .Where(o=>o.Activo&&o.Tipo==TipoServicioLlanta.DisposicionFinal&&(a.VerTodos||a.CentroIds.Contains(o.CentroOrigenId)||a.CentroIds.Contains(o.Llanta.CentroId)));
     private IQueryable<OrdenServicioLlanta> Filtrar(IQueryable<OrdenServicioLlanta> q,ConsultaDisposicion f)
     {
+        if(f.LlantaTexto is not null)q=q.Where(o=>(o.Llanta.Codigo+" · "+o.Llanta.Serial).Contains(f.LlantaTexto));
+        if(f.CentroTexto is not null)q=q.Where(o=>o.CentroOrigen.Nombre.Contains(f.CentroTexto));
+        if(f.EstadoTexto is not null){var term=f.EstadoTexto.Replace(" ","_");q=q.Where(o=>o.Estado.Contains(term));}
+        if(f.CentroIds?.Length>0)q=q.Where(o=>f.CentroIds.Contains(o.CentroOrigenId));
+        if(f.LlantaIds?.Length>0)q=q.Where(o=>f.LlantaIds.Contains(o.LlantaId));
+        if(f.Estados?.Length>0)q=q.Where(o=>f.Estados.Contains(o.Estado));
+        if(f.ConEvidencia.HasValue)q=q.Where(o=>o.Evidencias.Any(e=>e.Activo)==f.ConEvidencia.Value);
+        if(f.SoloPendientes)q=q.Where(o=>o.Estado!="RECHAZADA"&&o.Estado!="RETORNADA_INVENTARIO"&&o.Estado!="DISPOSICION_FINAL");
         if(f.CentroId.HasValue)q=q.Where(o=>o.CentroOrigenId==f.CentroId||o.Llanta.CentroId==f.CentroId);
-        if(!string.IsNullOrWhiteSpace(f.Buscar)){var term=f.Buscar.Trim();q=q.Where(o=>o.Llanta.Codigo.Contains(term)||o.Llanta.Serial.Contains(term));}
-        if(f.Desde.HasValue)q=q.Where(o=>o.FechaCreacion>=f.Desde);
-        if(f.Hasta.HasValue)q=q.Where(o=>o.FechaCreacion<=f.Hasta);
+        if(!string.IsNullOrWhiteSpace(f.Buscar)){var term=f.Buscar.Trim();q=q.Where(o=>o.Llanta.Codigo.Contains(term)||o.Llanta.Serial.Contains(term)||o.CentroOrigen.Nombre.Contains(term)||db.AsignacionesLlantaPosicion.Any(m=>m.LlantaId==o.LlantaId&&m.EsActiva&&(m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(term)||m.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        if(f.Desde.HasValue)q=q.Where(o=>(o.FechaModificacion??o.FechaCreacion)>=f.Desde);
+        if(f.Hasta.HasValue){var end=f.Hasta.Value.TimeOfDay==TimeSpan.Zero?f.Hasta.Value.AddDays(1).AddTicks(-1):f.Hasta.Value;q=q.Where(o=>(o.FechaModificacion??o.FechaCreacion)<=end);}
         if(f.Estado=="LISTAS_R1")q=q.Where(o=>o.Estado=="APROBADA"&&!o.LoteDisposicionFinalId.HasValue);
         else if(f.Estado=="DISPONIBLES_R1")q=Disponibles(q);
         else if(!string.IsNullOrWhiteSpace(f.Estado))q=q.Where(o=>o.Estado==f.Estado);
@@ -29,14 +37,14 @@ public sealed partial class DisposicionService(LlantasDbContext db,IOperacionSer
         &&!db.AsignacionesLlantaPosicion.Any(m=>m.EsActiva&&m.LlantaId==o.LlantaId)&&!db.PosicionesVehiculo.Any(p=>p.LlantaActualId==o.LlantaId));
     private IQueryable<OrdenDisposicionDto> Proyectar(IQueryable<OrdenServicioLlanta> q)=>q.Select(o=>new OrdenDisposicionDto(o.Id,o.LlantaId,o.Llanta.Codigo,o.Llanta.Serial,o.Llanta.Marca.Nombre,o.Llanta.Referencia.Nombre,o.Llanta.Dimension.Nombre,
         new(o.CentroOrigenId,o.CentroOrigen.Nombre),new(o.Llanta.CentroId,o.Llanta.Centro.Nombre),o.Estado,o.Estado,o.FechaModificacion??o.FechaCreacion,o.EvaluadoPor??o.UsuarioCreacion,o.LoteDisposicionFinalId,
-        db.DespachosDisposicionItems.Where(i=>i.Activo&&i.OrdenId==o.Id).Select(i=>(Guid?)i.DespachoId).FirstOrDefault()));
+        db.DespachosDisposicionItems.Where(i=>i.Activo&&i.OrdenId==o.Id).Select(i=>(Guid?)i.DespachoId).FirstOrDefault(),o.Evidencias.Count(e=>e.Activo)));
     public static string Etiqueta(string state)=>state switch{
         "PENDIENTE_EVALUACION_TECNICA"=>"Pendiente de evaluación", "PENDIENTE_APROBACION"=>"Pendiente de aprobación", "APROBADA"=>"Lista para enviar a R1",
         "EN_TRANSITO_DISPOSICION"=>"En tránsito a R1", "PENDIENTE_DISPOSICION"=>"Recibida; pendiente de disposición", "DISPOSICION_FINAL"=>"Disposición final cerrada",
         "RECHAZADA"=>"Rechazada", "RETORNADA_INVENTARIO"=>"Retornada a inventario", _=>state};
     private async Task<Pagina<OrdenDisposicionDto>> Paginar(IQueryable<OrdenServicioLlanta> q,ConsultaDisposicion f,CancellationToken ct)
     {
-        var total=await q.CountAsync(ct);var rows=await Proyectar(q.OrderBy(o=>o.FechaModificacion??o.FechaCreacion).ThenBy(o=>o.Id).Skip((f.Pagina-1)*f.Tamano).Take(f.Tamano)).ToListAsync(ct);
+        var total=await q.CountAsync(ct);var rows=await Proyectar(Ordenar(q,f).ThenBy(o=>o.Id).Skip((f.Pagina-1)*f.Tamano).Take(f.Tamano)).ToListAsync(ct);
         return new(rows.Select(o=>o with{Etiqueta=o.DespachoId.HasValue&&o.Estado!="DISPOSICION_FINAL"?"Enviada a Sistema Verde":Etiqueta(o.Estado)}).ToArray(),f.Pagina,f.Tamano,total);
     }
     public Task<Pagina<OrdenDisposicionDto>> OrdenesAsync(ConsultaDisposicion f,AlcanceCentros a,CancellationToken ct)=>Paginar(Filtrar(Ordenes(a),f),f,ct);
@@ -105,3 +113,6 @@ public sealed partial class DisposicionService(LlantasDbContext db,IOperacionSer
         var rows=new List<LoteDisposicionDetalleDto>();foreach(var id in ids)rows.Add((await LoteAsync(id,a,ct))!);return new(rows,f.Pagina,f.Tamano,total);
     }
 }
+
+
+
