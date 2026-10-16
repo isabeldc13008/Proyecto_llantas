@@ -51,7 +51,7 @@ public sealed class DisposicionFlujoSqlTests
             }
             await Assert.ThrowsAsync<ValidacionException>(async()=>await controller.Crear(new("DisposicionFinal",tires[17].Id,null,null,"No inspección",null,"INSPECCION"),default));
             User("aprobador",origin.Id);foreach(var id in ids)await controller.Aprobar(id,default);
-            var result=await controller.CrearLoteDisposicion(new(ids,origin.Id,r1.Id,DateTimeOffset.UtcNow,"REM-TEST","Transportes",null,Guid.NewGuid().ToString(),"ABC123"),default);
+            Assert.Single((await queryService.FiltrosAsync("estado","Lista para enviar a R1",1,new(),new(false,[origin.Id]),default)).Items); Assert.Equal(18,(await queryService.OrdenesAsync(new(EstadoTexto:"Lista para enviar a R1"),new(false,[origin.Id]),default)).TotalItems); var evidence=new EvidenciaFlujo{OrdenServicioLlantaId=ids[0],NombreArchivo="historico.pdf",MimeType="application/pdf",Ubicacion="historico.pdf",Hash="test"};db.EvidenciasFlujo.Add(evidence);await db.SaveChangesAsync(); var result=await controller.CrearLoteDisposicion(new(ids,origin.Id,r1.Id,DateTimeOffset.UtcNow,"REM-TEST","Transportes",null,Guid.NewGuid().ToString(),"ABC123"),default);
             var lot=Assert.IsType<ServiciosLlantaController.LoteDisposicionDto>(Assert.IsType<CreatedResult>(result.Result).Value);
             User("receptor",r1.Id);await controller.RecibirLoteDisposicion(lot.Id,new(ids.Take(15).ToArray()),default);
             await Assert.ThrowsAsync<ValidacionException>(()=>controller.CerrarLoteDisposicion(lot.Id,new(ids.Take(15).ToArray(),provider.Id,"No puede saltar soporte"),default));
@@ -69,13 +69,11 @@ public sealed class DisposicionFlujoSqlTests
             foreach(var typeName in new[]{"Reparacion","Reencauche","DisposicionFinal"})Assert.Equal(blocked,(await Assert.ThrowsAsync<ConflictoException>(async()=>await controller.Crear(new(typeName,tires[0].Id,null,null,"No permitido",null),default))).Message);
             Assert.Equal(blocked,(await Assert.ThrowsAsync<ConflictoException>(()=>op.MoverAsync(new(){LlantaId=tires[0].Id,TipoDestino="Inventario",Motivo="No permitido"},"receptor",scope,default))).Message);
             Assert.Equal(blocked,(await Assert.ThrowsAsync<ConflictoException>(()=>cycle.TrasladarCentroAsync(tires[0].Id,new(origin.Id,"No permitido",null),"receptor",new(true,[]),default))).Message);
+            Assert.Equal(blocked,(await Assert.ThrowsAsync<ConflictoException>(()=>op.ValidarMontajeAsync(tires[0].Id,Guid.NewGuid(),0,scope,default))).Message);
+            Assert.Equal(blocked,(await Assert.ThrowsAsync<ConflictoException>(()=>proposalController.Propuestas(new([new(Guid.NewGuid(),tires[0].Id)],"No permitido",null),default))).Message);
             var historical=await db.OrdenesServicioLlanta.CountAsync(o=>o.Estado=="DISPOSICION_FINAL");Assert.Equal(15,historical);
-            var terminal=await db.Llantas.SingleAsync(t=>t.Id==tires[0].Id);terminal.EstadoLlantaId=available.Id;await Assert.ThrowsAsync<ConflictoException>(()=>db.SaveChangesAsync());
+            await Assert.ThrowsAsync<ConflictoException>(()=>controller.Eliminar(evidence.Id,default));db.ChangeTracker.Clear(); Assert.True((await db.EvidenciasFlujo.AsNoTracking().SingleAsync(e=>e.Id==evidence.Id)).Activo); var terminal=await db.Llantas.SingleAsync(t=>t.Id==tires[0].Id);terminal.EstadoLlantaId=available.Id;await Assert.ThrowsAsync<ConflictoException>(()=>db.SaveChangesAsync());
         }
         finally{if(db.Database.GetDbConnection().Database==name)await db.Database.EnsureDeletedAsync();if(Directory.Exists(storage)&&Path.GetFileName(storage)==name)Directory.Delete(storage,true);}
     }
 }
-
-
-
-

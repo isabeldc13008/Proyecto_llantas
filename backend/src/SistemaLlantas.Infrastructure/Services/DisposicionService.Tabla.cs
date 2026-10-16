@@ -5,6 +5,14 @@ using SistemaLlantas.Domain.Entities;
 namespace SistemaLlantas.Infrastructure.Services;
 public sealed partial class DisposicionService
 {
+ private static IQueryable<OrdenServicioLlanta> FiltrarEstadoVisible(IQueryable<OrdenServicioLlanta> q,string term)
+ {
+  string[] estados=["PENDIENTE_EVALUACION_TECNICA","PENDIENTE_APROBACION","APROBADA","EN_TRANSITO_DISPOSICION","PENDIENTE_DISPOSICION","DISPOSICION_FINAL","RECHAZADA","RETORNADA_INVENTARIO"];
+  var compare=System.Globalization.CultureInfo.GetCultureInfo("es").CompareInfo;
+  var matches=estados.Where(s=>compare.IndexOf(Etiqueta(s),term.Trim(),System.Globalization.CompareOptions.IgnoreCase|System.Globalization.CompareOptions.IgnoreNonSpace)>=0).ToArray();
+  var code=term.Trim().Replace(" ","_");
+  return q.Where(o=>matches.Contains(o.Estado)||o.Estado.Contains(code));
+ }
  private static IOrderedQueryable<OrdenServicioLlanta> Ordenar(IQueryable<OrdenServicioLlanta> q,ConsultaDisposicion f)=>f.OrdenarPor switch{
  "llanta"=>f.Descendente?q.OrderByDescending(o=>o.Llanta.Codigo):q.OrderBy(o=>o.Llanta.Codigo),
  "centro"=>f.Descendente?q.OrderByDescending(o=>o.CentroOrigen.Nombre):q.OrderBy(o=>o.CentroOrigen.Nombre),
@@ -15,13 +23,11 @@ public sealed partial class DisposicionService
  public async Task<Pagina<ValorFiltroDisposicion>> FiltrosAsync(string columna,string? buscar,int pagina,ConsultaDisposicion f,AlcanceCentros a,CancellationToken ct)
  {
   f=columna switch{"llanta"=>f with{LlantaIds=null,LlantaTexto=null},"centro"=>f with{CentroId=null,CentroIds=null,CentroTexto=null},"estado"=>f with{Estado=null,Estados=null,EstadoTexto=null},_=>throw new ValidacionException("Columna de filtro no válida.")};
-  var q=Filtrar(Ordenes(a),f);var values=columna switch{
+  var q=Filtrar(Ordenes(a),f);if(columna=="estado"&&!string.IsNullOrWhiteSpace(buscar))q=FiltrarEstadoVisible(q,buscar);var values=columna switch{
    "llanta"=>q.Select(o=>new {Valor=o.LlantaId.ToString(),Etiqueta=o.Llanta.Codigo+" · "+o.Llanta.Serial}),
    "centro"=>q.Select(o=>new {Valor=o.CentroOrigenId.ToString(),Etiqueta=o.CentroOrigen.Nombre}),
    _=>q.Select(o=>new {Valor=o.Estado,Etiqueta=o.Estado})};
-  if(columna=="estado")buscar=buscar?.Replace(" ","_");values=values.Distinct();if(!string.IsNullOrWhiteSpace(buscar))values=values.Where(x=>x.Etiqueta.Contains(buscar));var total=await values.CountAsync(ct);pagina=Math.Max(1,pagina);var rows=await values.OrderBy(x=>x.Etiqueta).ThenBy(x=>x.Valor).Skip((pagina-1)*40).Take(40).ToListAsync(ct);
+  values=values.Distinct();if(columna!="estado"&&!string.IsNullOrWhiteSpace(buscar))values=values.Where(x=>x.Etiqueta.Contains(buscar));var total=await values.CountAsync(ct);pagina=Math.Max(1,pagina);var rows=await values.OrderBy(x=>x.Etiqueta).ThenBy(x=>x.Valor).Skip((pagina-1)*40).Take(40).ToListAsync(ct);
   return new(rows.Select(v=>new ValorFiltroDisposicion(v.Valor,columna=="estado"?Etiqueta(v.Valor):v.Etiqueta)).ToArray(),pagina,40,total);
  }
 }
-
-

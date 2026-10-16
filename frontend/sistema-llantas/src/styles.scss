@@ -7,8 +7,9 @@
   --info-gradient:linear-gradient(118deg,var(--ed-blue),#2f8b2f);
   --alert-gradient:linear-gradient(118deg,var(--ed-yellow),var(--ed-orange),var(--ed-red));
   --shadow:0 14px 38px rgb(0 0 0 / .055); --radius:18px; --radius-sm:10px;
-  --font-title:"DM Serif Display","Times New Roman",serif; --font-display:Bahnschrift,"Arial Narrow",Arial,sans-serif;
-  --font-body:Bahnschrift,"Arial Narrow",Arial,sans-serif;
+  --font-family:Bahnschrift,"Arial Narrow",Arial,sans-serif;
+  --font-title:"DM Serif Display","Times New Roman",serif; --font-display:var(--font-family);
+  --font-body:var(--font-family);
   font-family:var(--font-body);color:var(--ink);background:var(--canvas);font-synthesis:none;
 }
 *{box-sizing:border-box}html{min-width:320px;background:var(--canvas)}body{margin:0;background:var(--canvas);color:var(--ink)}
@@ -65,7 +66,9 @@ app-vehicles-page>.configuration-catalog,app-vehicles-page>.layout .detail{borde
 @media(max-width:650px){app-vehicles-page,app-alerts-page,app-scheduling-page .schedule-page,app-movements-page .ops,app-bulk-import .bulk{padding:1rem}app-alerts-page>header h1,app-scheduling-page .hero h1,app-movements-page .ops>header h1,app-bulk-import .bulk>header h1,app-vehicles-page>.hero h1{font-size:2.35rem}app-alerts-page>.filters label{display:grid;gap:.4rem}app-alerts-page>.filters select{width:100%;margin:0}app-alerts-page>main article{grid-template-columns:1fr}app-alerts-page>main article aside{display:flex;align-items:center;justify-content:space-between}app-bulk-import .steps article{min-height:0}app-movements-page .queue{padding:.8rem}}
 @media(max-width:650px){app-bulk-import .bulk{overflow:hidden}}
 
+/* Tipografía compartida: títulos principales serif; interfaz y textos sans serif. */
 h1{font-family:var(--font-title)!important;font-weight:400!important;letter-spacing:-.02em}
+input::file-selector-button{font:inherit}
 
 /* Contención real de controles y contenedores; los listados móviles conservan sus etiquetas. */
 html,body{max-width:100%;overflow-x:hidden}app-root,main,section,article,header,footer,nav,form,fieldset,label,dl,dd{min-width:0}

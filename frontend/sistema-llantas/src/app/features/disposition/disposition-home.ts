@@ -12,6 +12,6 @@ export class DispositionHome implements OnInit{
  private route=inject(ActivatedRoute);mountTire=this.route.snapshot.queryParamMap.get('proponerLlanta')||'';mountPosition=this.route.snapshot.queryParamMap.get('posicionId')||'';mountCode=this.route.snapshot.queryParamMap.get('codigo')||'';private api=inject(DispositionApi);auth=inject(AuthService);data=signal<Summary|null>(null);loading=signal(true);error=signal('');newOrder=false;revision=signal(0);
  ngOnInit(){if(this.mountTire&&this.mountPosition)this.newOrder=true;void this.load()}
  async load(){this.loading.set(true);this.error.set('');this.data.set(null);try{this.data.set(await firstValueFrom(this.api.summary({})))}catch(e){this.error.set(failure(e))}finally{this.loading.set(false)}}
+ startProposal(){this.mountTire="";this.mountPosition="";this.mountCode="";this.newOrder=true}
  created(){this.revision.update(v=>v+1);void this.load()}
 }
-

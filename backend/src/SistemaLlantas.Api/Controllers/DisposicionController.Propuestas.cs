@@ -21,6 +21,7 @@ public sealed partial class DisposicionController
    var existing=await db.OrdenesServicioLlanta.Where(o=>orderIds.Contains(o.Id)).ToListAsync(ct);
    if(existing.Count>0){if(existing.Count!=dto.Items.Count||existing.Any(o=>o.UsuarioCreacion!=user||o.Tipo!=TipoServicioLlanta.DisposicionFinal||o.OrigenTipo!=dto.Origen||o.Motivo!=dto.Motivo.Trim()||o.Observaciones!=dto.Observacion?.Trim()||!dto.Items.Any(i=>i.OrdenId==o.Id&&i.LlantaId==o.LlantaId)||!a.Autoriza(o.CentroOrigenId)))throw new ConflictoException("La propuesta ya fue procesada o cambió. Actualiza antes de continuar.");await tx.CommitAsync(ct);return;}
    if(dto.Origen=="MONTAJE"&&(dto.Items.Count!=1||!dto.PosicionOrigenId.HasValue||!await db.PosicionesVehiculo.AnyAsync(p=>p.Id==dto.PosicionOrigenId&&p.LlantaActualId==ids[0]&&(a.VerTodos||a.CentroIds.Contains(p.EjeVehiculo.Vehiculo.CentroId)),ct)))throw new ValidacionException("La propuesta desde montaje requiere una posición vigente de la llanta.");
+   await ReglaLlantaTerminal.ValidarAsync(db,ids,ct);
    var tires=await ElegibilidadDisposicion.Consulta(db).Where(t=>ids.Contains(t.Id)&&(a.VerTodos||a.CentroIds.Contains(t.CentroId))).ToListAsync(ct);
    if(tires.Count!=ids.Length)throw new ConflictoException("Una o más llantas dejaron de ser elegibles o están fuera de tu alcance. Actualiza la selección; no se creó ninguna propuesta.");
    foreach(var i in dto.Items){var t=tires.Single(t=>t.Id==i.LlantaId);var o=new OrdenServicioLlanta{Tipo=TipoServicioLlanta.DisposicionFinal,Estado="PENDIENTE_EVALUACION_TECNICA",LlantaId=t.Id,CentroOrigenId=t.CentroId,Motivo=dto.Motivo.Trim(),Observaciones=dto.Observacion?.Trim(),Elegible=true,OrigenTipo=dto.Origen,PosicionOrigenId=dto.PosicionOrigenId,OrigenEntidadId=dto.PosicionOrigenId,Solicitante=user,UsuarioOpciona=user,FechaOpcionada=DateTimeOffset.UtcNow,UsuarioCreacion=user};db.OrdenesServicioLlanta.Add(o);db.Entry(o).Property(x=>x.Id).CurrentValue=i.OrdenId;}
@@ -29,4 +30,3 @@ public sealed partial class DisposicionController
   return Ok(dto.Items);
  }
 }
-

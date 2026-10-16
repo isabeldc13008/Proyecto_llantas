@@ -64,4 +64,4 @@ input:hover { border-color: var(--ed-green) !important; }
 
 .contours-secondary{left:auto;top:auto;right:-12%;bottom:-12%;transform:rotate(175deg);width:min(65vw,850px)}@media(max-width:600px){.contours-secondary{left:auto;top:auto;right:-45%;bottom:-8%;width:110vw}.login-card{padding:1.7rem 1.4rem}.login-heading h1{font-size:2.3rem}}
 
-.login-heading h1{font-family:var(--font-display)!important;font-weight:700!important;letter-spacing:-.035em}.login-card input{background:#f3f6f7!important}
+.login-heading h1{font-family:var(--font-title)!important;font-weight:400!important;letter-spacing:-.035em}.login-card input{background:#f3f6f7!important}

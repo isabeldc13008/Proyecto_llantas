@@ -16,7 +16,7 @@ public sealed partial class DisposicionService(LlantasDbContext db,IOperacionSer
     {
         if(f.LlantaTexto is not null)q=q.Where(o=>(o.Llanta.Codigo+" · "+o.Llanta.Serial).Contains(f.LlantaTexto));
         if(f.CentroTexto is not null)q=q.Where(o=>o.CentroOrigen.Nombre.Contains(f.CentroTexto));
-        if(f.EstadoTexto is not null){var term=f.EstadoTexto.Replace(" ","_");q=q.Where(o=>o.Estado.Contains(term));}
+        if(f.EstadoTexto is not null)q=FiltrarEstadoVisible(q,f.EstadoTexto);
         if(f.CentroIds?.Length>0)q=q.Where(o=>f.CentroIds.Contains(o.CentroOrigenId));
         if(f.LlantaIds?.Length>0)q=q.Where(o=>f.LlantaIds.Contains(o.LlantaId));
         if(f.Estados?.Length>0)q=q.Where(o=>f.Estados.Contains(o.Estado));
@@ -113,6 +113,3 @@ public sealed partial class DisposicionService(LlantasDbContext db,IOperacionSer
         var rows=new List<LoteDisposicionDetalleDto>();foreach(var id in ids)rows.Add((await LoteAsync(id,a,ct))!);return new(rows,f.Pagina,f.Tamano,total);
     }
 }
-
-
-
