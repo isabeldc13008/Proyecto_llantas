@@ -28,8 +28,11 @@ public static class DependencyInjection
             new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connection);
 
         // SQL credentials belong only to SQL authentication, never to the interactive MFA flow.
-        if (connectionBuilder.Authentication is Microsoft.Data.SqlClient.SqlAuthenticationMethod.NotSpecified
-            or Microsoft.Data.SqlClient.SqlAuthenticationMethod.SqlPassword)
+        // QA disables legacy overrides so the complete Azure connection string is authoritative.
+        var allowOverrides = configuration["SqlCredentials:AllowOverrides"];
+        if ((allowOverrides is null || bool.Parse(allowOverrides))
+            && (connectionBuilder.Authentication is Microsoft.Data.SqlClient.SqlAuthenticationMethod.NotSpecified
+            or Microsoft.Data.SqlClient.SqlAuthenticationMethod.SqlPassword))
         {
             if (!string.IsNullOrWhiteSpace(configuration["SqlCredentials:Username"]))
                 connectionBuilder.UserID = configuration["SqlCredentials:Username"];

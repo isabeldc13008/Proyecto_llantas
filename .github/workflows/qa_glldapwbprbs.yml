@@ -1,55 +1,79 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - GLLDAPWBPRBS
+name: Build and deploy QA API and Angular - GLLDAPWBPRBS
 
 on:
   push:
-    branches:
-      - 'qa'
+    branches: [qa]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-GLLDAPWBPRBS
+  cancel-in-progress: false
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/qa'
     runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
-
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
-
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+          global-json-file: global.json
+      - uses: pnpm/action-setup@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/sistema-llantas/pnpm-lock.yaml
+      - name: Install Angular dependencies
+        working-directory: frontend/sistema-llantas
+        run: pnpm install --frozen-lockfile
+      - name: Build Angular production
+        working-directory: frontend/sistema-llantas
+        run: pnpm build --configuration production
+      - name: Build API
+        run: dotnet build backend/src/SistemaLlantas.Api/SistemaLlantas.Api.csproj --configuration Release
+      - name: Publish API only
+        run: dotnet publish backend/src/SistemaLlantas.Api/SistemaLlantas.Api.csproj --configuration Release --no-build --output artifacts/qa-app -p:UseAppHost=false
+      - name: Include Angular and validate QA package
+        shell: pwsh
+        run: |
+          $browser = Join-Path $env:GITHUB_WORKSPACE 'frontend/sistema-llantas/dist/sistema-llantas/browser'
+          $package = Join-Path $env:GITHUB_WORKSPACE 'artifacts/qa-app'
+          if (!(Test-Path (Join-Path $browser 'index.html'))) { throw 'Angular index.html is missing.' }
+          New-Item -ItemType Directory -Force (Join-Path $package 'wwwroot') | Out-Null
+          Copy-Item (Join-Path $browser '*') (Join-Path $package 'wwwroot') -Recurse -Force
+          $development = Join-Path $package 'appsettings.Development.json'
+          if (Test-Path -LiteralPath $development) { Remove-Item -LiteralPath $development }
+          foreach ($file in @('web.config', 'SistemaLlantas.Api.dll', 'SistemaLlantas.Api.deps.json', 'SistemaLlantas.Api.runtimeconfig.json', 'appsettings.json', 'appsettings.QA.json', 'wwwroot/index.html')) {
+            if (!(Test-Path (Join-Path $package $file))) { throw "Package is missing $file" }
+          }
+      - name: Smoke test QA startup without SQL access
+        shell: pwsh
+        run: ./scripts/Test-QaPackage.ps1 -PackagePath artifacts/qa-app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qa-app
+          path: artifacts/qa-app/
+          if-no-files-found: error
 
   deploy:
+    if: github.ref == 'refs/heads/qa'
     runs-on: windows-latest
     needs: build
-    
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+          name: qa-app
+          path: package
+      - name: Deploy exclusively to QA
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'GLLDAPWBPRBS'
           slot-name: 'Production'
-          package: .
+          package: package
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AE520CC35F564A4FBB74031826BF6355 }}
