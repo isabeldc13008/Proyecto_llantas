@@ -45,6 +45,7 @@ builder.Services.AddAuthorization(o =>
 builder.Services.AddCors(o => o.AddPolicy("Angular", p => p.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
+await QaAdminBootstrap.RunAsync(app.Environment.EnvironmentName, app.Configuration);
 if(app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Authentication:SeedDevelopmentUsers")) await DevelopmentSecuritySeeder.SeedAsync(app.Services);
 app.UseMiddleware<ApiExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
