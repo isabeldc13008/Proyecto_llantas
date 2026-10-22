@@ -18,11 +18,21 @@ public static class QaAdminBootstrap
     public static void ValidateTarget(string connectionString, string expectedServer)
     {
         var c = new SqlConnectionStringBuilder(connectionString);
-        if (c.InitialCatalog != "GDLLSQLPRBS" || string.IsNullOrWhiteSpace(expectedServer) ||
-            !string.Equals(c.DataSource, expectedServer, StringComparison.OrdinalIgnoreCase) ||
+        if (c.InitialCatalog != "GDLLSQLPRBS" || !IsApprovedServer(expectedServer) ||
+            !IsApprovedServer(c.DataSource) ||
             c.FailoverPartner.Length != 0 || c.AttachDBFilename.Length != 0 || c.UserInstance ||
             c.Encrypt == SqlConnectionEncryptOption.Optional || c.TrustServerCertificate)
             throw new InvalidOperationException("Destino QA o transporte del bootstrap no autorizado.");
+    }
+
+    // Exact allowlist: normalize only the optional TCP prefix and default SQL port.
+    // Both the connection and the configured expectation must designate this fixed QA host.
+    private static bool IsApprovedServer(string? server)
+    {
+        if (string.IsNullOrEmpty(server)) return false;
+        if (server.StartsWith("tcp:", StringComparison.OrdinalIgnoreCase)) server = server[4..];
+        if (server.EndsWith(",1433", StringComparison.Ordinal)) server = server[..^5];
+        return string.Equals(server, "srvsqlgdllprbs.database.windows.net", StringComparison.OrdinalIgnoreCase);
     }
 
     public interface IStore

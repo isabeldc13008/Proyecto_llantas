@@ -24,14 +24,47 @@ public class QaAdminBootstrapTests
     [InlineData("GDLLSQLDLLO")]
     [InlineData("master")]
     [InlineData("Production")]
-    public void RejectsOtherDatabase(string db) => Assert.Throws<InvalidOperationException>(() => QaAdminBootstrap.ValidateTarget($"Server=qa-approved;Database={db};Encrypt=True", "qa-approved"));
+    public void RejectsOtherDatabase(string db) => Assert.Throws<InvalidOperationException>(() => QaAdminBootstrap.ValidateTarget($"Server=srvsqlgdllprbs.database.windows.net;Database={db};Encrypt=True", "srvsqlgdllprbs.database.windows.net"));
     [Fact] public void AcceptsOnlyPinnedSecureTarget()
     {
-        QaAdminBootstrap.ValidateTarget("Server=qa-approved;Database=GDLLSQLPRBS;Encrypt=True", "qa-approved");
+        QaAdminBootstrap.ValidateTarget("Server=srvsqlgdllprbs.database.windows.net;Database=GDLLSQLPRBS;Encrypt=True", "srvsqlgdllprbs.database.windows.net");
         foreach (var suffix in new[]{";TrustServerCertificate=True", ";Failover Partner=other", ";Encrypt=False"})
-            Assert.Throws<InvalidOperationException>(()=>QaAdminBootstrap.ValidateTarget("Server=qa-approved;Database=GDLLSQLPRBS;Encrypt=True"+suffix,"qa-approved"));
-        Assert.Throws<InvalidOperationException>(()=>QaAdminBootstrap.ValidateTarget("Server=other;Database=GDLLSQLPRBS;Encrypt=True","qa-approved"));
+            Assert.Throws<InvalidOperationException>(()=>QaAdminBootstrap.ValidateTarget("Server=srvsqlgdllprbs.database.windows.net;Database=GDLLSQLPRBS;Encrypt=True"+suffix,"srvsqlgdllprbs.database.windows.net"));
+        Assert.Throws<InvalidOperationException>(()=>QaAdminBootstrap.ValidateTarget("Server=other;Database=GDLLSQLPRBS;Encrypt=True","srvsqlgdllprbs.database.windows.net"));
     }
+    private const string QaHost = "srvsqlgdllprbs.database.windows.net";
+    public static IEnumerable<object[]> AllowedTargets()
+    {
+        var forms = new[] { QaHost, "tcp:" + QaHost, QaHost + ",1433", "tcp:" + QaHost + ",1433" };
+        foreach (var source in forms)
+            foreach (var expected in forms)
+                yield return new object[] { source, expected };
+        yield return new object[] { "TCP:" + QaHost.ToUpperInvariant() + ",1433", QaHost };
+    }
+    [Theory, MemberData(nameof(AllowedTargets))]
+    public void AllowsOnlyDocumentedEndpointForms(string source, string expected) =>
+        QaAdminBootstrap.ValidateTarget($"Server={source};Database=GDLLSQLPRBS;Encrypt=True;TrustServerCertificate=False", expected);
+
+    [Theory]
+    [InlineData("other.database.windows.net")]
+    [InlineData("srvsqlgdllprbs.database.windows.net.evil")]
+    [InlineData("srvsqlgdllprbs.database.windows.net,1444")]
+    [InlineData("srvsqlgdllprbs.database.windows.net,01433")]
+    [InlineData("srvsqlgdllprbs.database.windows.net:1433")]
+    [InlineData("srvsqlgdllprbs.database.windows.net\\SQLEXPRESS")]
+    [InlineData("np:srvsqlgdllprbs.database.windows.net")]
+    [InlineData("tcp:tcp:srvsqlgdllprbs.database.windows.net")]
+    [InlineData("srvsqlgdllprbs.database.windows.net,1433,1433")]
+    [InlineData("srvsqlgdllprbs.database.windows.net.")]
+    [InlineData("localhost")]
+    [InlineData("")]
+    public void RejectsInvalidSourceAndExpectedEvenWhenTheyMatch(string target)
+    {
+        Assert.Throws<InvalidOperationException>(() => QaAdminBootstrap.ValidateTarget($"Server={target};Database=GDLLSQLPRBS;Encrypt=True", QaHost));
+        Assert.Throws<InvalidOperationException>(() => QaAdminBootstrap.ValidateTarget($"Server={QaHost};Database=GDLLSQLPRBS;Encrypt=True", target));
+        Assert.Throws<InvalidOperationException>(() => QaAdminBootstrap.ValidateTarget($"Server={target};Database=GDLLSQLPRBS;Encrypt=True", target));
+    }
+
     [Fact] public async Task CreatesOnlyUserWithVerifiableHashAndRequiredFlags()
     {
         var s=new Store(); var password=Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
