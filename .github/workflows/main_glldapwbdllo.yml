@@ -6,7 +6,7 @@ name: Build and deploy GLLD API and Angular - GLLDAPWBDLLO
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
 
 concurrency:
