@@ -35,7 +35,7 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
         if(string.IsNullOrWhiteSpace(termino)||termino.Trim().Length<2)return Ok(Array.Empty<object>());
         var term=termino.Trim();
         return Ok(await SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db)
-            .Where(x=>x.Codigo.Contains(term)||x.Serial.Contains(term)).OrderBy(x=>x.Codigo).Take(30)
+            .Where(x=>x.Codigo.Contains(term)||(x.Serial != null && x.Serial.Contains(term))).OrderBy(x=>x.Codigo).Take(30)
             .Select(x=>new{x.Id,x.Codigo,x.Serial,Marca=x.Marca.Nombre,Referencia=x.Referencia.Nombre,Dimension=x.Dimension.Nombre,Estado=x.EstadoLlanta.Nombre,x.CentroId,Centro=x.Centro.Nombre}).ToListAsync(ct));
     }
     private IQueryable<Inspeccion> InspeccionEnAlcance(Guid id)

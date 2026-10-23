@@ -20,7 +20,7 @@ public sealed record MedicionResumen(Guid LecturaId, Guid InspeccionId, DateTime
             completa ? Math.Min(exterior!.Value, Math.Min(centro!.Value, interior!.Value)) : null, completa, odometro);
     }
 }
-public sealed record FilaMantenimiento(Guid Id, string Codigo, string Serial, ReferenciaMantenimiento Centro,
+public sealed record FilaMantenimiento(Guid Id, string Codigo, string? Serial, ReferenciaMantenimiento Centro,
     ReferenciaMantenimiento EstadoOperativo, UbicacionMantenimiento Ubicacion, Evaluacion<string?> Clasificacion,
     bool EnCola, MotivoMantenimiento? MotivoPrincipal, IReadOnlyList<MotivoMantenimiento> MotivosSecundarios,
     MedicionResumen? UltimaLectura, MedicionResumen? UltimaCompleta, Evaluacion<bool?> Vigencia,

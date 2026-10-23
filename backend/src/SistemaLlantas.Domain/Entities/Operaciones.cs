@@ -11,7 +11,7 @@ public sealed class AsignacionLlantaPosicion : EntidadAuditable
     public Llanta Llanta { get; set; } = null!;
     public Guid PosicionVehiculoId { get; set; }
     public PosicionVehiculo PosicionVehiculo { get; set; } = null!;
-    public DateTimeOffset FechaInicio { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? FechaInicio { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? FechaFin { get; set; }
     public bool EsActiva { get; set; } = true;
     public Guid MovimientoOrigenId { get; set; }

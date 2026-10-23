@@ -8,7 +8,7 @@ public abstract class CatalogoBase : EntidadAuditable
     public string Nombre { get; set; } = string.Empty;
 }
 
-public sealed class Marca : CatalogoBase { public ICollection<Referencia> Referencias { get; set; } = []; }
+public sealed class Marca : CatalogoBase { public string? Abreviatura { get; set; } public ICollection<Referencia> Referencias { get; set; } = []; }
 public sealed class Referencia : CatalogoBase { public Guid MarcaId { get; set; } public Marca Marca { get; set; } = null!; }
 public sealed class Dimension : CatalogoBase { }
 public sealed class TipoLlanta : CatalogoBase { }

@@ -13,6 +13,5 @@ public sealed class LlantaTests
 
     [Theory]
     [InlineData("", "SERIAL")]
-    [InlineData("CODIGO", " ")]
     public void Constructor_RechazaIdentificacionVacia(string codigo, string serial) => Assert.Throws<ArgumentException>(() => new Llanta(codigo, serial));
 }

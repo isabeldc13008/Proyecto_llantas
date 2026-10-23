@@ -32,7 +32,7 @@ public sealed record ConteoAnalitica(string Nombre, int Cantidad);
 public sealed record ResumenAnalitica(int Total, int Montadas, int Disponibles, int EnReparacion, int EnReencauche, int DisposicionFinal, int ConAlertas, int SinKm, int ConTramosIncompletos, decimal? ProfundidadPromedio, int MuestraProfundidad, decimal? MovimientosPromedio, EstadisticaKm EnOperacion, EstadisticaKm Finalizadas, IReadOnlyList<ConteoAnalitica> Estados);
 public sealed record GrupoAnalitica(string Id, string Nombre, int Total, int EnOperacionTotal, int FinalizadasTotal, EstadisticaKm EnOperacion, EstadisticaKm Finalizadas, decimal ReparacionesPromedio, decimal ReencauchesPromedio, int Alertas, int Movimientos, bool MuestraSuficiente);
 public sealed record PosicionAnalitica(string Configuracion, string TipoVehiculo, int Eje, string TipoEje, string Posicion, int Llantas, int MuestraKm, int Tramos, int TramosValidos, decimal? KmPromedio, decimal? DiasPromedio, bool MuestraSuficiente);
-public sealed record MovimientoAnalitica(Guid Id, string Codigo, string Serial, string Marca, string Referencia, string Estado, int Total, int Vehiculos, int Centros, int Posiciones, IReadOnlyList<ConteoAnalitica> Tipos);
+public sealed record MovimientoAnalitica(Guid Id, string Codigo, string? Serial, string Marca, string Referencia, string Estado, int Total, int Vehiculos, int Centros, int Posiciones, IReadOnlyList<ConteoAnalitica> Tipos);
 public sealed record RankingMovimientos(Pagina<MovimientoAnalitica> Ranking, IReadOnlyList<ConteoAnalitica> Tipos);
 
 public interface IAnaliticaService
@@ -50,9 +50,9 @@ public interface IAnaliticaService
     Task<RankingMovimientos> MovimientosAsync(FiltroAnalitica filtro, AlcanceCentros alcance, CancellationToken ct);
 }
 
-public sealed record LlantaAnalitica(Guid Id, string Codigo, string Serial, string Centro, string Estado, int Alertas, decimal? Profundidad, decimal? Km);
+public sealed record LlantaAnalitica(Guid Id, string Codigo, string? Serial, string Centro, string Estado, int Alertas, decimal? Profundidad, decimal? Km);
 public sealed record LecturaAnalitica(Guid Id, Guid InspeccionId, DateTimeOffset Fecha, Guid PosicionId, string Posicion, decimal? Odometro, decimal? Exterior, decimal? Centro, decimal? Interior);
-public sealed record TramoAnalitica(Guid Id, Guid PosicionId, DateTimeOffset Inicio, DateTimeOffset? Fin, bool Activo, decimal? Montaje, decimal? Desmontaje, decimal? OdometroActual = null);
+public sealed record TramoAnalitica(Guid Id, Guid PosicionId, DateTimeOffset? Inicio, DateTimeOffset? Fin, bool Activo, decimal? Montaje, decimal? Desmontaje, decimal? OdometroActual = null);
 public sealed record MedicionAnalitica(LecturaAnalitica Lectura, decimal? Minima, Guid? TramoId, decimal? KmDesdeMontaje, string Calidad);
 public sealed record ReglaProfundidadAnalitica(string Codigo, string Operador, decimal Valor, string Unidad, string Alcance);
 public sealed record DesgasteAnalitica(Guid Id, string Codigo, int TotalLecturas, int LecturasCompletas, int LecturasConTramo, IReadOnlyList<MedicionAnalitica> Mediciones, IReadOnlyList<ReglaProfundidadAnalitica> Reglas, string Pronostico, IReadOnlyList<string> Limitaciones);

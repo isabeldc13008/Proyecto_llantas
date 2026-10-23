@@ -413,7 +413,7 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("DFechaFin");
 
-                    b.Property<DateTimeOffset>("FechaInicio")
+                    b.Property<DateTimeOffset?>("FechaInicio")
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("DFechaInicio");
 
@@ -1025,6 +1025,22 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("IX_ConfiguracionVehiculo_SCodigo");
 
                     b.ToTable("TBL_ConfiguracionVehiculo", "dbo");
+                });
+
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.ConsecutivoCodigo", b =>
+                {
+                    b.Property<string>("Ambito")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)")
+                        .HasColumnName("SAmbito");
+
+                    b.Property<long>("Ultimo")
+                        .HasColumnType("bigint")
+                        .HasColumnName("NUltimo");
+
+                    b.HasKey("Ambito");
+
+                    b.ToTable("TBL_ConsecutivoCodigo", "dbo");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.DespachoDisposicion", b =>
@@ -1836,6 +1852,10 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("NCosto");
 
+                    b.Property<string>("DatosImportacionJson")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SDatosImportacionJson");
+
                     b.Property<Guid>("DimensionId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("GDimensionId");
@@ -1860,6 +1880,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("DFechaModificacion");
 
+                    b.Property<string>("IdentificadorOriginal")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SIdentificadorOriginal");
+
                     b.Property<decimal>("KilometrajeAcumulado")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
@@ -1878,7 +1903,7 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("SObservaciones");
 
-                    b.Property<decimal>("ProfundidadInicial")
+                    b.Property<decimal?>("ProfundidadInicial")
                         .HasPrecision(8, 2)
                         .HasColumnType("decimal(8,2)")
                         .HasColumnName("NProfundidadInicial");
@@ -1895,7 +1920,6 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnName("TRowVersion");
 
                     b.Property<string>("Serial")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("SSerial");
@@ -1932,6 +1956,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.HasIndex("EstadoLlantaId")
                         .HasDatabaseName("IX_Llanta_GEstadoLlantaId");
 
+                    b.HasIndex("IdentificadorOriginal")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Llanta_SIdentificadorOriginal")
+                        .HasFilter("[SIdentificadorOriginal] IS NOT NULL");
+
                     b.HasIndex("MarcaId")
                         .HasDatabaseName("IX_Llanta_GMarcaId");
 
@@ -1940,7 +1969,8 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Serial")
                         .IsUnique()
-                        .HasDatabaseName("IX_Llanta_SSerial");
+                        .HasDatabaseName("IX_Llanta_SSerial")
+                        .HasFilter("[SSerial] IS NOT NULL");
 
                     b.HasIndex("TipoLlantaId")
                         .HasDatabaseName("IX_Llanta_GTipoLlantaId");
@@ -2256,6 +2286,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("GId");
 
+                    b.Property<string>("Abreviatura")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)")
+                        .HasColumnName("SAbreviatura");
+
                     b.Property<bool>("Activo")
                         .HasColumnType("bit")
                         .HasColumnName("BActivo");
@@ -2298,6 +2333,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK_TBL_Marca");
+
+                    b.HasIndex("Abreviatura")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Marca_SAbreviatura")
+                        .HasFilter("[SAbreviatura] IS NOT NULL");
 
                     b.HasIndex("Codigo")
                         .IsUnique()

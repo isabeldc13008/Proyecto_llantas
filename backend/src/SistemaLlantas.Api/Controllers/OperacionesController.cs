@@ -37,7 +37,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
         var a=User.AlcanceCentros();
         var page=Math.Max(1,consulta.Pagina);var size=Math.Clamp(consulta.Tamano,1,100);
         var q=db.MovimientosDetalle.AsNoTracking().Where(x=>x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.Movimiento.CentroId)));
-        if(!string.IsNullOrWhiteSpace(consulta.Buscar)){var term=consulta.Buscar.Trim();q=q.Where(x=>x.Llanta.Codigo.Contains(term)||x.Llanta.Serial.Contains(term)||x.Movimiento.Numero.Contains(term)||db.PosicionesVehiculo.Any(p=>(p.Id==x.PosicionOrigenId||p.Id==x.PosicionDestinoId)&&(p.EjeVehiculo.Vehiculo.Placa.Contains(term)||p.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        if(!string.IsNullOrWhiteSpace(consulta.Buscar)){var term=consulta.Buscar.Trim();q=q.Where(x=>x.Llanta.Codigo.Contains(term)||(x.Llanta.Serial != null && x.Llanta.Serial.Contains(term))||x.Movimiento.Numero.Contains(term)||db.PosicionesVehiculo.Any(p=>(p.Id==x.PosicionOrigenId||p.Id==x.PosicionDestinoId)&&(p.EjeVehiculo.Vehiculo.Placa.Contains(term)||p.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
         if(!string.IsNullOrWhiteSpace(consulta.Numero))q=q.Where(x=>x.Movimiento.Numero.Contains(consulta.Numero.Trim()));
         if(!string.IsNullOrWhiteSpace(consulta.Tipo))q=q.Where(x=>x.Movimiento.Tipo==consulta.Tipo);
         if(consulta.CentroId.HasValue){if(!a.Autoriza(consulta.CentroId.Value))throw new UnauthorizedAccessException("Centro no autorizado.");q=q.Where(x=>x.Movimiento.CentroId==consulta.CentroId);}
@@ -180,7 +180,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
         var centro=await db.Vehiculos.Where(x=>x.Id==vehiculoId&&x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.CentroId))).Select(x=>(Guid?)x.CentroId).SingleOrDefaultAsync(ct);
         if(!centro.HasValue)return NotFound();
         var q=SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db).Where(x=>x.CentroId==centro);
-        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(x=>x.Codigo.Contains(term)||x.Serial.Contains(term)||x.Marca.Nombre.Contains(term)||x.Referencia.Nombre.Contains(term)||x.Dimension.Nombre.Contains(term));}
+        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(x=>x.Codigo.Contains(term)||(x.Serial != null && x.Serial.Contains(term))||x.Marca.Nombre.Contains(term)||x.Referencia.Nombre.Contains(term)||x.Dimension.Nombre.Contains(term));}
         return Ok(await q.OrderBy(x=>x.Codigo).Take(50).Select(x=>new{x.Id,x.Codigo,x.Serial,Marca=x.Marca.Nombre,Referencia=x.Referencia.Nombre,Dimension=x.Dimension.Nombre,Estado=x.EstadoLlanta.Nombre,Centro=x.Centro.Nombre}).ToListAsync(ct));
     }
     [HttpGet("api/operaciones/autorizaciones"),Authorize(Policy="Operaciones.Aprobar")]
