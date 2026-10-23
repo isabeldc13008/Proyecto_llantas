@@ -1,0 +1,53 @@
+<main class="bulk module-page">
+  <header class="module-hero"><div>
+    <p>INTEGRACIÓN CONTROLADA</p><h1>Carga masiva</h1>
+    <span>Valida y confirma el lote completo. No se guardan llantas durante la vista previa.</span>
+  </div></header>
+
+  <section class="module-toolbar import-form" aria-label="Configuración de carga">
+    <div class="fields">
+      <label for="import-type">Tipo
+        <select id="import-type" [(ngModel)]="type" (ngModelChange)="reset()"><option value="llantas">Llantas</option><option value="vehiculos">Vehículos</option></select>
+      </label>
+      @if(type==='llantas'){
+        <label for="import-mode">Modalidad
+          <select id="import-mode" [(ngModel)]="mode" (ngModelChange)="reset()"><option value="inventario">Solo inventario</option><option value="montaje">Inventario con montaje</option></select>
+        </label>
+      }
+    </div>
+    <div class="form-section">
+      <h2>Plantillas</h2>
+      <div class="actions"><button class="secondary" (click)="download('xlsx')">Plantilla Excel</button><button class="secondary" (click)="download('csv')">Plantilla CSV</button></div>
+      <p class="muted">Código autogenerado. Conserva el identificador original como texto. Deja vacíos los datos desconocidos.</p>
+    </div>
+    <div class="form-section">
+      <label for="import-file">Archivo
+        <input id="import-file" aria-label="Archivo" aria-describedby="file-help" type="file" accept=".csv,.xlsx" (change)="choose($event)">
+      </label>
+      <small id="file-help" class="muted">Selecciona un archivo Excel (.xlsx) o CSV.</small>
+      <div class="actions"><button class="primary" [disabled]="!file()||loading()" (click)="previewFile()">Previsualizar</button></div>
+    </div>
+  </section>
+
+  @if(preview();as p){
+    <section class="module-toolbar result" aria-label="Resultado de validación">
+      <h2>Previsualización</h2>
+      <p>{{p.total}} filas · {{p.validas}} registros por crear · {{p.montajes??0}} montajes · {{p.conError}} rechazados</p>
+      <div class="actions">
+        <button class="primary" [disabled]="p.conError>0||p.validas===0||loading()" (click)="confirm()">Confirmar lote completo</button>
+        @if(p.errores.length){<button class="secondary" (click)="errors()">Descargar validaciones</button>}
+      </div>
+    </section>
+    @if(p.errores.length){
+      <section class="module-table validation-table" tabindex="0" aria-label="Errores detectados">
+        <table><thead><tr><th>Fila</th><th>Columna</th><th>Error</th></tr></thead><tbody>@for(e of p.errores;track $index){<tr><td>{{e.fila}}</td><td>{{e.campo}}</td><td>{{e.error}}</td></tr>}</tbody></table>
+      </section>
+    }
+    @if(p.filas?.length){
+      <section class="module-table preview" tabindex="0" aria-label="Filas del archivo">
+        <table><thead><tr><th>Fila</th>@for(c of columns();track c){<th>{{c}}</th>}</tr></thead><tbody>@for(row of p.filas;track $index){<tr><td>{{$index+2}}</td>@for(c of columns();track c){<td>{{row[c]||'Sin dato'}}</td>}</tr>}</tbody></table>
+      </section>
+    }
+  }
+  <p class="message" role="status">{{message()}}</p>
+</main>
