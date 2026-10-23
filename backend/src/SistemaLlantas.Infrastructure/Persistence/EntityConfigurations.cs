@@ -11,7 +11,7 @@ public sealed class LlantaConfiguration : IEntityTypeConfiguration<Llanta>
     {
         b.ToTable("TBL_Llanta"); b.HasKey(x => x.Id);
         b.Property(x => x.Codigo).HasMaxLength(50).IsRequired();
-        b.Property(x => x.Serial).HasMaxLength(100).IsRequired();
+        b.Property(x => x.Serial).HasMaxLength(100).IsRequired(false);
         b.Property(x => x.UbicacionActual).HasMaxLength(150).IsRequired();
         b.Property(x => x.Observaciones).HasMaxLength(1000);
         b.Property(x => x.Costo).HasPrecision(18, 2);

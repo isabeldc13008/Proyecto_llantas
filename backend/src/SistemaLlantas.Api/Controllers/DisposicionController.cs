@@ -17,7 +17,7 @@ public sealed partial class DisposicionController(IDisposicionService service,Ll
     public async Task<IActionResult> Llantas([FromQuery]string? buscar,[FromQuery]int pageNumber=1,CancellationToken ct=default)
     {
         var a=User.AlcanceCentros();var q=ElegibilidadDisposicion.Consulta(db).AsNoTracking().Where(t=>a.VerTodos||a.CentroIds.Contains(t.CentroId));
-        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(t=>t.Codigo.Contains(term)||t.Serial.Contains(term)||t.Centro.Nombre.Contains(term)||db.AsignacionesLlantaPosicion.Any(m=>m.LlantaId==t.Id&&m.EsActiva&&(m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(term)||m.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        if(!string.IsNullOrWhiteSpace(buscar)){var term=buscar.Trim();q=q.Where(t=>t.Codigo.Contains(term)||(t.Serial != null && t.Serial.Contains(term))||t.Centro.Nombre.Contains(term)||db.AsignacionesLlantaPosicion.Any(m=>m.LlantaId==t.Id&&m.EsActiva&&(m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(term)||m.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
         var page=Math.Max(1,pageNumber);var total=await q.CountAsync(ct);var items=await q.OrderBy(t=>t.Codigo).ThenBy(t=>t.Id).Skip((page-1)*20).Take(20).Select(t=>new LlantaElegibleDisposicion(t.Id,t.Codigo,t.Serial,t.Centro.Nombre,db.AsignacionesLlantaPosicion.Where(m=>m.EsActiva&&m.LlantaId==t.Id).Select(m=>m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa).FirstOrDefault(),db.AsignacionesLlantaPosicion.Where(m=>m.EsActiva&&m.LlantaId==t.Id).Select(m=>m.PosicionVehiculo.Codigo).FirstOrDefault())).ToListAsync(ct);
         return Ok(new Pagina<LlantaElegibleDisposicion>(items,page,20,total));
     }

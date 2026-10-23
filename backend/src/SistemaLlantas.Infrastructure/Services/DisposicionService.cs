@@ -23,7 +23,7 @@ public sealed partial class DisposicionService(LlantasDbContext db,IOperacionSer
         if(f.ConEvidencia.HasValue)q=q.Where(o=>o.Evidencias.Any(e=>e.Activo)==f.ConEvidencia.Value);
         if(f.SoloPendientes)q=q.Where(o=>o.Estado!="RECHAZADA"&&o.Estado!="RETORNADA_INVENTARIO"&&o.Estado!="DISPOSICION_FINAL");
         if(f.CentroId.HasValue)q=q.Where(o=>o.CentroOrigenId==f.CentroId||o.Llanta.CentroId==f.CentroId);
-        if(!string.IsNullOrWhiteSpace(f.Buscar)){var term=f.Buscar.Trim();q=q.Where(o=>o.Llanta.Codigo.Contains(term)||o.Llanta.Serial.Contains(term)||o.CentroOrigen.Nombre.Contains(term)||db.AsignacionesLlantaPosicion.Any(m=>m.LlantaId==o.LlantaId&&m.EsActiva&&(m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(term)||m.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        if(!string.IsNullOrWhiteSpace(f.Buscar)){var term=f.Buscar.Trim();q=q.Where(o=>o.Llanta.Codigo.Contains(term)||(o.Llanta.Serial != null && o.Llanta.Serial.Contains(term))||o.CentroOrigen.Nombre.Contains(term)||db.AsignacionesLlantaPosicion.Any(m=>m.LlantaId==o.LlantaId&&m.EsActiva&&(m.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa.Contains(term)||m.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
         if(f.Desde.HasValue)q=q.Where(o=>(o.FechaModificacion??o.FechaCreacion)>=f.Desde);
         if(f.Hasta.HasValue){var end=f.Hasta.Value.TimeOfDay==TimeSpan.Zero?f.Hasta.Value.AddDays(1).AddTicks(-1):f.Hasta.Value;q=q.Where(o=>(o.FechaModificacion??o.FechaCreacion)<=end);}
         if(f.Estado=="LISTAS_R1")q=q.Where(o=>o.Estado=="APROBADA"&&!o.LoteDisposicionFinalId.HasValue);

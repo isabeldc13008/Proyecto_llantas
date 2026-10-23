@@ -11,7 +11,7 @@ public sealed partial class AnaliticaService
     {
         public Guid Id { get; init; }
         public string Codigo { get; init; } = "";
-        public string Serial { get; init; } = "";
+        public string? Serial { get; init; } = "";
         public Guid CentroId { get; init; }
         public string Centro { get; init; } = "";
         public Guid EstadoId { get; init; }

@@ -3,14 +3,14 @@ using System.ComponentModel.DataAnnotations;
 namespace SistemaLlantas.Application.Llantas;
 
 public sealed record LlantaResumenDto(
-    Guid Id, string Codigo, string Serial, string Marca, string Referencia,
+    Guid Id, string Codigo, string? Serial, string Marca, string Referencia,
     string Dimension, string Tipo, string Estado, string Centro, string UbicacionActual,
-    decimal ProfundidadInicial, decimal KilometrajeAcumulado, int NumeroReencauches,
+    decimal? ProfundidadInicial, decimal KilometrajeAcumulado, int NumeroReencauches,
     string? VehiculoActual, string? PosicionActual, DateTimeOffset? UltimaInspeccion,decimal? UltimaProfundidadMinima,int NumeroReparaciones,int NumeroMontajes,string Atencion,
     bool Activo, string RowVersion);
 
-public sealed record EventoVidaLlantaDto(DateTimeOffset Fecha,string Tipo,string Descripcion,string Usuario,string? Centro,string? Vehiculo,string? Posicion,decimal? Kilometraje,decimal? Recorrido);
-public sealed record MontajeVidaDto(DateTimeOffset FechaInicio,DateTimeOffset? FechaFin,string Vehiculo,string Placa,string Centro,string Posicion,decimal? KilometrajeInicio,decimal? KilometrajeFin,decimal? Recorrido,bool Actual,bool InconsistenciaKilometraje);
+public sealed record EventoVidaLlantaDto(DateTimeOffset? Fecha,string Tipo,string Descripcion,string Usuario,string? Centro,string? Vehiculo,string? Posicion,decimal? Kilometraje,decimal? Recorrido);
+public sealed record MontajeVidaDto(DateTimeOffset? FechaInicio,DateTimeOffset? FechaFin,string Vehiculo,string Placa,string Centro,string Posicion,decimal? KilometrajeInicio,decimal? KilometrajeFin,decimal? Recorrido,bool Actual,bool InconsistenciaKilometraje);
 public sealed record InspeccionVidaDto(Guid Id,DateTimeOffset Fecha,string Vehiculo,string Placa,string Posicion,string Centro,decimal? Exterior,decimal? CentroProfundidad,decimal? Interior,decimal? Minima,string Estado);
 public sealed record ServicioVidaDto(Guid Id,string Tipo,string Estado,DateTimeOffset Fecha,string? Proveedor,string Motivo,DateTimeOffset? FechaEnvio,DateTimeOffset? FechaRetorno);
 public sealed record MovimientoVidaDto(Guid Id,DateTimeOffset Fecha,string Tipo,string Motivo,string Centro,string Usuario,string? PosicionOrigen,string? PosicionDestino);
@@ -29,8 +29,8 @@ public interface ICicloVidaLlantaService
 
 public sealed class GuardarLlantaDto
 {
-    [Required, StringLength(50)] public string Codigo { get; init; } = string.Empty;
-    [Required, StringLength(100)] public string Serial { get; init; } = string.Empty;
+    [StringLength(50)] public string Codigo { get; init; } = string.Empty;
+    [StringLength(100)] public string? Serial { get; init; } = string.Empty;
     [Required] public Guid MarcaId { get; init; }
     [Required] public Guid ReferenciaId { get; init; }
     [Required] public Guid DimensionId { get; init; }
@@ -40,7 +40,7 @@ public sealed class GuardarLlantaDto
     [Required, StringLength(150)] public string UbicacionActual { get; init; } = string.Empty;
     public DateOnly? FechaCompra { get; init; }
     [Range(0, 999999999999.99)] public decimal? Costo { get; init; }
-    [Range(0, 100)] public decimal ProfundidadInicial { get; init; }
+    [Range(0, 100)] public decimal? ProfundidadInicial { get; init; }
     public DateOnly? FechaIngreso { get; init; }
     [StringLength(1000)] public string? Observaciones { get; init; }
     public string? RowVersion { get; init; }

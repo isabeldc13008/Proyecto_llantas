@@ -39,7 +39,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
     {
         if (!alcance.Autoriza(dto.CentroId)) throw new UnauthorizedAccessException("El centro no está autorizado para el usuario.");
         await ValidarAsync(dto, null, ct);
-        var e = new Llanta(dto.Codigo, dto.Serial) { MarcaId = dto.MarcaId, ReferenciaId = dto.ReferenciaId, DimensionId = dto.DimensionId,
+        var e = new Llanta("PENDIENTE", dto.Serial) { MarcaId = dto.MarcaId, ReferenciaId = dto.ReferenciaId, DimensionId = dto.DimensionId,
             TipoLlantaId = dto.TipoLlantaId, EstadoLlantaId = dto.EstadoLlantaId, CentroId = dto.CentroId, UbicacionActual = dto.UbicacionActual.Trim(),
             FechaCompra = dto.FechaCompra, Costo = dto.Costo, ProfundidadInicial = dto.ProfundidadInicial,
             FechaIngreso = dto.FechaIngreso ?? DateOnly.FromDateTime(DateTime.UtcNow), Observaciones = dto.Observaciones?.Trim(), UsuarioCreacion = usuario };
@@ -52,7 +52,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         var e = await db.Llantas.SingleOrDefaultAsync(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct); if (e is null) return null;
         if(e.CentroId!=dto.CentroId) throw new ConflictoException("El centro de una llanta no se edita directamente. Use el comando transaccional de traslado.");
         if (!string.IsNullOrWhiteSpace(dto.RowVersion)) db.Entry(e).Property(x => x.RowVersion).OriginalValue = Convert.FromBase64String(dto.RowVersion);
-        await ValidarAsync(dto, id, ct); e.CambiarIdentificacion(dto.Codigo, dto.Serial); e.MarcaId = dto.MarcaId; e.ReferenciaId = dto.ReferenciaId;
+        await ValidarAsync(dto, id, ct); e.CambiarIdentificacion(e.Codigo, dto.Serial); e.MarcaId = dto.MarcaId; e.ReferenciaId = dto.ReferenciaId;
         e.DimensionId = dto.DimensionId; e.TipoLlantaId = dto.TipoLlantaId; e.EstadoLlantaId = dto.EstadoLlantaId; e.CentroId = dto.CentroId;
         e.UbicacionActual = dto.UbicacionActual.Trim(); e.FechaCompra = dto.FechaCompra; e.Costo = dto.Costo; e.ProfundidadInicial = dto.ProfundidadInicial;
         e.FechaIngreso = dto.FechaIngreso ?? e.FechaIngreso; e.Observaciones = dto.Observaciones?.Trim(); e.FechaModificacion = DateTimeOffset.UtcNow; e.UsuarioModificacion = usuario;
@@ -67,8 +67,8 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
 
     private async Task ValidarAsync(GuardarLlantaDto d, Guid? id, CancellationToken ct)
     {
-        var codigo = d.Codigo.Trim().ToUpperInvariant(); var serial = d.Serial.Trim().ToUpperInvariant();
-        if (await db.Llantas.IgnoreQueryFilters().AnyAsync(x => x.Id != id && (x.Codigo == codigo || x.Serial == serial), ct)) throw new ConflictoException("Ya existe una llanta con el código o serial indicado.");
+        var serial = string.IsNullOrWhiteSpace(d.Serial) ? null : d.Serial.Trim().ToUpperInvariant();
+        if (await db.Llantas.IgnoreQueryFilters().AnyAsync(x => x.Id != id && (serial != null && x.Serial == serial), ct)) throw new ConflictoException("Ya existe una llanta con el código o serial indicado.");
         var referenciaValida = await db.Referencias.AnyAsync(x => x.Id == d.ReferenciaId && x.MarcaId == d.MarcaId, ct);
         if (!referenciaValida) throw new ValidacionException("La referencia no pertenece a la marca seleccionada.");
     }
@@ -93,7 +93,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         if(c.KilometrajeMin.HasValue)q=q.Where(x=>x.KilometrajeAcumulado>=c.KilometrajeMin);if(c.KilometrajeMax.HasValue)q=q.Where(x=>x.KilometrajeAcumulado<=c.KilometrajeMax);
         if(c.InspeccionDesde.HasValue)q=q.Where(x=>db.InspeccionesDetalle.Any(d=>d.LlantaId==x.Id&&d.Inspeccion.FechaCreacion>=c.InspeccionDesde));if(c.InspeccionHasta.HasValue)q=q.Where(x=>db.InspeccionesDetalle.Any(d=>d.LlantaId==x.Id&&d.Inspeccion.FechaCreacion<=c.InspeccionHasta));
         if(c.RequiereAtencion.HasValue)q=q.Where(x=>(db.AlertasInspeccion.Any(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO))||db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"&&o.Estado!="RETORNADA_INVENTARIO"))==c.RequiereAtencion);
-        if(!string.IsNullOrWhiteSpace(c.Search)){var s=c.Search.Trim();q=q.Where(x=>x.Codigo.Contains(s)||x.Serial.Contains(s)||x.Marca.Nombre.Contains(s)||x.Referencia.Nombre.Contains(s));}
+        if(!string.IsNullOrWhiteSpace(c.Search)){var s=c.Search.Trim();q=q.Where(x=>x.Codigo.Contains(s)||(x.Serial != null && x.Serial.Contains(s))||x.Marca.Nombre.Contains(s)||x.Referencia.Nombre.Contains(s));}
         return q;
     }
     private static Guid[] Ids(string? value)=>value?.Split(',',StringSplitOptions.RemoveEmptyEntries).Select(x=>Guid.TryParse(x,out var id)?id:Guid.Empty).Where(x=>x!=Guid.Empty).Distinct().ToArray()??[];

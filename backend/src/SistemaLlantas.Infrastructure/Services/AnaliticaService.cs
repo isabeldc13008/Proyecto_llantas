@@ -18,7 +18,7 @@ public sealed partial class AnaliticaService(LlantasDbContext db) : IAnaliticaSe
         if (!string.IsNullOrWhiteSpace(f.Buscar))
         {
             var buscar = f.Buscar.Trim();
-            q = q.Where(x => x.Codigo.Contains(buscar) || x.Serial.Contains(buscar));
+            q = q.Where(x => x.Codigo.Contains(buscar) || (x.Serial != null && x.Serial.Contains(buscar)));
         }
         if (f.CentroId.HasValue) q = q.Where(x => x.CentroId == f.CentroId);
         if (f.MarcaId.HasValue) q = q.Where(x => x.MarcaId == f.MarcaId);
@@ -67,7 +67,7 @@ public sealed partial class AnaliticaService(LlantasDbContext db) : IAnaliticaSe
         return new(centers, brands, references, dimensions, states, types);
     }
 
-    private sealed record TireRow(Guid Id, string Codigo, string Serial, Guid MarcaId, string Marca, Guid ReferenciaId,
+    private sealed record TireRow(Guid Id, string Codigo, string? Serial, Guid MarcaId, string Marca, Guid ReferenciaId,
         string Referencia, Guid DimensionId, string Dimension, Guid CentroId, string Centro, string Estado,
         string EstadoCodigo, bool Finalizada, bool Montada, bool Disponible, decimal? Profundidad);
     private sealed record Fact(TireRow Tire, decimal? Km, int Tramos, int Validos, int Reparaciones, int Reencauches, int Alertas, int Movimientos);

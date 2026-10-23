@@ -47,7 +47,7 @@ public sealed record AlertaDto(Guid Id,string Tipo,string Descripcion,string Est
 public sealed record AlertaEventoDto(DateTimeOffset Fecha,string EstadoAnterior,string EstadoNuevo,string Usuario,string? Observacion);
 public sealed record CambiarAlertaDto(string Estado,string? Observacion);
 public sealed record EvidenciaDto(Guid Id,string NombreArchivo,string MimeType,long TamanoBytes,string Hash,DateTimeOffset Fecha,bool Activo);
-public sealed record LlantaBusquedaInspeccionDto(Guid Id,string Codigo,string Serial,string Marca,string Referencia,string Dimension,string Estado);
+public sealed record LlantaBusquedaInspeccionDto(Guid Id,string Codigo,string? Serial,string Marca,string Referencia,string Dimension,string Estado);
 public sealed record ResumenInspeccionesDto(int PendientesHoy,int RealizadasHoy,int ConNovedad,int ConAlerta);
 public sealed record HistorialInspeccionDto(Guid Id,DateTimeOffset Fecha,string Placa,string NumeroInterno,string Centro,string Tecnico,decimal? Kilometraje,int Inspeccionadas,int Novedades,int Alertas,string Estado);
 

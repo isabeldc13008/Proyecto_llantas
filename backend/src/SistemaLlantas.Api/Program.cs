@@ -5,6 +5,7 @@ using SistemaLlantas.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+builder.Services.AddDataProtection();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);

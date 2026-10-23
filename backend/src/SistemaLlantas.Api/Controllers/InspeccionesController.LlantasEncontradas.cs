@@ -17,8 +17,8 @@ public sealed partial class InspeccionesController
     {
         public Guid PosicionId { get; init; }
         public Guid? LlantaAnteriorId { get; init; }
-        [Required, StringLength(50)] public string Codigo { get; init; } = "";
-        [Required, StringLength(100)] public string Serial { get; init; } = "";
+        [StringLength(50)] public string Codigo { get; init; } = "";
+        [Required, StringLength(100)] public string? Serial { get; init; } = "";
         public Guid MarcaId { get; init; }
         public Guid ReferenciaId { get; init; }
         public Guid DimensionId { get; init; }
@@ -30,10 +30,10 @@ public sealed partial class InspeccionesController
         public void Validar()
         {
             if(!DiscrepanciaFisica) throw new ValidacionException("Confirma que la llanta ya está físicamente instalada. Un montaje operativo requiere Programación o Montajes.");
-            if(string.IsNullOrWhiteSpace(Codigo)||Codigo.Length>50||string.IsNullOrWhiteSpace(Serial)||Serial.Length>100
+            if(string.IsNullOrWhiteSpace(Serial)||Serial.Length>100
                 ||string.IsNullOrWhiteSpace(Motivo)||Motivo.Length>400||ProfundidadInicial is <0 or >100
                 ||new[]{PosicionId,MarcaId,ReferenciaId,DimensionId,TipoLlantaId,CentroId}.Contains(Guid.Empty))
-                throw new ValidacionException("Completa código, serial, catálogos, posición, centro y motivo válidos. La profundidad inicial debe estar entre 0 y 100 mm.");
+                throw new ValidacionException("Completa serial, catálogos, posición, centro y motivo válidos. La profundidad inicial debe estar entre 0 y 100 mm.");
         }
     }
     public sealed record ReferenciaEncontradaDto(Guid Id,string Codigo,string Nombre,Guid MarcaId);
@@ -82,7 +82,7 @@ public sealed partial class InspeccionesController
                     .OrderByDescending(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).FirstOrDefaultAsync(ct)
                     ??throw new ConflictoException("No hay estado disponible activo configurado para registrar la llanta.");
                 var motivo=$"Llanta registrada durante inspección física · {id}. {dto.Motivo.Trim()}";
-                var nueva=await llantas.CrearAsync(new(){Codigo=dto.Codigo.Trim(),Serial=dto.Serial.Trim(),MarcaId=dto.MarcaId,ReferenciaId=dto.ReferenciaId,
+                var nueva=await llantas.CrearAsync(new(){Codigo="",Serial=dto.Serial!.Trim(),MarcaId=dto.MarcaId,ReferenciaId=dto.ReferenciaId,
                     DimensionId=dto.DimensionId,TipoLlantaId=dto.TipoLlantaId,CentroId=dto.CentroId,EstadoLlantaId=estado,
                     UbicacionActual="Inventario",ProfundidadInicial=dto.ProfundidadInicial,Observaciones=motivo},Usuario(),User.AlcanceCentros(),ct);
                 await CorregirLlantaFisicaAsync(inspeccion,dto.PosicionId,new(nueva.Id,dto.Motivo,true,nueva.Serial,dto.LlantaAnteriorId),operaciones,ciclo,ct);
