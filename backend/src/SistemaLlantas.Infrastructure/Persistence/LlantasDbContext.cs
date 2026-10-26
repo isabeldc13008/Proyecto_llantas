@@ -64,6 +64,10 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
             modelBuilder.Entity(type).Property(nameof(EntidadAuditable.RowVersion)).IsRowVersion();
 
         ExistingDatabaseSchemaConfiguration.Configure(modelBuilder);
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.DestinoSolicitadoJson).HasColumnName("SDestinoSolicitadoJson");
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.HistorialRevisionJson).HasColumnName("SHistorialRevisionJson");
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.Ejecutor).HasColumnName("SEjecutor").HasMaxLength(100);
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.FechaEjecucion).HasColumnName("DFechaEjecucion");
         modelBuilder.Entity<Marca>().Property(x => x.Abreviatura).HasColumnName("SAbreviatura").HasMaxLength(2);
         modelBuilder.Entity<Marca>().HasIndex(x => x.Abreviatura).IsUnique().HasDatabaseName("UX_Marca_SAbreviatura").HasFilter("[SAbreviatura] IS NOT NULL");
         modelBuilder.Entity<Llanta>().HasIndex(x => x.Serial).HasFilter("[SSerial] IS NOT NULL");

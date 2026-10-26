@@ -2,9 +2,13 @@ using SistemaLlantas.Domain.Common;
 
 namespace SistemaLlantas.Domain.Entities;
 
-public enum EstadoSolicitudOperacion { BORRADOR, PENDIENTE_APROBACION, APROBADO, RECHAZADO, EJECUTADO }
+public enum EstadoSolicitudOperacion { BORRADOR, PENDIENTE_APROBACION, APROBADO, RECHAZADO, EJECUTADO, DEVUELTO }
 public sealed class SolicitudOperacion : EntidadAuditable
 {
+    public string? DestinoSolicitadoJson {get;set;}
+    public string? HistorialRevisionJson {get;set;}
+    public string? Ejecutor {get;set;}
+    public DateTimeOffset? FechaEjecucion {get;set;}
     public Guid? GrupoOperacionId {get;set;}
     public string Tipo {get;set;}=string.Empty;
     public EstadoSolicitudOperacion Estado {get;set;}=EstadoSolicitudOperacion.BORRADOR;
