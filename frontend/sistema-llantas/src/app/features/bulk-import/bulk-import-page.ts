@@ -4,18 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 interface Preview { id:string; token?:string; total:number; validas:number; conError:number; montajes?:number; errores:{fila:number;campo:string;error:string}[]; filas?:Record<string,string>[] }
-@Component({selector:'app-bulk-import',standalone:true,imports:[CommonModule,FormsModule],template:`
-<main><h1>Carga masiva</h1><p>Valida y confirma el lote completo. No se guardan llantas durante la vista previa.</p>
-<label>Tipo<select [(ngModel)]="type" (ngModelChange)="reset()"><option value="llantas">Llantas</option><option value="vehiculos">Vehículos</option></select></label>
-@if(type==='llantas'){<label>Modalidad<select [(ngModel)]="mode" (ngModelChange)="reset()"><option value="inventario">Solo inventario</option><option value="montaje">Inventario con montaje</option></select></label>}
-<button (click)="download('xlsx')">Plantilla Excel</button><button (click)="download('csv')">Plantilla CSV</button>
-<p>Código autogenerado. Conserva el identificador original como texto. Deja vacíos los datos desconocidos.</p>
-<input aria-label="Archivo" type="file" accept=".csv,.xlsx" (change)="choose($event)"><button [disabled]="!file()||loading()" (click)="previewFile()">Previsualizar</button>
-@if(preview();as p){<p>{{p.total}} filas · {{p.validas}} registros por crear · {{p.montajes??0}} montajes · {{p.conError}} rechazados</p>
-<button [disabled]="p.conError>0||p.validas===0||loading()" (click)="confirm()">Confirmar lote completo</button>
-@if(p.errores.length){<button (click)="errors()">Descargar validaciones</button><table><thead><tr><th>Fila</th><th>Columna</th><th>Error</th></tr></thead><tbody>@for(e of p.errores;track $index){<tr><td>{{e.fila}}</td><td>{{e.campo}}</td><td>{{e.error}}</td></tr>}</tbody></table>}
-@if(p.filas?.length){<div class="preview"><table><thead><tr><th>Fila</th>@for(c of columns();track c){<th>{{c}}</th>}</tr></thead><tbody>@for(row of p.filas;track $index){<tr><td>{{$index+2}}</td>@for(c of columns();track c){<td>{{row[c]||'Sin dato'}}</td>}</tr>}</tbody></table></div>}}
-<p role="status">{{message()}}</p></main>`,styles:[`main{display:grid;gap:1rem}label{display:grid;gap:.4rem}button,select,input{padding:.6rem}.preview{overflow:auto;max-height:32rem}th,td{padding:.5rem;border:1px solid #ddd;white-space:nowrap}`]})
+@Component({selector:'app-bulk-import',standalone:true,imports:[CommonModule,FormsModule],templateUrl:'./bulk-import-page.html',styleUrl:'./bulk-import-page.scss'})
 export class BulkImportPage {
  private http=inject(HttpClient);type='llantas';mode='inventario';file=signal<File|null>(null);preview=signal<Preview|null>(null);loading=signal(false);message=signal('');
  reset(){this.preview.set(null);this.message.set('')}
