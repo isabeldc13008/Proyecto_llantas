@@ -5,12 +5,12 @@ using SistemaLlantas.Domain.Entities;
 namespace SistemaLlantas.Infrastructure.Services;
 public sealed partial class OperacionService
 {
- public Task ValidarAsignacionesAsync(Guid vehiculoId,IReadOnlyList<AsignacionMontajeDto> filas,AlcanceCentros alcance,Guid? grupoExcluir,CancellationToken ct)=>ValidarAsignacionesCoreAsync(vehiculoId,filas,alcance,grupoExcluir,ct);
+ public Task ValidarAsignacionesAsync(Guid vehiculoId,IReadOnlyList<AsignacionMontajeDto> filas,AlcanceCentros alcance,Guid? grupoExcluir,CancellationToken ct,Guid? solicitudExcluir=null,Guid? actividadExcluir=null)=>ValidarAsignacionesCoreAsync(vehiculoId,filas,alcance,grupoExcluir,ct,solicitudExcluir,actividadExcluir);
  private async Task ValidarAsignacionesCoreAsync(Guid vehiculoId,IReadOnlyList<AsignacionMontajeDto> filas,AlcanceCentros alcance,Guid? grupoExcluir,CancellationToken ct,Guid? solicitudExcluir=null,Guid? actividadExcluir=null)
  {
   await ReglaLlantaTerminal.ValidarAsync(db,filas.Select(f=>f.LlantaId).Concat(filas.Where(f=>f.LlantaActualId.HasValue).Select(f=>f.LlantaActualId!.Value)),ct);
   AsignacionesMontaje.Validar(filas);
-  var vehicle=await db.Vehiculos.SingleOrDefaultAsync(v=>v.Id==vehiculoId&&v.Activo&&v.Centro.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(v.CentroId)),ct)??throw new ValidacionException("Vehículo inactivo o fuera del alcance.");
+  var vehicle=await db.Vehiculos.SingleOrDefaultAsync(v=>v.Id==vehiculoId&&v.Activo&&v.Estado=="Activo"&&v.Centro.Activo&&(alcance.VerTodos||alcance.CentroIds.Contains(v.CentroId)),ct)??throw new ValidacionException("Vehículo inactivo o fuera del alcance.");
   var ids=filas.Select(f=>f.PosicionId).ToArray();
   var positions=await db.PosicionesVehiculo.Where(p=>ids.Contains(p.Id)&&p.Activo&&p.EjeVehiculo.Activo&&p.EjeVehiculo.VehiculoId==vehiculoId).ToListAsync(ct);
   var active=await db.AsignacionesLlantaPosicion.Where(a=>a.EsActiva&&ids.Contains(a.PosicionVehiculoId)).ToListAsync(ct);
@@ -24,19 +24,21 @@ public sealed partial class OperacionService
    AsignacionConsistente(p,f.LlantaActualId,active.Where(a=>a.PosicionVehiculoId==p.Id));
    if(!available.Contains(f.LlantaId))throw new ConflictoException($"La llanta asignada a {p.Codigo} no está disponible en el centro o está comprometida.");
    if(await db.ActividadesProgramadas.AnyAsync(a=>a.Activo&&a.Id!=actividadExcluir&&a.PosicionVehiculoId==p.Id&&(!grupoExcluir.HasValue||a.GrupoProgramacionId!=grupoExcluir)&&(a.TipoActividad=="Montaje"||a.TipoActividad=="Cambio de juego"||a.TipoActividad=="Reemplazar llanta")&&a.Estado!=EstadoActividad.Cumplida&&a.Estado!=EstadoActividad.Cancelada,ct))throw new ConflictoException($"La posición {p.Codigo} ya tiene un montaje programado.");
-   if(await db.SolicitudesOperacion.AnyAsync(s=>s.Activo&&s.Id!=solicitudExcluir&&s.PosicionDestinoId==p.Id&&(!grupoExcluir.HasValue||s.GrupoOperacionId!=grupoExcluir)&&(s.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION||s.Estado==EstadoSolicitudOperacion.APROBADO),ct))throw new ConflictoException($"La posición {p.Codigo} tiene una solicitud pendiente.");
+   if(await db.SolicitudesOperacion.AnyAsync(s=>s.Activo&&s.Id!=solicitudExcluir&&(s.PosicionOrigenId==p.Id||s.PosicionDestinoId==p.Id||s.PosicionDestinoDesplazadaId==p.Id)&&(!grupoExcluir.HasValue||s.GrupoOperacionId!=grupoExcluir)&&(s.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION||s.Estado==EstadoSolicitudOperacion.APROBADO),ct))throw new ConflictoException($"La posición {p.Codigo} tiene una solicitud pendiente.");
   }
  }
  public async Task EjecutarReemplazosAsync(IReadOnlyList<SolicitudOperacion> solicitudes,decimal kilometraje,string usuario,AlcanceCentros alcance,CancellationToken ct)
  {
   if(db.Database.CurrentTransaction is null)throw new InvalidOperationException("El cambio requiere una transacción.");
   if(solicitudes.Count==0)throw new ValidacionException("Asigna al menos una llanta.");
+  RevisionPosicionMontaje.ValidarEjecucion(solicitudes);
+  await ValidarDestinosMontajeAsync(solicitudes,alcance,ct);
   var group=solicitudes[0].GrupoOperacionId;
   if((!group.HasValue&&solicitudes.Count!=1)||solicitudes.Any(s=>s.GrupoOperacionId!=group))throw new ConflictoException("Las solicitudes no pertenecen al mismo grupo de montaje.");
   var vehicleId=await db.PosicionesVehiculo.Where(p=>p.Id==solicitudes[0].PosicionDestinoId).Select(p=>(Guid?)p.EjeVehiculo.VehiculoId).SingleOrDefaultAsync(ct)??throw new ConflictoException("La posición programada ya no existe.");
   await ValidarAsignacionesCoreAsync(vehicleId,solicitudes.Select(s=>new AsignacionMontajeDto(s.PosicionDestinoId??Guid.Empty,s.LlantaId,s.LlantaDesplazadaId)).ToList(),alcance,group,ct,solicitudes.Count==1?solicitudes[0].Id:null,solicitudes.Count==1?solicitudes[0].ActividadProgramadaId:null);
   var vehicle=await db.Vehiculos.SingleOrDefaultAsync(v=>v.Id==vehicleId,ct)??throw new ConflictoException("El vehículo ya no existe.");
-  if(solicitudes.Any(s=>!s.Activo||s.CentroId!=vehicle.CentroId||s.Estado is not (EstadoSolicitudOperacion.APROBADO or EstadoSolicitudOperacion.PENDIENTE_APROBACION)))throw new ConflictoException("Una solicitud ya fue procesada o no pertenece al centro del vehículo.");
+  if(solicitudes.Any(s=>!s.Activo||s.CentroId!=vehicle.CentroId||s.Estado!=EstadoSolicitudOperacion.APROBADO))throw new ConflictoException("Una solicitud ya fue procesada o no pertenece al centro del vehículo.");
   var positionIds=solicitudes.Select(s=>s.PosicionDestinoId!.Value).ToArray();
   var positions=await db.PosicionesVehiculo.Include(p=>p.EjeVehiculo).ThenInclude(e=>e.Vehiculo).Where(p=>positionIds.Contains(p.Id)).ToDictionaryAsync(p=>p.Id,ct);
   var active=await db.AsignacionesLlantaPosicion.Include(a=>a.Llanta).Include(a=>a.PosicionVehiculo).ThenInclude(p=>p.EjeVehiculo).ThenInclude(e=>e.Vehiculo).Where(a=>a.EsActiva&&positionIds.Contains(a.PosicionVehiculoId)).ToListAsync(ct);
@@ -67,7 +69,10 @@ public sealed partial class OperacionService
    tire.EstadoLlanta=mounted;tire.EstadoLlantaId=mounted.Id;tire.UbicacionActual=$"{vehicle.Placa} / {p.Codigo}";
    movement.Detalles.Add(new(){LlantaId=tire.Id,PosicionDestinoId=p.Id,TipoDestino=TipoDestinoLlanta.Posicion,UsuarioCreacion=usuario});db.Movimientos.Add(movement);
    p.LlantaActualId=tire.Id;db.AsignacionesLlantaPosicion.Add(new(){LlantaId=tire.Id,PosicionVehiculoId=p.Id,MovimientoOrigenId=movement.Id,KilometrajeMontaje=kilometraje,UsuarioCreacion=usuario});
+   if(s.LlantaDesplazadaId.HasValue)await DestinarRetirada(s,movement,active.Single(a=>a.LlantaId==s.LlantaDesplazadaId).Llanta,kilometraje,usuario,mounted,ct);
+   var before=RevisionPosicionMontaje.Foto(s);s.Ejecutor=usuario;s.FechaEjecucion=DateTimeOffset.UtcNow;
    s.KilometrajeVehiculo=kilometraje;s.MovimientoEjecutadoId=movement.Id;s.Estado=EstadoSolicitudOperacion.EJECUTADO;s.UsuarioModificacion=usuario;
+   RevisionPosicionMontaje.Registrar(s,"EJECUTAR",usuario,null,before);
    if(s.ActividadProgramadaId.HasValue){var activity=activities[s.ActividadProgramadaId.Value];activity.Estado=EstadoActividad.Cumplida;activity.FechaInicioReal??=DateTimeOffset.UtcNow;activity.FechaFinReal=DateTimeOffset.UtcNow;activity.UsuarioModificacion=usuario;}
   }
   ActualizarOdometro(vehicle,kilometraje);await db.SaveChangesAsync(ct);

@@ -133,6 +133,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
             if(!a.Autoriza(item.CentroId))throw new UnauthorizedAccessException("La solicitud está fuera de tus centros autorizados.");
             if(item.Estado!=EstadoSolicitudOperacion.PENDIENTE_APROBACION)throw new ConflictoException($"La solicitud ya fue procesada: {item.Estado}. Actualiza Autorizaciones.");
             if(dto.Aprobar&&(EsDisposicionFinal(item.Tipo)||EsDisposicionFinal(item.TipoDestino)||EsDisposicionFinal(item.DestinoDesplazada)))throw new ValidacionException("La disposición final debe gestionarse desde su módulo con evaluación técnica.");if(item.GrupoOperacionId.HasValue){await ResolverGrupo(item,dto,a,ct);var groupedResponse=await MapSolicitudAsync(item,ct);await tx.CommitAsync(ct);return groupedResponse;}
+            if(RevisionPosicionMontaje.EsMontaje(item))throw new ValidacionException("Revisa la posición con su versión desde Autorizaciones; aprobar no ejecuta.");
             if(item.Solicitante==Usuario()&&!User.HasClaim("permiso","operaciones.aprobar_propia"))throw new UnauthorizedAccessException("No puede resolver su propia solicitud.");
             item.Aprobador=Usuario();item.FechaDecision=DateTimeOffset.UtcNow;
             if(!dto.Aprobar)
@@ -188,7 +189,7 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
     {
         var a=User.AlcanceCentros();
         var q=db.SolicitudesOperacion.AsNoTracking().Where(x=>x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.CentroId)));
-        if(grupoId.HasValue)q=q.Where(x=>x.GrupoOperacionId==grupoId);
+        if(grupoId.HasValue)q=q.Where(x=>x.GrupoOperacionId==grupoId||x.Id==grupoId);
         if(estado!="TODOS"){if(!Enum.TryParse<EstadoSolicitudOperacion>(estado??"PENDIENTE_APROBACION",out var state))throw new ValidacionException("Estado inválido.");q=q.Where(x=>x.Estado==state);}
         if(centroId.HasValue)q=q.Where(x=>x.CentroId==centroId);
         if(!string.IsNullOrWhiteSpace(tipo))q=q.Where(x=>x.Tipo==tipo);
@@ -196,17 +197,27 @@ public sealed partial class OperacionesController(IOperacionService service,ICic
         if(desde.HasValue)q=q.Where(x=>x.FechaCreacion>=desde);
         if(hasta.HasValue){var end=hasta.Value.AddDays(1);q=q.Where(x=>x.FechaCreacion<end);}
         if(!string.IsNullOrWhiteSpace(vehiculo)){var term=vehiculo.Trim();q=q.Where(x=>db.PosicionesVehiculo.Any(p=>(p.Id==x.PosicionDestinoId||p.Id==x.PosicionOrigenId)&&(p.EjeVehiculo.Vehiculo.Placa.Contains(term)||p.EjeVehiculo.Vehiculo.NumeroInterno.Contains(term))));}
+        if(!grupoId.HasValue){
+            var keys=q.Select(x=>x.GrupoOperacionId??x.Id).Distinct();
+            q=db.SolicitudesOperacion.AsNoTracking().Where(x=>x.Activo&&keys.Contains(x.GrupoOperacionId??x.Id));
+            q=q.Where(x=>x.Id==db.SolicitudesOperacion.Where(y=>y.Activo&&(y.GrupoOperacionId??y.Id)==(x.GrupoOperacionId??x.Id)).OrderBy(y=>y.Id).Select(y=>y.Id).First());
+        }
         var total=await q.CountAsync(ct);
         var items=await q.OrderByDescending(x=>x.FechaCreacion).ThenBy(x=>x.Id).Skip((Math.Max(1,pagina)-1)*30).Take(grupoId.HasValue?100:30).Select(x=>new{
+            RowVersion=Convert.ToBase64String(x.RowVersion),x.DestinoDesplazada,x.PosicionDestinoDesplazadaId,x.CentroDestinoId,x.DestinoSolicitadoJson,x.HistorialRevisionJson,x.Ejecutor,x.FechaEjecucion,
+            CantidadPosiciones=db.SolicitudesOperacion.Count(y=>y.Activo&&(y.GrupoOperacionId??y.Id)==(x.GrupoOperacionId??x.Id)),
+            Aprobadas=db.SolicitudesOperacion.Count(y=>y.Activo&&(y.GrupoOperacionId??y.Id)==(x.GrupoOperacionId??x.Id)&&y.Estado==EstadoSolicitudOperacion.APROBADO),
+            Pendientes=db.SolicitudesOperacion.Count(y=>y.Activo&&(y.GrupoOperacionId??y.Id)==(x.GrupoOperacionId??x.Id)&&y.Estado==EstadoSolicitudOperacion.PENDIENTE_APROBACION),
+            Devueltas=db.SolicitudesOperacion.Count(y=>y.Activo&&(y.GrupoOperacionId??y.Id)==(x.GrupoOperacionId??x.Id)&&y.Estado==EstadoSolicitudOperacion.DEVUELTO),
             LlantaActual=db.Llantas.Where(t=>t.Id==x.LlantaDesplazadaId).Select(t=>t.Codigo).FirstOrDefault(),
-            x.Id,x.Tipo,x.GrupoOperacionId,Estado=x.Estado.ToString(),Fecha=x.FechaCreacion,x.CentroId,Centro=x.Centro.Nombre,x.Solicitante,x.LlantaId,Llanta=x.Llanta.Codigo,x.Llanta.Serial,
+            x.Id,x.Tipo,x.GrupoOperacionId,x.PosicionDestinoId,x.LlantaDesplazadaId,VehiculoId=db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.EjeVehiculo.VehiculoId).FirstOrDefault(),Estado=x.Estado.ToString(),Fecha=x.FechaCreacion,x.CentroId,Centro=x.Centro.Nombre,x.Solicitante,x.LlantaId,Llanta=x.Llanta.Codigo,x.Llanta.Serial,
             Vehiculo=db.PosicionesVehiculo.Where(p=>p.Id==(x.PosicionDestinoId??x.PosicionOrigenId)).Select(p=>p.EjeVehiculo.Vehiculo.NumeroInterno+" / "+p.EjeVehiculo.Vehiculo.Placa).FirstOrDefault(),
             PosicionOrigen=db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionOrigenId).Select(p=>p.Codigo).FirstOrDefault(),
             PosicionDestino=db.PosicionesVehiculo.Where(p=>p.Id==x.PosicionDestinoId).Select(p=>p.Codigo).FirstOrDefault(),
             x.KilometrajeVehiculo,x.Motivo,x.Observaciones,x.ActividadProgramadaId,x.Aprobador,x.FechaDecision,x.MotivoRechazo}).ToListAsync(ct);
         return Ok(new{items,total,pagina=Math.Max(1,pagina),tamano=30});
     }
-    private bool PuedePlanificarMontaje()=>User.HasClaim("permiso","operaciones.montar")||User.HasClaim("permiso","programacion.administrar");
+    private bool PuedePlanificarMontaje()=>User.HasClaim("permiso","operaciones.aprobar")||User.HasClaim("permiso","operaciones.montar")||User.HasClaim("permiso","programacion.administrar");
     private string Usuario()=>User.Username();
     private async Task Ejecutar(SolicitudOperacion x,Application.Common.AlcanceCentros a,CancellationToken ct)
     {
