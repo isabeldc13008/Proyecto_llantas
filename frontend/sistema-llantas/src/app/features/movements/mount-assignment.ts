@@ -10,11 +10,11 @@ import {DiagramAxle,VehicleAxleDiagram} from '../../shared/vehicle-axle-diagram'
 export interface MountAssignment{posicionId:string;llantaId:string;llantaActualId:string|null;codigo?:string|null;serial?:string|null;marcaReferencia?:string|null;dimension?:string|null;destinoRetirada?:string|null;posicionRetiradaId?:string|null;centroRetiradaId?:string|null;solicitudId?:string;rowVersion?:string;estado?:string}
 export interface AvailableTire{id:string;codigo:string;serial:string;marca:string;referencia:string;dimension:string;estado:string;centro:string}
 @Component({selector:'app-mount-assignment',imports:[RouterLink,CommonModule,FormsModule,VehicleAxleDiagram],template:`
-<section class="assignment-layout" aria-label="Asignación de llantas por posición">
- <div><app-vehicle-axle-diagram [axles]="axles()" [vehicleType]="vehicle?.tipo??'Vehículo'" [selectedId]="selectedId" (positionSelected)="selectedId=''+$event.id"/>
+<section [class.table-layout]="tableLayout" class="assignment-layout" aria-label="Asignación de llantas por posición">
+ <div><app-vehicle-axle-diagram [axles]="axles()" [vehicleType]="vehicle?.tipo??'Vehículo'" [selectedId]="selectedId" (positionSelected)="selectForReview(''+$event.id)"/>
  <p>Selecciona una posición para ver la llanta actual y su reemplazo.</p>
- <div class="position-list">@for(p of positions();track p.id){<button type="button" [class.selected]="selectedId===p.id" (click)="selectedId=p.id"><b>{{p.codigo}}</b> {{p.llantaCodigo??'Libre'}} → {{assigned(p.id)?.codigo??(assigned(p.id)?assigned(p.id)!.llantaId:'Mantener')}}</button>}</div></div>
- <div class="assignment-panel">@if(position();as p){
+ @if(!tableLayout){ <div class="position-list">@for(p of positions();track p.id){<button type="button" [class.selected]="selectedId===p.id" (click)="selectedId=p.id"><b>{{p.codigo}}</b> {{p.llantaCodigo??'Libre'}} → {{assigned(p.id)?.codigo??(assigned(p.id)?assigned(p.id)!.llantaId:'Mantener')}}</button>}</div>} </div>
+ <div class="assignment-side">@if(tableLayout){<div class="positions-table"><table><thead><tr><th>Posición</th><th>Llanta saliente / actual</th><th>Llanta entrante</th><th>Estado</th><th>Acción</th></tr></thead><tbody>@for(p of positions();track p.id){<tr [class.selected]="selectedId===p.id" [class.intervened]="!!assigned(p.id)"><td>{{p.codigo}}</td><td>{{p.llantaCodigo??'Sin llanta'}}@if(assigned(p.id)){<small>Posición intervenida</small>}</td><td>{{assigned(p.id)?.codigo??assigned(p.id)?.llantaId??'Sin cambio'}}</td><td>{{assigned(p.id)?.estado??p.estadoLlanta??(p.llantaId?'Instalada':'Libre')}}</td><td><button type="button" [attr.aria-pressed]="selectedId===p.id" (click)="selectForReview(p.id)">{{readonly?'Consultar':assigned(p.id)?'Revisar':'Asignar'}}</button></td></tr>}</tbody></table></div>}@if(!tableLayout||detailsOpen){<div class="assignment-panel">@if(tableLayout){<button class="close-review" type="button" (click)="detailsOpen=false">Cerrar detalle de posición</button>}@if(position();as p){
   <h3>{{p.codigo}} · {{p.lado}} {{p.ubicacion}}</h3>
   @if(allowProposal&&!readonly&&p.llantaId){<a class="secondary" routerLink="/disposicion-final" [queryParams]="{proponerLlanta:p.llantaId,posicionId:p.id,codigo:p.llantaCodigo}">Proponer disposición de la llanta actual</a>}<article class="current"><small>ACTUALMENTE INSTALADA</small><b>{{p.llantaCodigo??'Posición libre'}}</b><span>{{p.llantaSerial??'Sin serial'}}</span><span>{{p.marcaReferencia??'—'}}</span><span>{{p.estadoLlanta??'Sin llanta'}} · {{p.kilometrajeLlanta===null?'Sin kilometraje':(p.kilometrajeLlanta|number)+' km'}}</span></article>
   <div class="arrow" aria-hidden="true">↓</div>
@@ -26,14 +26,15 @@ export interface AvailableTire{id:string;codigo:string;serial:string;marca:strin
    <div class="tire-results">@for(t of options();track t.id){<button type="button" (click)="choose(p,t)"><b>{{t.codigo}}</b><span>Serial {{t.serial}}</span><span>{{t.marca}} · {{t.referencia}} · {{t.dimension}}</span><small>Disponible · {{t.centro}}</small></button>}@empty{<p>{{loading()?'Consultando…':'No hay disponibles para esta búsqueda.'}}</p>}</div>
   }
  }@else{<p>Selecciona una posición del vehículo.</p>}
- @if(error()){<p role="alert" class="warning">{{error()}}</p>}</div>
-</section>
-<p class="assignment-summary" role="status">{{removed()}} llantas serán desmontadas · {{value.length}} serán montadas · {{positions().length-value.length}} posiciones permanecerán iguales. {{destinations?'Cada retirada conserva su destino y los controles del proceso especializado.':'Las retiradas regresan a inventario.'}}</p>
+ @if(error()){<p role="alert" class="warning">{{error()}}</p>}</div>}
+</div></section>
+@if(showSummary){<p class="assignment-summary" role="status">{{removed()}} llantas serán desmontadas · {{value.length}} serán montadas · {{positions().length-value.length}} posiciones permanecerán iguales. {{destinations?'Cada retirada conserva su destino y los controles del proceso especializado.':'Las retiradas regresan a inventario.'}}</p>}
 `,styleUrl:'./mount-assignment.scss'})
 export class MountAssignmentEditor implements OnChanges{
- @Input()destinations=false;@Input()centers:{id:string;nombre:string}[]=[];@Input()allowProposal=false;private http=inject(HttpClient);@Input() vehicle:VehicleDetail|null=null;@Input() value:MountAssignment[]=[];@Input() readonly=false;@Input() individual=false;@Output() valueChange=new EventEmitter<MountAssignment[]>();
+ @Input()showSummary=true;@Input()tableLayout=false;@Input()destinations=false;@Input()centers:{id:string;nombre:string}[]=[];@Input()allowProposal=false;private http=inject(HttpClient);@Input() vehicle:VehicleDetail|null=null;@Input() value:MountAssignment[]=[];@Input() readonly=false;@Input() individual=false;@Output() valueChange=new EventEmitter<MountAssignment[]>();
+ detailsOpen=false;selectForReview(id:string){this.selectedId=id;this.detailsOpen=true;}
  selectedId='';search='';available=signal<AvailableTire[]>([]);error=signal('');loading=signal(false);private version=0;private lastVehicle='';
- ngOnChanges(){const id=this.vehicle?.id??'';if(id!==this.lastVehicle){this.lastVehicle=id;this.selectedId=this.positions()[0]?.id??'';this.available.set([]);this.search='';++this.version;if(id&&!this.readonly)void this.find();}}
+ ngOnChanges(){const id=this.vehicle?.id??'';if(id!==this.lastVehicle){this.lastVehicle=id;this.detailsOpen=false;this.selectedId=this.positions()[0]?.id??'';this.available.set([]);this.search='';++this.version;if(id&&!this.readonly)void this.find();}}
  positions(){return this.vehicle?.ejes.flatMap(e=>e.posiciones)??[];}position(){return this.positions().find(p=>p.id===this.selectedId);}assigned(id:string){return this.value.find(v=>v.posicionId===id);}removed(){return this.value.filter(v=>v.llantaActualId).length;}
  axles():DiagramAxle[]{return this.vehicle?.ejes.map(e=>({id:e.id,name:e.nombre,type:e.tipoEje,positions:e.posiciones.map(p=>({id:p.id,code:p.codigo,side:p.lado+' '+p.ubicacion,tire:p.llantaCodigo??'LIBRE',state:p.llantaId?'normal':'empty'}))}))??[];}
  options(){return this.available().filter(t=>!this.value.some(v=>v.llantaId===t.id));}

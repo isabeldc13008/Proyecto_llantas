@@ -34,7 +34,7 @@ describe('Movements refresh',()=>{
   expect(page.detail()?.kilometraje).toBe(1500);expect(page.detail()?.movimientos[0].id).toBe('m1');
  });
  it('leaves the origin empty after unmounting',async()=>{
-  page.type='Desmontaje';page.detail.set(vehicle(['t1','t2']));await execute([null,'t2']);
+  page.type='Desmontaje';page.removalDestination='Inventario';page.detail.set(vehicle(['t1','t2']));await execute([null,'t2']);
   expect(page.axles()[0].positions[0].state).toBe('empty');
  });
  it('updates both positions after a rotation',async()=>{
@@ -80,5 +80,5 @@ describe('Movements refresh',()=>{
  });
 
  it('sends a one-position work for approval without executing',async()=>{page.assignments=[{posicionId:'p0',llantaId:'new',llantaActualId:'t1',destinoRetirada:'Inventario'}];page.reason='Reemplazar';spyOn(page,'refresh').and.resolveTo();const pending=page.submitSet();const req=http.expectOne('/api/operaciones/solicitudes');expect(req.request.body.tipo).toBe('Reemplazar llanta');req.flush({id:'s',estado:'PENDIENTE_APROBACION'});await pending;http.expectNone(r=>r.url.includes('/ejecutar'));});
- it('requests explicit replacement with the expected outgoing tire',async()=>{page.type='Reemplazar llanta';page.detail.set(vehicle(['t1','t2']));page.tireId='new';page.reason='Reemplazar';page.mileage=5000;page.selectedPosition.set({id:'p0',code:'P1',side:'',tire:'t1'});spyOn(page,'refresh').and.resolveTo();const pending=page.submit();const req=http.expectOne('/api/operaciones/solicitudes');expect(req.request.body.tipo).toBe('Reemplazar llanta');expect(req.request.body.asignaciones).toEqual([{posicionId:'p0',llantaId:'new',llantaActualId:'t1'}]);req.flush({id:'s',estado:'PENDIENTE_APROBACION'});await pending;expect(page.message()).toContain('autorización');});
+ it('requests explicit replacement with the expected outgoing tire',async()=>{page.type='Reemplazar llanta';page.removalDestination='Reparacion';page.detail.set(vehicle(['t1','t2']));page.tireId='new';page.reason='Reemplazar';page.mileage=5000;page.selectedPosition.set({id:'p0',code:'P1',side:'',tire:'t1'});spyOn(page,'refresh').and.resolveTo();const pending=page.submit();const req=http.expectOne('/api/operaciones/solicitudes');expect(req.request.body.tipo).toBe('Reemplazar llanta');expect(req.request.body.asignaciones).toEqual([{posicionId:'p0',llantaId:'new',llantaActualId:'t1',destinoRetirada:'Reparacion',centroRetiradaId:null}]);req.flush({id:'s',estado:'PENDIENTE_APROBACION'});await pending;expect(page.message()).toContain('autorización');});
 });
