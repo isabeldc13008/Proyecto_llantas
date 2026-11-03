@@ -90,12 +90,22 @@ public sealed class AnaliticaQueryTests
         await Assert.ThrowsAsync<ValidacionException>(() => new AnaliticaService(db).LlantasAsync(new(), "inventado", new(true, []), default));
         Assert.Empty(probe.Commands);
     }
+    [Theory][InlineData(false)][InlineData(true)]
+    public async Task WearNormalizesKnownTurnsAndRejectsHiddenEvidence(bool hidden)
+    {
+        var probe=new SqlProbe(false,wear:true,orientation:true,hidden:hidden);await using var db=Context(probe);
+        var result=await new AnaliticaService(db).DesgasteAsync(Guid.NewGuid(),new(false,[Guid.NewGuid()]),default);
+        Assert.Equal(2,result.Mediciones.Count);
+        if(hidden)Assert.All(result.Mediciones,m=>Assert.Null(m.Normalizada));
+        else {Assert.False(result.Mediciones[0].Normalizada!.Invertida);Assert.True(result.Mediciones[1].Normalizada!.Invertida);Assert.Equal(6,result.Mediciones[1].Normalizada!.Exterior);Assert.Equal(8,result.Mediciones[1].Lectura.Exterior);}
+        Assert.Equal(6,probe.Commands.Count);Assert.Contains("CentroId",probe.Commands[5]);Assert.Contains("DFechaGiro",probe.Commands[5]);Assert.Empty(db.ChangeTracker.Entries());
+    }
     private sealed class NoConnection : DbConnectionInterceptor
     {
         public override ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
             => ValueTask.FromResult(InterceptionResult.Suppress());
     }
-    private sealed class SqlProbe(bool supplyTire, int tireCount = 1, bool wear = false) : DbCommandInterceptor
+    private sealed class SqlProbe(bool supplyTire, int tireCount = 1, bool wear = false, bool orientation = false, bool hidden = false) : DbCommandInterceptor
     {
         public List<string> Commands { get; } = [];
         public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
@@ -105,6 +115,18 @@ public sealed class AnaliticaQueryTests
             {
                 table.Columns.Add("Id", typeof(Guid));table.Columns.Add("Codigo", typeof(string));table.Columns.Add("CentroId", typeof(Guid));
                 table.Rows.Add(Guid.NewGuid(), "LL-1", Guid.NewGuid());
+            }
+            else if(orientation && Commands.Count == 2)
+            {
+                object[] values=[Guid.NewGuid(),Guid.NewGuid(),new DateTimeOffset(2026,10,1,10,0,0,TimeSpan.Zero),Guid.NewGuid(),"P1",1000m,8m,7m,6m,new DateTimeOffset(2026,10,1,10,1,0,TimeSpan.Zero)];
+                for(var i=0;i<values.Length;i++)table.Columns.Add("c"+i,values[i].GetType());table.Rows.Add(values);
+                values[0]=Guid.NewGuid();values[1]=Guid.NewGuid();values[2]=((DateTimeOffset)values[2]).AddDays(2);values[9]=((DateTimeOffset)values[9]).AddDays(2);table.Rows.Add(values);
+            }
+            else if(orientation && Commands.Count == 5){table.Columns.Add("hidden",typeof(bool));table.Rows.Add(hidden);}
+            else if(orientation && Commands.Count == 6)
+            {
+                object[] values=[Guid.NewGuid(),new DateTimeOffset(2026,10,2,10,0,0,TimeSpan.Zero),1000m,Guid.NewGuid(),true];
+                for(var i=0;i<values.Length;i++)table.Columns.Add("c"+i,values[i].GetType());table.Rows.Add(values);
             }
             else if (supplyTire && Commands.Count == 1)
             {

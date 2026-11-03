@@ -1,38 +1,38 @@
 <main class="maintenance">
- <header class="heading"><div><p class="context">Analítica de llantas</p><h1>Centro de decisiones</h1><p>Revisar la evidencia. Preparar la siguiente acción.</p></div><button (click)="load()" [disabled]="loading()">Actualizar</button></header>
+ <header class="heading"><div><p class="context">AnalÃ­tica de llantas</p><h1>Mantenimiento y alertas</h1><p>Alertas activas observadas y acceso al historial operativo.</p></div><button (click)="load()" [disabled]="loading()">Actualizar</button></header>
  <form class="scope" (ngSubmit)="apply()">
   <label>Centro<select name="centro" [(ngModel)]="filters.centroId" (change)="centerChanged()"><option value="">Todos los autorizados</option>@for(c of options()?.centros??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
-  <label>Llanta<input name="buscar" [(ngModel)]="filters.buscar" type="search" maxlength="100" placeholder="Código o serial"></label>
+  <label>Estado actual<select name="estado" [(ngModel)]="filters.estadoId"><option value="">Todos</option>@for(c of options()?.estados??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label><label>Llanta<input name="buscar" [(ngModel)]="filters.buscar" type="search" maxlength="100" placeholder="CÃ³digo o serial"></label>
   <label>Montaje<select name="montaje" [(ngModel)]="filters.montaje"><option value="MONTADAS">Montadas</option><option value="TODAS">Todos los estados</option></select></label>
-  <button type="submit" class="primary">Aplicar</button><button type="button" (click)="showFilters=!showFilters" [attr.aria-expanded]="showFilters">Vehículo y más filtros</button>
+  <button type="submit" class="primary">Aplicar</button><button type="button" (click)="showFilters=!showFilters" [attr.aria-expanded]="showFilters">VehÃ­culo y mÃ¡s filtros</button>
   @if(showFilters){<div class="secondary-filters">
-   <div class="vehicle-search"><label>Buscar vehículo<input name="vehiculoBuscar" [(ngModel)]="vehicleSearch" placeholder="Placa o número interno"></label><button type="button" (click)="findVehicles()" [disabled]="vehicleLoading()">Buscar vehículo</button></div>
-   <label>Vehículo<select name="vehiculo" [(ngModel)]="filters.vehiculoId"><option value="">Todos</option>@if(filters.vehiculoId){<option [value]="filters.vehiculoId">Vehículo seleccionado</option>}@for(v of vehicles()?.items??[];track v.id){<option [value]="v.id">{{v.numeroInterno}} · {{v.placa}}</option>}</select></label>
-   @if(vehicles();as v){@if(v.totalPages>1){<div class="vehicle-pages"><button type="button" [disabled]="vehicleLoading()||v.pageNumber<=1" (click)="findVehicles(v.pageNumber-1)">Vehículos anteriores</button><span>{{v.pageNumber}} / {{v.totalPages}}</span><button type="button" [disabled]="vehicleLoading()||v.pageNumber>=v.totalPages" (click)="findVehicles(v.pageNumber+1)">Más vehículos</button></div>}}
+   <div class="vehicle-search"><label>Buscar vehÃ­culo<input name="vehiculoBuscar" [(ngModel)]="vehicleSearch" placeholder="Placa o nÃºmero interno"></label><button type="button" (click)="findVehicles()" [disabled]="vehicleLoading()">Buscar vehÃ­culo</button></div>
+   <label>VehÃ­culo<select name="vehiculo" [(ngModel)]="filters.vehiculoId"><option value="">Todos</option>@if(filters.vehiculoId){<option [value]="filters.vehiculoId">VehÃ­culo seleccionado</option>}@for(v of vehicles()?.items??[];track v.id){<option [value]="v.id">{{v.numeroInterno}} Â· {{v.placa}}</option>}</select></label>
+   @if(vehicles();as v){@if(v.totalPages>1){<div class="vehicle-pages"><button type="button" [disabled]="vehicleLoading()||v.pageNumber<=1" (click)="findVehicles(v.pageNumber-1)">VehÃ­culos anteriores</button><span>{{v.pageNumber}} / {{v.totalPages}}</span><button type="button" [disabled]="vehicleLoading()||v.pageNumber>=v.totalPages" (click)="findVehicles(v.pageNumber+1)">MÃ¡s vehÃ­culos</button></div>}}
    <label>Marca<select name="marca" [(ngModel)]="filters.marcaId"><option value="">Todas</option>@for(o of options()?.marcas??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
    <label>Referencia<select name="referencia" [(ngModel)]="filters.referenciaId"><option value="">Todas</option>@for(o of options()?.referencias??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
-   <label>Dimensión<select name="dimension" [(ngModel)]="filters.dimensionId"><option value="">Todas</option>@for(o of options()?.dimensiones??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
-   <label>Tipo de vehículo actual<select name="tipo" [(ngModel)]="filters.tipoVehiculo"><option value="">Todos</option>@for(t of options()?.tiposVehiculo??[];track t){<option [value]="t">{{t}}</option>}</select></label>
+   <label>DimensiÃ³n<select name="dimension" [(ngModel)]="filters.dimensionId"><option value="">Todas</option>@for(o of options()?.dimensiones??[];track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+   <label>Tipo de vehÃ­culo actual<select name="tipo" [(ngModel)]="filters.tipoVehiculo"><option value="">Todos</option>@for(t of options()?.tiposVehiculo??[];track t){<option [value]="t">{{t}}</option>}</select></label>
    <button type="button" (click)="clear()">Limpiar filtros</button>
   </div>}
  </form>
  @if(optionsError()){<p role="alert">{{optionsError()}} <button (click)="loadOptions()">Reintentar filtros</button></p>}
  @if(vehicleError()){<p role="alert">{{vehicleError()}}</p>}
- @if(loading()){<p role="status">Consultando cola de mantenimiento…</p>}
+ @if(loading()){<p role="status">Consultando cola de mantenimientoâ€¦</p>}
  @if(error()){<section class="error-state" role="alert"><h2>No se pudo consultar mantenimiento</h2><p>{{error()}}</p><button (click)="load()">Reintentar</button></section>}
  @if(data();as d){
-  <section class="priorities" aria-label="Capacidades de evaluación">
-   @for(c of d.conteos;track c.clasificacion){@if(c.clasificacion!=='SIN_SENALES'){<div><span>{{labels[c.clasificacion]}}</span>@if(c.clasificacion==='CONDICION_POR_VERIFICAR'){<button class="count" (click)="verifyOnly()" [attr.aria-pressed]="applied.clasificacion==='CONDICION_POR_VERIFICAR'">{{evaluationText(c.resultado)}}</button><small>Confirmadas por falta de evidencia; vigencia no evaluada</small>}@else{<strong>{{evaluationText(c.resultado)}}</strong>}</div>}}
+  <section class="priorities" aria-label="Capacidades de evaluaciÃ³n">
+   @for(c of d.conteos;track c.clasificacion){@if(c.clasificacion!=='SIN_SENALES'){<div><span>{{labels[c.clasificacion]}}</span>@if(c.clasificacion==='CONDICION_POR_VERIFICAR'){<button class="count" (click)="verifyOnly()" [attr.aria-pressed]="applied.clasificacion==='CONDICION_POR_VERIFICAR'">{{evaluationText(c.resultado)}}</button><small>Ver en Calidad de datos; no implica mantenimiento crÃ­tico</small>}@else{<strong>{{evaluationText(c.resultado)}}</strong>}</div>}}
   </section>
-  <div class="scope-note"><p><b>{{d.totalEnAlcance}}</b> llantas en alcance · <b>{{d.totalEnCola}}</b> con motivos de revisión<br><span>Sin señales de intervención: No evaluable</span></p><small>Consultado {{d.generadoEn|date:'dd/MM/yyyy HH:mm'}}</small></div>
+  <div class="scope-note"><p><b>{{d.totalEnAlcance}}</b> llantas en alcance Â· <b>{{d.totalEnCola}}</b> con alertas activas<br><span>Sin seÃ±ales de intervenciÃ³n: No evaluable</span></p><small>Consultado {{d.generadoEn|date:'dd/MM/yyyy HH:mm'}}</small></div>
   <section class="workspace" [class.with-evidence]="selectedId()">
-   <div class="queue"><header class="queue-heading"><div><h2>Cola de mantenimiento</h2><p>Orden de revisión; severidad no evaluable.</p></div><label>Mostrar<select [ngModel]="applied.vista" (ngModelChange)="setView($event)"><option value="COLA">Con motivos de revisión</option><option value="FUERA_COLA">Fuera de la cola</option><option value="TODAS">Todas en alcance</option></select></label></header>
-    @if(applied.vista==='FUERA_COLA'){<p class="notice">Última medición completa y sin alertas activas observadas. Esto no certifica condición segura ni vigencia.</p>}
+   <div class="queue"><header class="queue-heading"><div><h2>Cola de mantenimiento</h2><p>Orden de revisiÃ³n; severidad no evaluable.</p></div><label>Mostrar<select [ngModel]="applied.vista" (ngModelChange)="setView($event)"><option value="COLA">Con alertas activas</option><option value="FUERA_COLA">Fuera de la cola</option><option value="TODAS">Todas en alcance</option></select></label></header>
+    @if(applied.vista==='FUERA_COLA'){<p class="notice">Sin alertas activas observadas. Puede faltar una inspecciÃ³n; esto no certifica condiciÃ³n segura ni vigencia.</p>}
     <app-maintenance-queue [pagina]="d.pagina" [selectedId]="selectedId()" (selected)="select($event)" (pageChanged)="changePage($event)"/>
    </div>
    @if(selectedId()){<aside class="evidence" aria-label="Evidencia de la llanta seleccionada"><button class="close" (click)="select('')">Cerrar evidencia</button><app-tire-evidence-panel [tireId]="selectedId()"/></aside>}
   </section>
-  <details class="concentration"><summary>Concentración de motivos observados</summary><p>Motivo principal de cada llanta en el alcance filtrado. No representa severidad ni causa del desgaste.</p><dl>@for(c of d.concentracion;track c.codigo){<div><dt>{{c.nombre}}</dt><dd>{{c.llantas}} / {{d.totalEnAlcance}} llantas</dd></div>}</dl></details>
+  <details class="concentration"><summary>ConcentraciÃ³n de motivos observados</summary><p>Motivo principal de cada llanta en el alcance filtrado. No representa severidad ni causa del desgaste.</p><dl>@for(c of d.concentracion;track c.codigo){<div><dt>{{c.nombre}}</dt><dd>{{c.llantas}} / {{d.totalEnAlcance}} llantas</dd></div>}</dl></details>
  }
- <footer class="method"><details><summary>Cómo leer esta evidencia</summary><p>La cola incluye alertas abiertas o en proceso y carencias observadas de medición. Las alertas de inspecciones en borrador se identifican en el detalle. La última lectura completa puede ser anterior a una incompleta posterior.</p><p>Las fechas corresponden al registro. No se evalúa aún vigencia, severidad, tendencias relevantes ni pronóstico. Finalizar una actividad no prueba que el motivo esté resuelto. Solo se consulta el historial autorizado.</p></details></footer>
+ <footer class="method"><details><summary>CÃ³mo leer esta evidencia</summary><p>La cola incluye alertas abiertas o en proceso y carencias observadas de mediciÃ³n. Las alertas de inspecciones en borrador se identifican en el detalle. La Ãºltima lectura completa puede ser anterior a una incompleta posterior.</p><p>Las fechas corresponden al registro. No se evalÃºa aÃºn vigencia, severidad, tendencias relevantes ni pronÃ³stico. Finalizar una actividad no prueba que el motivo estÃ© resuelto. Solo se consulta el historial autorizado.</p></details></footer>
 </main>

@@ -22,6 +22,9 @@ public sealed partial class AnaliticaService
         public Guid? LecturaId { get; init; }
         public DateTimeOffset? FechaLectura { get; init; }
         public bool UltimaCompleta { get; init; }
+        public Guid? InspeccionId { get; init; }
+        public bool Montada { get; init; }
+        public bool Disponible { get; init; }
     }
 
     private IQueryable<InspeccionDetalle> LecturasMantenimiento(AlcanceCentros a) => db.InspeccionesDetalle.AsNoTracking()
@@ -40,6 +43,7 @@ public sealed partial class AnaliticaService
         f.Validar(a);
         var tires = Llantas(f.FiltroBase(), a);
         var mounted = Asignaciones(new(), a).Where(x => x.EsActiva);
+        var available = LlantasDisponibles.Consulta(db);
         if (f.Montaje == "MONTADAS") tires = tires.Where(x => mounted.Any(s => s.LlantaId == x.Id));
         if (f.VehiculoId.HasValue) tires = tires.Where(x => mounted.Any(s => s.LlantaId == x.Id && s.PosicionVehiculo.EjeVehiculo.VehiculoId == f.VehiculoId));
         if (!string.IsNullOrWhiteSpace(f.TipoVehiculo)) tires = tires.Where(x => mounted.Any(s => s.LlantaId == x.Id && s.PosicionVehiculo.EjeVehiculo.Vehiculo.Tipo == f.TipoVehiculo));
@@ -48,10 +52,13 @@ public sealed partial class AnaliticaService
         return tires.Select(t => new HechoMantenimiento {
             Id = t.Id, Codigo = t.Codigo, Serial = t.Serial, CentroId = t.CentroId, Centro = t.Centro.Nombre,
             EstadoId = t.EstadoLlantaId, Estado = t.EstadoLlanta.Nombre,
+            Montada = mounted.Any(s => s.LlantaId == t.Id),
+            Disponible = available.Any(s => s.Id == t.Id),
             Alertas = alerts.Count(x => x.LlantaId == t.Id),
             AlertaId = alerts.Where(x => x.LlantaId == t.Id).OrderBy(x => x.FechaCreacion).ThenBy(x => x.Id).Select(x => (Guid?)x.Id).FirstOrDefault(),
             FechaAlerta = alerts.Where(x => x.LlantaId == t.Id).Select(x => (DateTimeOffset?)x.FechaCreacion).Min(),
             LecturaId = readings.Where(x => x.LlantaId == t.Id).OrderByDescending(x => x.Inspeccion.FechaCreacion).ThenByDescending(x => x.Id).Select(x => (Guid?)x.Id).FirstOrDefault(),
+            InspeccionId = readings.Where(x => x.LlantaId == t.Id).OrderByDescending(x => x.Inspeccion.FechaCreacion).ThenByDescending(x => x.Id).Select(x => (Guid?)x.InspeccionId).FirstOrDefault(),
             FechaLectura = readings.Where(x => x.LlantaId == t.Id).Select(x => (DateTimeOffset?)x.Inspeccion.FechaCreacion).Max(),
             UltimaCompleta = readings.Where(x => x.LlantaId == t.Id).OrderByDescending(x => x.Inspeccion.FechaCreacion).ThenByDescending(x => x.Id)
                 .Select(x => x.ProfundidadExterior >= 0 && x.ProfundidadCentro >= 0 && x.ProfundidadInterior >= 0).FirstOrDefault()
@@ -66,13 +73,13 @@ public sealed partial class AnaliticaService
     {
         var all = ConsultaMantenimiento(f, a);
         var totals = await all.GroupBy(x => 1).Select(g => new {
-            Total = g.Count(), Queue = g.Count(x => x.Alertas > 0 || !x.UltimaCompleta),
+            Total = g.Count(), Queue = g.Count(x => x.Alertas > 0),
             Alerts = g.Count(x => x.Alertas > 0), Missing = g.Count(x => x.Alertas == 0 && x.LecturaId == null),
             Incomplete = g.Count(x => x.Alertas == 0 && x.LecturaId != null && !x.UltimaCompleta)
         }).SingleOrDefaultAsync(ct);
         var query = all;
-        if (f.Vista == "COLA") query = query.Where(x => x.Alertas > 0 || !x.UltimaCompleta);
-        if (f.Vista == "FUERA_COLA") query = query.Where(x => x.Alertas == 0 && x.UltimaCompleta);
+        if (f.Vista == "COLA") query = query.Where(x => x.Alertas > 0);
+        if (f.Vista == "FUERA_COLA") query = query.Where(x => x.Alertas == 0);
         if (f.Clasificacion == "CONDICION_POR_VERIFICAR") query = query.Where(x => x.Alertas == 0 && !x.UltimaCompleta);
         var count = await query.CountAsync(ct);
         var facts = await OrdenarMantenimiento(query).Skip((f.Pagina - 1) * f.Tamano).Take(f.Tamano).ToListAsync(ct);

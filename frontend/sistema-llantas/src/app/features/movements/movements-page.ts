@@ -1,3 +1,4 @@
+import {GiroRinForm} from './giro-rin-form';
 import {MountWorkList} from './mount-work-list';
 import {MountAssignment,MountAssignmentEditor} from './mount-assignment';
 import {HttpClient} from '@angular/common/http';
@@ -11,7 +12,7 @@ import {AuthService} from '../../core/auth/auth.service';
 import {DiagramAxle,DiagramPosition,VehicleAxleDiagram} from '../../shared/vehicle-axle-diagram';
 import {VehicleDetail,VehicleSummary} from '../vehicles/vehicles-api';
 interface RequestRow{id:string;tipo:string;estado:string;centro:string;llanta:string;motivo:string;centroDestinoId:string|null;fechaRecepcionDestino:string|null}
-@Component({host:{class:'edinsa-workflow'},selector:'app-movements-page',imports:[CommonModule,FormsModule,VehicleAxleDiagram,MountAssignmentEditor,MountWorkList],templateUrl:'./movements-page.html',styleUrls:['../../shared/operational-workflow.scss','./movements-page.scss']})
+@Component({host:{class:'edinsa-workflow'},selector:'app-movements-page',imports:[GiroRinForm,CommonModule,FormsModule,VehicleAxleDiagram,MountAssignmentEditor,MountWorkList],templateUrl:'./movements-page.html',styleUrls:['../../shared/operational-workflow.scss','./movements-page.scss']})
 export class MovementsPage implements OnInit {
  private http=inject(HttpClient);private catalogs=inject(CatalogsApi);private route=inject(ActivatedRoute);
  readonly auth=inject(AuthService);

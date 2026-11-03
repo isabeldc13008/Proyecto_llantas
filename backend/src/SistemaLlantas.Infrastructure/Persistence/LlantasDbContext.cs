@@ -64,6 +64,9 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
             modelBuilder.Entity(type).Property(nameof(EntidadAuditable.RowVersion)).IsRowVersion();
 
         ExistingDatabaseSchemaConfiguration.Configure(modelBuilder);
+        modelBuilder.Entity<Movimiento>().Property(x => x.FechaGiro).HasColumnName("DFechaGiro");
+        modelBuilder.Entity<Movimiento>().Property(x => x.KilometrajeGiro).HasColumnName("NKilometrajeGiro").HasPrecision(18, 2);
+        modelBuilder.Entity<Movimiento>().Property(x => x.TecnicoGiroId).HasColumnName("GTecnicoGiroId");
         modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.DestinoSolicitadoJson).HasColumnName("SDestinoSolicitadoJson");
         modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.HistorialRevisionJson).HasColumnName("SHistorialRevisionJson");
         modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.Ejecutor).HasColumnName("SEjecutor").HasMaxLength(100);

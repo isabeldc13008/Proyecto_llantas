@@ -2365,6 +2365,10 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("DFechaCreacion");
 
+                    b.Property<DateTimeOffset?>("FechaGiro")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("DFechaGiro");
+
                     b.Property<DateTimeOffset?>("FechaModificacion")
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("DFechaModificacion");
@@ -2372,6 +2376,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("InspeccionId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("GInspeccionId");
+
+                    b.Property<decimal?>("KilometrajeGiro")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("NKilometrajeGiro");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
@@ -2396,6 +2405,10 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion")
                         .HasColumnName("TRowVersion");
+
+                    b.Property<Guid?>("TecnicoGiroId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GTecnicoGiroId");
 
                     b.Property<string>("Tipo")
                         .IsRequired()

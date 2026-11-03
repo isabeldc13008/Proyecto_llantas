@@ -9,6 +9,9 @@ namespace SistemaLlantas.Api.Controllers;
 [ApiController, Route("api/analitica"), Authorize(Policy = "Analitica.Consultar")]
 public sealed class AnaliticaController(IAnaliticaService service) : ControllerBase
 {
+    [HttpGet("calidad-datos")]
+    public Task<CalidadDatosAnalitica> CalidadDatos([FromQuery] FiltroMantenimiento filtro, [FromQuery] string categoria = "todas", CancellationToken ct = default)
+        => service.CalidadDatosAsync(filtro, categoria, User.AlcanceCentros(), ct);
     [HttpGet("mantenimiento")]
     public Task<ColaMantenimiento> Mantenimiento([FromQuery] FiltroMantenimiento filtro, CancellationToken ct) => service.MantenimientoAsync(filtro, User.AlcanceCentros(), ct);
     [HttpGet("mantenimiento/vehiculos")]

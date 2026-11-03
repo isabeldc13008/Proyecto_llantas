@@ -36,6 +36,7 @@ public sealed class DesmontarLlantaDto { [Required] public Guid PosicionId { get
 
 public interface IOperacionService
 {
+    Task<MovimientoDto> GirarEnRinAsync(GiroRinDto dto,string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<IReadOnlyList<ActividadDto>> MisActividadesAsync(string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<ActividadDto> IniciarActividadAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct);
     Task<ActividadDto> CompletarActividadAsync(Guid id,string usuario,AlcanceCentros alcance,CancellationToken ct);

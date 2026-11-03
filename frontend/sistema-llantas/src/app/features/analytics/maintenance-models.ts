@@ -1,7 +1,7 @@
 import {AnalyticsPage} from './analytics-api';
 export interface Evaluation<T>{estado:'EVALUADO'|'PARCIAL'|'NO_EVALUABLE'|'PENDIENTE_CONFIGURACION';valor:T|null;motivos:string[]}
-export interface MaintenanceFilters{buscar:string;centroId:string;vehiculoId:string;marcaId:string;referenciaId:string;dimensionId:string;tipoVehiculo:string;montaje:'MONTADAS'|'TODAS';vista:'COLA'|'TODAS'|'FUERA_COLA';clasificacion:string}
-export const maintenanceDefaults=():MaintenanceFilters=>({buscar:'',centroId:'',vehiculoId:'',marcaId:'',referenciaId:'',dimensionId:'',tipoVehiculo:'',montaje:'MONTADAS',vista:'COLA',clasificacion:''});
+export interface MaintenanceFilters{buscar:string;centroId:string;vehiculoId:string;estadoId?:string;marcaId:string;referenciaId:string;dimensionId:string;tipoVehiculo:string;montaje:'MONTADAS'|'TODAS';vista:'COLA'|'TODAS'|'FUERA_COLA';clasificacion:string}
+export const maintenanceDefaults=():MaintenanceFilters=>({buscar:'',centroId:'',vehiculoId:'',estadoId:'',marcaId:'',referenciaId:'',dimensionId:'',tipoVehiculo:'',montaje:'MONTADAS',vista:'COLA',clasificacion:''});
 export interface Reference{id:string;nombre:string}
 export interface MaintenanceReason{codigo:string;descripcion:string;fecha:string|null;fuente:{tipo:string;id:string}|null}
 export interface MaintenanceAction{tipo:'REVISAR_ALERTA'|'INSPECCIONAR'|'PROGRAMAR_EVALUACION'|'VER_HISTORIAL';llantaId:string;vehiculoId:string|null;posicionId:string|null;alertaId:string|null}

@@ -37,6 +37,7 @@ public sealed record RankingMovimientos(Pagina<MovimientoAnalitica> Ranking, IRe
 
 public interface IAnaliticaService
 {
+    Task<CalidadDatosAnalitica> CalidadDatosAsync(FiltroMantenimiento filtro, string categoria, AlcanceCentros alcance, CancellationToken ct);
     Task<ColaMantenimiento> MantenimientoAsync(FiltroMantenimiento filtro, AlcanceCentros alcance, CancellationToken ct);
     Task<DetalleMantenimiento> DetalleMantenimientoAsync(Guid id, AlcanceCentros alcance, CancellationToken ct);
     Task<Pagina<AlertaObservada>> AlertasMantenimientoAsync(Guid id, int pagina, int tamano, AlcanceCentros alcance, CancellationToken ct);
@@ -51,8 +52,8 @@ public interface IAnaliticaService
 }
 
 public sealed record LlantaAnalitica(Guid Id, string Codigo, string? Serial, string Centro, string Estado, int Alertas, decimal? Profundidad, decimal? Km);
-public sealed record LecturaAnalitica(Guid Id, Guid InspeccionId, DateTimeOffset Fecha, Guid PosicionId, string Posicion, decimal? Odometro, decimal? Exterior, decimal? Centro, decimal? Interior);
+public sealed record LecturaAnalitica(Guid Id, Guid InspeccionId, DateTimeOffset Fecha, Guid PosicionId, string Posicion, decimal? Odometro, decimal? Exterior, decimal? Centro, decimal? Interior, DateTimeOffset? FechaHasta = null);
 public sealed record TramoAnalitica(Guid Id, Guid PosicionId, DateTimeOffset? Inicio, DateTimeOffset? Fin, bool Activo, decimal? Montaje, decimal? Desmontaje, decimal? OdometroActual = null);
-public sealed record MedicionAnalitica(LecturaAnalitica Lectura, decimal? Minima, Guid? TramoId, decimal? KmDesdeMontaje, string Calidad);
+public sealed record MedicionAnalitica(LecturaAnalitica Lectura, decimal? Minima, Guid? TramoId, decimal? KmDesdeMontaje, string Calidad, HombrosNormalizados? Normalizada = null, string Orientacion = "No verificable");
 public sealed record ReglaProfundidadAnalitica(string Codigo, string Operador, decimal Valor, string Unidad, string Alcance);
 public sealed record DesgasteAnalitica(Guid Id, string Codigo, int TotalLecturas, int LecturasCompletas, int LecturasConTramo, IReadOnlyList<MedicionAnalitica> Mediciones, IReadOnlyList<ReglaProfundidadAnalitica> Reglas, string Pronostico, IReadOnlyList<string> Limitaciones);

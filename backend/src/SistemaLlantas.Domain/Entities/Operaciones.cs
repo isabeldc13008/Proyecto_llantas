@@ -22,6 +22,9 @@ public sealed class AsignacionLlantaPosicion : EntidadAuditable
 
 public sealed class Movimiento : EntidadAuditable
 {
+    public DateTimeOffset? FechaGiro { get; set; }
+    public decimal? KilometrajeGiro { get; set; }
+    public Guid? TecnicoGiroId { get; set; }
     public string Numero { get; set; } = string.Empty;
     public string Tipo { get; set; } = string.Empty;
     public string Motivo { get; set; } = string.Empty;

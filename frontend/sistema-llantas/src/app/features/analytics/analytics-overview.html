@@ -1,0 +1,67 @@
+<main class="analytics">
+ <header class="heading"><div><p class="eyebrow">GESTIÓN DE LLANTAS</p><h1>Analítica</h1><p>Una visión de la flota, con evidencia y contexto.</p></div>
+ @if(section()!=='mantenimiento'){<button (click)="load()" [disabled]="loading()">Actualizar indicadores</button>}</header>
+ <nav class="sections" aria-label="Vistas de Analítica">
+  <button (click)="navigate('resumen')" [attr.aria-current]="section()==='resumen'?'page':null">Resumen ejecutivo</button>
+  <button disabled title="Disponible en una próxima fase">Desgaste y vida útil <small>Próximamente</small></button>
+  <button disabled title="Requiere costos comparables y recorridos verificables">Costos y rendimiento <small>Próximamente</small></button>
+  <button (click)="navigate('mantenimiento')" [attr.aria-current]="section()==='mantenimiento'?'page':null">Mantenimiento y alertas</button>
+  <button (click)="navigate('calidad')" [attr.aria-current]="section()==='calidad'?'page':null">Inspecciones y calidad</button>
+ </nav>
+ <p class="provenance">Datos del entorno actual · Procedencia no verificada. Las cifras son descriptivas; no están certificadas como productivas.</p>
+ @if(section()==='mantenimiento'){
+  <app-analytics-page/>
+ }@else{
+  <form class="filters" (ngSubmit)="apply()" aria-label="Filtros compartidos de Analítica">
+   <label>Centro actual de la llanta<select name="centro" [(ngModel)]="filters.centroId" (change)="centerChanged()"><option value="">Todos los autorizados</option>@for(c of options()?.centros??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
+   <label>Marca<select name="marca" [(ngModel)]="filters.marcaId"><option value="">Todas</option>@for(c of options()?.marcas??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
+   <label>Referencia<select name="referencia" [(ngModel)]="filters.referenciaId"><option value="">Todas</option>@for(c of options()?.referencias??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
+   <label>Estado actual<select name="estado" [(ngModel)]="filters.estadoId"><option value="">Todos</option>@for(c of options()?.estados??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
+   <label>Llanta<input name="buscar" type="search" maxlength="100" [(ngModel)]="filters.buscar" placeholder="Código o serial"></label>
+   <div class="vehicle-search"><label>Buscar vehículo<input name="vehicleSearch" type="search" maxlength="100" [(ngModel)]="vehicleSearch" placeholder="Placa o número interno"></label><button type="button" (click)="findVehicles()" [disabled]="vehicleLoading()">Buscar</button></div>
+   <label>Vehículo con montaje vigente<select name="vehiculo" [(ngModel)]="filters.vehiculoId"><option value="">Todos</option>@if(filters.vehiculoId){<option [value]="filters.vehiculoId">Vehículo seleccionado</option>}@for(v of vehicles()?.items??[];track v.id){<option [value]="v.id">{{v.numeroInterno}} · {{v.placa}}</option>}</select></label>
+   <label>Asignación actual<select name="montaje" [(ngModel)]="filters.montaje"><option value="TODAS">Todas las llantas</option><option value="MONTADAS">Solo montadas</option></select></label>
+   <div class="filter-actions"><button class="primary" type="submit" [disabled]="loading()">Aplicar filtros</button><button type="button" (click)="clear()">Limpiar</button></div>
+   @if(vehicles();as v){@if(v.totalPages>1){<div class="vehicle-pages"><button type="button" (click)="findVehicles(v.pageNumber-1)" [disabled]="vehicleLoading()||v.pageNumber<=1">Vehículos anteriores</button><span>{{v.pageNumber}} / {{v.totalPages}}</span><button type="button" (click)="findVehicles(v.pageNumber+1)" [disabled]="vehicleLoading()||v.pageNumber>=v.totalPages">Más vehículos</button></div>}}
+  </form>
+  <p class="method">Centro, vehículo, marca, referencia y estado describen la situación actual. Las inspecciones consideran todo el historial finalizado visible para tus centros; su fecha es la de registro. No es un informe por período ni una evaluación de vigencia.</p>
+  @if(optionsError()){<p role="alert" class="error">{{optionsError()}} <button (click)="loadOptions()">Reintentar filtros</button></p>}
+  @if(vehicleError()){<p role="alert" class="error">{{vehicleError()}}</p>}
+  @if(loading()){<p role="status" class="loading">Consultando indicadores…</p>}
+  @if(error()){<div role="alert" class="error">{{error()}} <button (click)="load()">Reintentar</button></div>}
+  @if(data();as d){
+   <div class="section-title"><div><h2>{{section()==='resumen'?'Resumen ejecutivo':'Inspecciones y calidad de datos'}}</h2><p>{{d.totales.total}} llantas en el alcance filtrado y autorizado</p></div><small>Consulta: {{d.generadoEn|date:'dd/MM/yyyy HH:mm'}}</small></div>
+   @if(section()==='resumen'){
+    <section class="metrics" aria-label="Indicadores de flota">
+     <article><span>Inventario registrado</span><strong>{{d.totales.total}}</strong><p>Llantas activas registradas en el alcance filtrado. Incluye los distintos estados operativos.</p></article>
+     <article><span>Montadas</span><strong>{{d.totales.montadas}} <small>/ {{d.totales.total}}</small></strong><p>Con asignación vigente y movimiento de origen visible. No es un conteo de vehículos.</p></article>
+     <article><span>Disponibles para montaje</span><strong>{{d.totales.disponibles}} <small>/ {{d.totales.total}}</small></strong><p>Según las reglas operativas de disponibilidad, sin reservas ni servicios que impidan el montaje.</p></article>
+     <article><span>Con alertas activas</span><strong>{{d.totales.conAlertas}} <small>/ {{d.totales.total}}</small></strong><p>Llantas con alertas abiertas o en proceso. La severidad no se deduce del conteo.</p><button class="text-link" (click)="navigate('mantenimiento')">Consultar alertas →</button></article>
+     <article class="coverage"><span>Cobertura de inspección</span><strong>{{display(d.totales.coberturaInspeccion)}}{{d.totales.coberturaInspeccion===null?'':'%'}}</strong><p>{{d.totales.conInspeccion}} / {{d.totales.total}} llantas con al menos una inspección finalizada visible, aunque esté incompleta. No certifica vigencia.</p><button class="text-link" (click)="navigate('calidad')">Revisar calidad →</button></article>
+    </section>
+    <div class="charts">
+     <section class="panel"><h3>Distribución por estado actual</h3><p>Conteo por estado / {{d.totales.total}} llantas del alcance. Incluye reparación, reencauche o disposición cuando existan en los datos.</p>
+      @for(g of d.estados;track g.id){<div class="bar-item"><div><span>{{g.nombre}}</span><b>{{g.total}} / {{d.totales.total}}</b></div><div class="track" aria-hidden="true"><span [style.width.%]="percent(g.total,d.totales.total)"></span></div></div>}@empty{<p class="empty">Sin datos suficientes para mostrar la distribución.</p>}
+     </section>
+     <section class="panel"><h3>Cobertura por centro actual</h3><p>Comparativo descriptivo: llantas con inspección / llantas del centro. No es una clasificación de desempeño.</p>
+      @for(g of d.centros;track g.id){<div class="bar-item"><div><span>{{g.nombre}}</span><b>{{g.conInspeccion}} / {{g.total}} · {{percent(g.conInspeccion,g.total)|number:'1.0-1'}}%</b></div><div class="track blue" aria-hidden="true"><span [style.width.%]="percent(g.conInspeccion,g.total)"></span></div></div>}@empty{<p class="empty">Sin datos suficientes para comparar centros.</p>}
+     </section>
+    </div>
+   }@else{
+    <section class="metrics quality-metrics" aria-label="Cobertura y completitud">
+     <article><span>Sin inspección registrada</span><strong>{{d.totales.sinInspeccion}} <small>/ {{d.totales.total}}</small></strong><p>Sin inspección finalizada visible. Es una falta de evidencia, no una alerta crítica.</p><button class="text-link" (click)="qualityCategory('sin-inspeccion')">Ver llantas →</button></article>
+     <article><span>Última medición incompleta</span><strong>{{d.totales.ultimaIncompleta}} <small>/ {{d.totales.total}}</small></strong><p>Existe inspección finalizada, pero falta alguna profundidad o hay valores negativos.</p><button class="text-link" (click)="qualityCategory('incompleta')">Ver llantas →</button></article>
+     <article><span>Última medición completa</span><strong>{{d.totales.ultimaCompleta}} <small>/ {{d.totales.total}}</small></strong><p>Exterior, centro e interior registrados y no negativos. 0,0 mm es un valor medido; no implica condición segura.</p><button class="text-link" (click)="qualityCategory('completa')">Ver llantas →</button></article>
+    </section>
+    <section class="panel"><div class="section-title"><h3>Evidencia por llanta</h3><label>Mostrar<select [ngModel]="category" (ngModelChange)="qualityCategory($event)"><option value="todas">Todas</option><option value="sin-inspeccion">Sin inspección</option><option value="incompleta">Última incompleta</option><option value="completa">Última completa</option></select></label></div>
+     <p>La clasificación usa la última inspección finalizada, sin sustituirla por una medición anterior más completa. Las alertas se muestran por separado.</p>
+     <div class="table-scroll" role="region" aria-label="Calidad de datos de las llantas" tabindex="0"><table><thead><tr><th>Llanta</th><th>Centro / estado actual</th><th>Última inspección visible</th><th>Alertas activas</th></tr></thead><tbody>
+      @for(t of d.llantas.items;track t.id){<tr><td><a [routerLink]="['/analitica/llantas',t.id]" [queryParams]="{volver:router.url}">{{t.codigo}}</a></td><td>{{t.centro}}<small>{{t.estado}}</small></td><td>{{t.inspeccionId?(t.ultimaCompleta?'Medición completa':'Medición incompleta'):'Sin inspección registrada'}}<small>{{t.fechaRegistro?(t.fechaRegistro|date:'dd/MM/yyyy HH:mm'):'Sin fecha registrada'}}</small></td><td>{{t.alertasActivas}}</td></tr>}@empty{<tr><td colspan="4">No hay llantas para esta selección.</td></tr>}
+     </tbody></table></div>
+     <footer class="pagination"><span>{{d.llantas.totalItems}} resultados · Página {{d.llantas.pageNumber}} / {{d.llantas.totalPages||1}}</span><button (click)="changePage(d.llantas.pageNumber-1)" [disabled]="loading()||d.llantas.pageNumber<=1">Anterior</button><button (click)="changePage(d.llantas.pageNumber+1)" [disabled]="loading()||d.llantas.pageNumber>=d.llantas.totalPages">Siguiente</button></footer>
+    </section>
+   }
+   <details class="definitions"><summary>Alcance y límites de los datos</summary><p>No se excluyen registros por nombres, códigos o prefijos. La información de lotes y auditoría no distingue de forma aprobada datos DEMO y productivos. Se requiere validar su procedencia antes de certificar estos indicadores.</p><p>Una inspección ausente no genera una alerta de mantenimiento. Una medición completa no acredita vigencia ni seguridad. No se calculan proyecciones de vida útil, umbrales de criticidad ni costos en esta fase.</p><p>La ficha analítica individual conserva lecturas originales, normalización de giros e historial. Ábrela desde el listado de calidad o desde la cola de mantenimiento.</p></details>
+  }
+ }
+</main>
