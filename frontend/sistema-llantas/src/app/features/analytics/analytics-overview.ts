@@ -6,11 +6,12 @@ import {Subscription, firstValueFrom} from 'rxjs';
 import {AnalyticsApi, AnalyticsOptions, AnalyticsPage, QualityData} from './analytics-api';
 import {MaintenanceFilters, MaintenanceVehicle, maintenanceDefaults} from './maintenance-models';
 import {AnalyticsPageComponent} from './analytics-page';
+import {AnalyticsWearPage} from './analytics-wear-page';
 
-type Section='resumen'|'calidad'|'mantenimiento';
+type Section='resumen'|'calidad'|'mantenimiento'|'desgaste';
 const defaults=():MaintenanceFilters=>({...maintenanceDefaults(),montaje:'TODAS'});
 
-@Component({selector:'app-analytics-overview',imports:[CommonModule,FormsModule,RouterLink,AnalyticsPageComponent],
+@Component({selector:'app-analytics-overview',imports:[CommonModule,FormsModule,RouterLink,AnalyticsPageComponent,AnalyticsWearPage],
  templateUrl:'./analytics-overview.html',styleUrl:'./analytics-overview.scss'})
 export class AnalyticsOverview implements OnInit, OnDestroy{
  private api=inject(AnalyticsApi);private route=inject(ActivatedRoute);readonly router=inject(Router);
@@ -19,7 +20,7 @@ export class AnalyticsOverview implements OnInit, OnDestroy{
  data=signal<QualityData|null>(null);loading=signal(false);error=signal('');options=signal<AnalyticsOptions|null>(null);optionsError=signal('');
  vehicles=signal<AnalyticsPage<MaintenanceVehicle>|null>(null);vehicleSearch='';vehicleLoading=signal(false);vehicleError=signal('');
  ngOnInit(){void this.loadOptions();this.subscription=this.route.queryParamMap.subscribe(p=>{
-  const raw=p.get('seccion');const section:Section=raw==='calidad'||raw==='mantenimiento'?raw:!raw&&(p.has('vista')||p.has('seleccion'))?'mantenimiento':'resumen';
+  const raw=p.get('seccion');const section:Section=raw==='calidad'||raw==='mantenimiento'||raw==='desgaste'?raw:!raw&&(p.has('vista')||p.has('seleccion'))?'mantenimiento':'resumen';
   this.section.set(section);const next=defaults();for(const key of Object.keys(next) as (keyof MaintenanceFilters)[]){const v=p.get(key);if(v!==null)(next as unknown as Record<string,string>)[key]=v;}
   if(!['MONTADAS','TODAS'].includes(next.montaje))next.montaje='TODAS';
   // Legacy queue-only filters must not change the population of the executive/quality views.
@@ -28,11 +29,12 @@ export class AnalyticsOverview implements OnInit, OnDestroy{
   const category=p.get('categoria')??'todas';this.category=['todas','sin-inspeccion','incompleta','completa'].includes(category)?category:'todas';
   const centerChanged=this.applied.centroId!==next.centroId;this.filters={...next};this.applied={...next};
   if(section==='mantenimiento'){this.version++;this.loading.set(false);this.lastQuery='';return;}
+  if(section==='desgaste'){this.version++;this.loading.set(false);this.error.set('');this.data.set(null);this.lastQuery='';if(centerChanged||!this.vehicles())void this.findVehicles();return;}
   const query=JSON.stringify([next,this.page(),this.category]);if(query!==this.lastQuery){this.lastQuery=query;void this.load();}
   if(centerChanged||!this.vehicles())void this.findVehicles();
  });}
  ngOnDestroy(){this.subscription?.unsubscribe();this.version++;this.vehicleVersion++;}
- async load(){const v=++this.version;this.loading.set(true);this.error.set('');this.data.set(null);
+ async load(){if(this.section()==='desgaste'){this.applied={...this.filters};return;}const v=++this.version;this.loading.set(true);this.error.set('');this.data.set(null);
   try{const data=await firstValueFrom(this.api.quality(this.applied,this.page(),this.category));if(v===this.version)this.data.set(data);}
   catch(e:unknown){if(v===this.version)this.error.set(this.message(e,'No se pudieron consultar los indicadores.'));}
   finally{if(v===this.version)this.loading.set(false);}}

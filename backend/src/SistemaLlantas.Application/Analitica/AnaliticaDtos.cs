@@ -37,6 +37,8 @@ public sealed record RankingMovimientos(Pagina<MovimientoAnalitica> Ranking, IRe
 
 public interface IAnaliticaService
 {
+    Task<DesgasteFlota> DesgasteFlotaAsync(FiltroMantenimiento filtro, string agrupar, int paginaLlantas, AlcanceCentros alcance, CancellationToken ct);
+    Task<Pagina<IntervencionDesgaste>> IntervencionesAsync(Guid id, int pagina, AlcanceCentros alcance, CancellationToken ct);
     Task<CalidadDatosAnalitica> CalidadDatosAsync(FiltroMantenimiento filtro, string categoria, AlcanceCentros alcance, CancellationToken ct);
     Task<ColaMantenimiento> MantenimientoAsync(FiltroMantenimiento filtro, AlcanceCentros alcance, CancellationToken ct);
     Task<DetalleMantenimiento> DetalleMantenimientoAsync(Guid id, AlcanceCentros alcance, CancellationToken ct);
@@ -56,4 +58,7 @@ public sealed record LecturaAnalitica(Guid Id, Guid InspeccionId, DateTimeOffset
 public sealed record TramoAnalitica(Guid Id, Guid PosicionId, DateTimeOffset? Inicio, DateTimeOffset? Fin, bool Activo, decimal? Montaje, decimal? Desmontaje, decimal? OdometroActual = null);
 public sealed record MedicionAnalitica(LecturaAnalitica Lectura, decimal? Minima, Guid? TramoId, decimal? KmDesdeMontaje, string Calidad, HombrosNormalizados? Normalizada = null, string Orientacion = "No verificable");
 public sealed record ReglaProfundidadAnalitica(string Codigo, string Operador, decimal Valor, string Unidad, string Alcance);
-public sealed record DesgasteAnalitica(Guid Id, string Codigo, int TotalLecturas, int LecturasCompletas, int LecturasConTramo, IReadOnlyList<MedicionAnalitica> Mediciones, IReadOnlyList<ReglaProfundidadAnalitica> Reglas, string Pronostico, IReadOnlyList<string> Limitaciones);
+public sealed record DesgasteAnalitica(Guid Id, string Codigo, int TotalLecturas, int LecturasCompletas, int LecturasConTramo, IReadOnlyList<MedicionAnalitica> Mediciones, IReadOnlyList<ReglaProfundidadAnalitica> Reglas, string Pronostico, IReadOnlyList<string> Limitaciones)
+{
+    public IReadOnlyList<TasaDesgaste> Tasas => TasasDesgaste.Calcular(Mediciones);
+}

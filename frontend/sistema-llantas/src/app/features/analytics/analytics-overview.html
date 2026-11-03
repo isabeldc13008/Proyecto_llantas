@@ -1,9 +1,9 @@
 <main class="analytics">
  <header class="heading"><div><p class="eyebrow">GESTIÓN DE LLANTAS</p><h1>Analítica</h1><p>Una visión de la flota, con evidencia y contexto.</p></div>
- @if(section()!=='mantenimiento'){<button (click)="load()" [disabled]="loading()">Actualizar indicadores</button>}</header>
+ @if(section()!=='mantenimiento'&&section()!=='desgaste'){<button (click)="load()" [disabled]="loading()">Actualizar indicadores</button>}</header>
  <nav class="sections" aria-label="Vistas de Analítica">
   <button (click)="navigate('resumen')" [attr.aria-current]="section()==='resumen'?'page':null">Resumen ejecutivo</button>
-  <button disabled title="Disponible en una próxima fase">Desgaste y vida útil <small>Próximamente</small></button>
+  <button (click)="navigate('desgaste')" [attr.aria-current]="section()==='desgaste'?'page':null">Desgaste y vida útil</button>
   <button disabled title="Requiere costos comparables y recorridos verificables">Costos y rendimiento <small>Próximamente</small></button>
   <button (click)="navigate('mantenimiento')" [attr.aria-current]="section()==='mantenimiento'?'page':null">Mantenimiento y alertas</button>
   <button (click)="navigate('calidad')" [attr.aria-current]="section()==='calidad'?'page':null">Inspecciones y calidad</button>
@@ -16,6 +16,7 @@
    <label>Centro actual de la llanta<select name="centro" [(ngModel)]="filters.centroId" (change)="centerChanged()"><option value="">Todos los autorizados</option>@for(c of options()?.centros??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
    <label>Marca<select name="marca" [(ngModel)]="filters.marcaId"><option value="">Todas</option>@for(c of options()?.marcas??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
    <label>Referencia<select name="referencia" [(ngModel)]="filters.referenciaId"><option value="">Todas</option>@for(c of options()?.referencias??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
+   @if(section()==='desgaste'){<label>Dimensión<select name="dimension" [(ngModel)]="filters.dimensionId"><option value="">Todas</option>@for(c of options()?.dimensiones??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>}
    <label>Estado actual<select name="estado" [(ngModel)]="filters.estadoId"><option value="">Todos</option>@for(c of options()?.estados??[];track c.id){<option [value]="c.id">{{c.nombre}}</option>}</select></label>
    <label>Llanta<input name="buscar" type="search" maxlength="100" [(ngModel)]="filters.buscar" placeholder="Código o serial"></label>
    <div class="vehicle-search"><label>Buscar vehículo<input name="vehicleSearch" type="search" maxlength="100" [(ngModel)]="vehicleSearch" placeholder="Placa o número interno"></label><button type="button" (click)="findVehicles()" [disabled]="vehicleLoading()">Buscar</button></div>
@@ -27,6 +28,7 @@
   <p class="method">Centro, vehículo, marca, referencia y estado describen la situación actual. Las inspecciones consideran todo el historial finalizado visible para tus centros; su fecha es la de registro. No es un informe por período ni una evaluación de vigencia.</p>
   @if(optionsError()){<p role="alert" class="error">{{optionsError()}} <button (click)="loadOptions()">Reintentar filtros</button></p>}
   @if(vehicleError()){<p role="alert" class="error">{{vehicleError()}}</p>}
+  @if(section()==='desgaste'){<app-analytics-wear-page [filters]="applied"/>}
   @if(loading()){<p role="status" class="loading">Consultando indicadores…</p>}
   @if(error()){<div role="alert" class="error">{{error()}} <button (click)="load()">Reintentar</button></div>}
   @if(data();as d){

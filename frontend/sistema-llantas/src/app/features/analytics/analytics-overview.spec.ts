@@ -11,12 +11,23 @@ const data=():QualityData=>({generadoEn:'2026-11-03T12:00:00Z',procedencia:'Dato
 describe('Resumen y calidad de Analítica',()=>{
  let api:jasmine.SpyObj<AnalyticsApi>;
  beforeEach(async()=>{
-  api=jasmine.createSpyObj('AnalyticsApi',['options','quality','maintenanceVehicles','maintenance']);
+  api=jasmine.createSpyObj('AnalyticsApi',['options','quality','maintenanceVehicles','maintenance','fleetWear']);
+  api.fleetWear.and.returnValue(of({generadoEn:'2026-11-03T12:00:00Z',procedencia:'Datos del entorno actual · Procedencia no verificada',
+   total:{id:'total',nombre:'Total',total:0,muestraProfundidad:0,profundidadMedia:null,muestraKm:0,kmMedio:null},
+   grupos:{items:[],pageNumber:1,pageSize:20,totalItems:0,totalPages:0},llantas:{items:[],pageNumber:1,pageSize:20,totalItems:0,totalPages:0}}));
   api.options.and.returnValue(of({centros:[],marcas:[],referencias:[],dimensiones:[],estados:[],tiposVehiculo:[]}));
   api.quality.and.returnValue(of(data()));api.maintenanceVehicles.and.returnValue(of({items:[],pageNumber:1,pageSize:20,totalItems:0,totalPages:0}));
   await TestBed.configureTestingModule({imports:[AnalyticsOverview],providers:[provideRouter([{path:'analitica',component:AnalyticsOverview}]),{provide:AnalyticsApi,useValue:api}]}).compileComponents();
  });
  async function create(){const f=TestBed.createComponent(AnalyticsOverview);f.detectChanges();await f.whenStable();f.detectChanges();return f;}
+ it('integra desgaste con filtros compartidos sin cargar calidad y permite volver',async()=>{
+  const f=await create();api.quality.calls.reset();f.componentInstance.filters.centroId='c';f.componentInstance.filters.vehiculoId='v';
+  await f.componentInstance.navigate('desgaste');f.detectChanges();await f.whenStable();f.detectChanges();
+  expect(api.quality).not.toHaveBeenCalled();expect(api.fleetWear).toHaveBeenCalledWith(jasmine.objectContaining({centroId:'c',vehiculoId:'v'}),'marca',1,1);
+  expect(f.nativeElement.querySelector('app-analytics-wear-page')).not.toBeNull();
+  await f.componentInstance.navigate('resumen');f.detectChanges();await f.whenStable();
+  expect(api.quality).toHaveBeenCalledWith(jasmine.objectContaining({centroId:'c',vehiculoId:'v'}),1,'todas');
+ });
  it('abre resumen con todos los estados y advierte la procedencia sin enviar faltantes a mantenimiento',async()=>{
   const f=await create();expect(api.quality).toHaveBeenCalledWith(jasmine.objectContaining({montaje:'TODAS'}),1,'todas');
   expect(api.maintenance).not.toHaveBeenCalled();expect(f.nativeElement.textContent).toContain('Resumen ejecutivo');
