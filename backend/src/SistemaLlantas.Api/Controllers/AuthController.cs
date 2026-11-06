@@ -33,8 +33,11 @@ public sealed class AuthController(LlantasDbContext db,IConfiguration config):Co
             if(!hasEntraHeader)
                 return Unauthorized(new { code="entra_token_missing", message="No se recibió la autenticación Microsoft Entra para continuar." });
             var entra=await HttpContext.AuthenticateAsync(EntraAuthentication.Scheme);
-            if(!entra.Succeeded||!EntraAuthentication.HasDelegatedIdentity(entra.Principal!,config))
-                return Unauthorized(new { code="entra_token_rejected", message="La autenticación Microsoft Entra fue rechazada por la API." });
+            if(!entra.Succeeded)
+                return Unauthorized(new { code=entra.Failure is null ? "entra_token_rejected" : EntraAuthentication.AuthenticationFailureCode(entra.Failure), message="La autenticación Microsoft Entra fue rechazada por la API." });
+            var identityFailure=EntraAuthentication.DelegatedIdentityFailure(entra.Principal!,config);
+            if(identityFailure is not null)
+                return Unauthorized(new { code=identityFailure, message="La identidad Microsoft Entra no está autorizada para este registro." });
             entraUser=entra.Principal;
         }
         var username=request.Username.Trim().ToLowerInvariant();

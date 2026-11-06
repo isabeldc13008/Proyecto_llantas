@@ -60,6 +60,12 @@ public sealed class EntraAuthenticationTests
         Assert.Equal($"https://sts.windows.net/{Tenant}/",options.TokenValidationParameters.ValidIssuer);
         Assert.Equal($"api://{Client}",options.TokenValidationParameters.ValidAudience);
     }
+    [Fact] public void V2UsaMetadataOpenIdConnectV2DelTenant() {
+        var options=new JwtBearerOptions();EntraAuthentication.Configure(options,Config("2.0"));
+        Assert.Equal($"https://login.microsoftonline.com/{Tenant}/v2.0/.well-known/openid-configuration",options.MetadataAddress);
+        Assert.Equal($"https://login.microsoftonline.com/{Tenant}/v2.0",options.TokenValidationParameters.ValidIssuer);
+        Assert.Equal(Client,options.TokenValidationParameters.ValidAudience);
+    }
     [Fact] public async Task LoginAceptaBearerEstandarComoTokenEntra() {
         var options=new JwtBearerOptions();EntraAuthentication.Configure(options,Config("1.0"));
         var http=new DefaultHttpContext();http.Request.Path="/api/auth/login";http.Request.Headers.Authorization="Bearer entra-token";
@@ -89,5 +95,19 @@ public sealed class EntraAuthenticationTests
         Assert.False(EntraAuthentication.IsBound(new ClaimsPrincipal(),entra));
         entra=new ClaimsPrincipal(new ClaimsIdentity(new[]{new Claim("tid",Tenant),new Claim("oid",Guid.NewGuid().ToString())}));
         Assert.False(EntraAuthentication.IsBound(local,entra));
+    }
+    [Fact] public void AceptaClaimsV1RepresentadosConUri() {
+        var oid=Guid.NewGuid().ToString();
+        var entra=new ClaimsPrincipal(new ClaimsIdentity(new[]{
+            new Claim("ver","1.0"),new Claim("http://schemas.microsoft.com/identity/claims/tenantid",Tenant),
+            new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier",oid),
+            new Claim("http://schemas.microsoft.com/identity/claims/appid",Client),
+            new Claim("iss",$"https://sts.windows.net/{Tenant}/"),new Claim("aud",$"api://{Client}"),
+            new Claim("http://schemas.microsoft.com/identity/claims/scope","access_as_user")
+        }));
+        Assert.Null(EntraAuthentication.DelegatedIdentityFailure(entra,Config("1.0")));
+    }
+    [Fact] public void ClasificaFalloDeAudienceSinExponerDetalles() {
+        Assert.Equal("audience_mismatch",EntraAuthentication.AuthenticationFailureCode(new SecurityTokenInvalidAudienceException("sensitive details")));
     }
 }

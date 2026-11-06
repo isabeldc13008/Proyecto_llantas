@@ -34,17 +34,36 @@ public static class EntraAuthentication
     {
         var tenant=config["Entra:TenantId"];
         var client=config["Entra:ClientId"];
-        var version=principal.FindFirstValue("ver");
-        var actor=principal.FindFirstValue(version=="1.0"?"appid":"azp");
-        if(!Guid.TryParse(principal.FindFirstValue("oid"),out var oid)||oid==Guid.Empty)return "oid_missing";
-        if(principal.FindFirstValue("tid")!=tenant)return "tid_mismatch";
+        var version=ClaimValue(principal,"ver");
+        var actor=ClaimValue(principal,version=="1.0"?"appid":"azp");
+        if(!Guid.TryParse(ClaimValue(principal,"oid"),out var oid)||oid==Guid.Empty)return "oid_missing";
+        if(ClaimValue(principal,"tid")!=tenant)return "tid_mismatch";
         if(version!=config["Entra:TokenVersion"]||(version is not ("1.0" or "2.0")))return "version_mismatch";
         if(actor!=client)return "appid_mismatch";
-        if(principal.FindFirstValue("iss")!=(version=="1.0"?$"https://sts.windows.net/{tenant}/":$"https://login.microsoftonline.com/{tenant}/v2.0"))return "issuer_mismatch";
-        if(principal.FindFirstValue("aud")!=(version=="1.0"?$"api://{client}":client))return "audience_mismatch";
-        if(!(principal.FindFirstValue("scp")??"").Split(' ',StringSplitOptions.RemoveEmptyEntries).Contains("access_as_user",StringComparer.Ordinal))return "scope_missing";
+        if(ClaimValue(principal,"iss")!=(version=="1.0"?$"https://sts.windows.net/{tenant}/":$"https://login.microsoftonline.com/{tenant}/v2.0"))return "issuer_mismatch";
+        if(ClaimValue(principal,"aud")!=(version=="1.0"?$"api://{client}":client))return "audience_mismatch";
+        if(!(ClaimValue(principal,"scp")??"").Split(' ',StringSplitOptions.RemoveEmptyEntries).Contains("access_as_user",StringComparer.Ordinal))return "scope_missing";
         return null;
     }
+
+    public static string AuthenticationFailureCode(Exception exception) => exception switch
+    {
+        SecurityTokenInvalidIssuerException => "issuer_mismatch",
+        SecurityTokenInvalidAudienceException => "audience_mismatch",
+        SecurityTokenExpiredException => "expired",
+        SecurityTokenInvalidSignatureException => "signature_invalid",
+        SecurityTokenNoExpirationException => "expiration_missing",
+        _ => "token_validation_failed"
+    };
+
+    private static string? ClaimValue(ClaimsPrincipal principal,string type) => principal.FindFirstValue(type) ?? principal.FindFirstValue(type switch
+    {
+        "appid" => "http://schemas.microsoft.com/identity/claims/appid",
+        "oid" => "http://schemas.microsoft.com/identity/claims/objectidentifier",
+        "tid" => "http://schemas.microsoft.com/identity/claims/tenantid",
+        "scp" => "http://schemas.microsoft.com/identity/claims/scope",
+        _ => type
+    });
 
     public static bool IsBound(ClaimsPrincipal local, ClaimsPrincipal entra) =>
         Guid.TryParse(local.FindFirstValue(TenantClaim),out var tenant)&&tenant!=Guid.Empty
@@ -61,7 +80,9 @@ public static class EntraAuthentication
             throw new InvalidOperationException("Configure Entra:TenantId y Entra:ClientId para el ambiente.");
         options.MapInboundClaims=false;
         options.Authority=$"https://login.microsoftonline.com/{tenant}"+(config["Entra:TokenVersion"]=="2.0"?"/v2.0":"");
-        options.MetadataAddress=$"https://login.microsoftonline.com/{tenant}/.well-known/openid-configuration";
+        options.MetadataAddress=$"https://login.microsoftonline.com/{tenant}"+
+            (config["Entra:TokenVersion"]=="2.0"?"/v2.0":"")+
+            "/.well-known/openid-configuration";
         options.RequireHttpsMetadata=true;
         options.TokenValidationParameters=new TokenValidationParameters {
             ValidateIssuer=true,ValidateAudience=true,ValidateLifetime=true,ValidateIssuerSigningKey=true,
@@ -94,13 +115,4 @@ public static class EntraAuthentication
         };
     }
 
-    private static string AuthenticationFailureCode(Exception exception) => exception switch
-    {
-        SecurityTokenInvalidIssuerException => "issuer_mismatch",
-        SecurityTokenInvalidAudienceException => "audience_mismatch",
-        SecurityTokenExpiredException => "expired",
-        SecurityTokenInvalidSignatureException => "signature_invalid",
-        SecurityTokenNoExpirationException => "expiration_missing",
-        _ => "token_validation_failed"
-    };
 }
