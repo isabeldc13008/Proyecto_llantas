@@ -18,6 +18,14 @@
         <h1 id="login-title">Bienvenido</h1>
         <p class="intro">Inicia sesión para continuar</p>
       </header>
+      @if(auth.entra.enabled()){
+        <p role="status">1. Microsoft {{auth.entra.authenticated()?'✓':''}} · 2. Acceso interno</p>
+        @if(auth.entra.error()){<p class="error" role="alert">{{auth.entra.error()}}</p>}
+        @if(!auth.entra.authenticated()){
+          <button type="button" class="primary login-button" [disabled]="auth.entra.busy()" (click)="auth.entra.signIn()">Iniciar sesión con Microsoft</button>
+        }
+      }
+      @if(!auth.entra.enabled() || auth.entra.authenticated()){
       <form (ngSubmit)="submit()" [formGroup]="form">
         <label for="login-username">Usuario</label>
         <input id="login-username" formControlName="username" autocomplete="username">
@@ -32,6 +40,7 @@
         <button type="submit" class="primary login-button">Iniciar sesión <span aria-hidden="true">→</span></button>
         <small class="access-note">GLLD administra tu acceso y tus permisos.</small>
       </form>
+      }
     </div>
     <footer class="login-footer"><span class="footer-mark" aria-hidden="true"></span>Inventario · Inspecciones · Trazabilidad</footer>
   </div>

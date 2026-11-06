@@ -12,6 +12,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.AddApplicationAuthentication();
 builder.Services.AddAuthorization(o =>
 {
+    o.FallbackPolicy=new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
     o.AddPolicy("Inventario.Consultar", p =>
     p.RequireAuthenticatedUser()
      .RequireClaim("permiso", "modulos.inventario.consultar"));
