@@ -14,7 +14,7 @@ public sealed class Llanta : EntidadAuditable
     public Referencia Referencia { get; set; } = null!;
     public Guid DimensionId { get; set; }
     public Dimension Dimension { get; set; } = null!;
-    public Guid TipoLlantaId { get; set; }
+    public Guid? TipoLlantaId { get; set; }
     public TipoLlanta TipoLlanta { get; set; } = null!;
     public Guid EstadoLlantaId { get; set; }
     public EstadoLlanta EstadoLlanta { get; set; } = null!;
@@ -25,6 +25,8 @@ public sealed class Llanta : EntidadAuditable
     public decimal? Costo { get; set; }
     public decimal KilometrajeAcumulado { get; set; }
     public int NumeroReencauches { get; set; }
+    public Guid? MarcaReencaucheId { get; set; }
+    public Marca? MarcaReencauche { get; set; }
     public decimal? ProfundidadInicial { get; set; }
     public DateOnly FechaIngreso { get; set; }
     public string? Observaciones { get; set; }

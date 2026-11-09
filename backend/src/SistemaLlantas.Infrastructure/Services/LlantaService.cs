@@ -35,12 +35,26 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         return item is null?null:(await ConKilometrajeActivo([item],ct))[0];
     }
 
-    public async Task<LlantaResumenDto> CrearAsync(GuardarLlantaDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct)
+    public Task<LlantaResumenDto> CrearAsync(GuardarLlantaDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct)
+    {
+        if (dto.TipoLlantaId == Guid.Empty) throw new ValidacionException("El tipo de llanta es obligatorio.");
+        return CrearInternaAsync(dto, dto.TipoLlantaId, null, 0, usuario, alcance, ct);
+    }
+
+    // Only physical correction may create an unidentified type; normal create/update contracts stay required.
+    public Task<LlantaResumenDto> CrearEncontradaAsync(GuardarLlantaDto dto, Guid? marcaReencaucheId, int numeroReencauches, string usuario, AlcanceCentros alcance, CancellationToken ct)
+        => CrearInternaAsync(dto, dto.TipoLlantaId == Guid.Empty ? null : dto.TipoLlantaId, marcaReencaucheId, numeroReencauches, usuario, alcance, ct);
+
+    private async Task<LlantaResumenDto> CrearInternaAsync(GuardarLlantaDto dto, Guid? tipoId, Guid? marcaReencaucheId, int numeroReencauches, string usuario, AlcanceCentros alcance, CancellationToken ct)
     {
         if (!alcance.Autoriza(dto.CentroId)) throw new UnauthorizedAccessException("El centro no está autorizado para el usuario.");
         await ValidarAsync(dto, null, ct);
+        if (numeroReencauches < 0 || (numeroReencauches > 0 && (!marcaReencaucheId.HasValue
+            || !await db.Marcas.AnyAsync(m => m.Id == marcaReencaucheId && m.Activo, ct))))
+            throw new ValidacionException("La llanta reencauchada requiere marca activa y vida válida.");
         var e = new Llanta("PENDIENTE", dto.Serial) { MarcaId = dto.MarcaId, ReferenciaId = dto.ReferenciaId, DimensionId = dto.DimensionId,
-            TipoLlantaId = dto.TipoLlantaId, EstadoLlantaId = dto.EstadoLlantaId, CentroId = dto.CentroId, UbicacionActual = dto.UbicacionActual.Trim(),
+            TipoLlantaId = tipoId, MarcaReencaucheId = numeroReencauches > 0 ? marcaReencaucheId : null, NumeroReencauches = numeroReencauches,
+            EstadoLlantaId = dto.EstadoLlantaId, CentroId = dto.CentroId, UbicacionActual = dto.UbicacionActual.Trim(),
             FechaCompra = dto.FechaCompra, Costo = dto.Costo, ProfundidadInicial = dto.ProfundidadInicial,
             FechaIngreso = dto.FechaIngreso ?? DateOnly.FromDateTime(DateTime.UtcNow), Observaciones = dto.Observaciones?.Trim(), UsuarioCreacion = usuario };
         db.Llantas.Add(e); await db.SaveChangesAsync(ct); return (await ObtenerAsync(e.Id, alcance, ct))!;
@@ -48,6 +62,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
 
     public async Task<LlantaResumenDto?> ActualizarAsync(Guid id, GuardarLlantaDto dto, string usuario, AlcanceCentros alcance, CancellationToken ct)
     {
+        if (dto.TipoLlantaId == Guid.Empty) throw new ValidacionException("El tipo de llanta es obligatorio.");
         if (!alcance.Autoriza(dto.CentroId)) throw new UnauthorizedAccessException("El centro no está autorizado para el usuario.");
         var e = await db.Llantas.SingleOrDefaultAsync(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct); if (e is null) return null;
         if(e.CentroId!=dto.CentroId) throw new ConflictoException("El centro de una llanta no se edita directamente. Use el comando transaccional de traslado.");
@@ -85,7 +100,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         if(c.ProfundidadMin.HasValue)q=q.Where(x=>x.ProfundidadInicial>=c.ProfundidadMin);
         if(c.ProfundidadMax.HasValue)q=q.Where(x=>x.ProfundidadInicial<=c.ProfundidadMax);
         if(c.MarcaId.HasValue)q=q.Where(x=>x.MarcaId==c.MarcaId);if(c.ReferenciaId.HasValue)q=q.Where(x=>x.ReferenciaId==c.ReferenciaId);if(c.DimensionId.HasValue)q=q.Where(x=>x.DimensionId==c.DimensionId);if(c.TipoLlantaId.HasValue)q=q.Where(x=>x.TipoLlantaId==c.TipoLlantaId);
-        var marcas=Ids(c.MarcaIds);if(marcas.Length>0)q=q.Where(x=>marcas.Contains(x.MarcaId));var referencias=Ids(c.ReferenciaIds);if(referencias.Length>0)q=q.Where(x=>referencias.Contains(x.ReferenciaId));var dimensiones=Ids(c.DimensionIds);if(dimensiones.Length>0)q=q.Where(x=>dimensiones.Contains(x.DimensionId));var tipos=Ids(c.TipoLlantaIds);if(tipos.Length>0)q=q.Where(x=>tipos.Contains(x.TipoLlantaId));
+        var marcas=Ids(c.MarcaIds);if(marcas.Length>0)q=q.Where(x=>marcas.Contains(x.MarcaId));var referencias=Ids(c.ReferenciaIds);if(referencias.Length>0)q=q.Where(x=>referencias.Contains(x.ReferenciaId));var dimensiones=Ids(c.DimensionIds);if(dimensiones.Length>0)q=q.Where(x=>dimensiones.Contains(x.DimensionId));var tipos=Ids(c.TipoLlantaIds);if(tipos.Length>0)q=q.Where(x=>x.TipoLlantaId.HasValue && tipos.Contains(x.TipoLlantaId.Value));
         if(c.TieneReencauches.HasValue)q=q.Where(x=>(x.NumeroReencauches>0)==c.TieneReencauches);if(c.ReencauchesMin.HasValue)q=q.Where(x=>x.NumeroReencauches>=c.ReencauchesMin);
         if(!string.IsNullOrWhiteSpace(c.Reencauches)){var counts=c.Reencauches.Split(',').Select(v=>int.TryParse(v,out var n)?n:-1).Where(v=>v>=0).ToArray();if(counts.Length>0)q=q.Where(x=>counts.Contains(x.NumeroReencauches)||counts.Contains(3)&&x.NumeroReencauches>=3);}
         if(c.TieneReparaciones.HasValue)q=q.Where(x=>db.OrdenesServicioLlanta.Any(o=>o.LlantaId==x.Id&&o.Activo&&o.Tipo==TipoServicioLlanta.Reparacion)==c.TieneReparaciones);
@@ -105,7 +120,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
     }
 
     private System.Linq.Expressions.Expression<Func<Llanta, LlantaResumenDto>> Map() => x => new(x.Id, x.Codigo, x.Serial, x.Marca.Nombre,
-        x.Referencia.Nombre, x.Dimension.Nombre, x.TipoLlanta.Nombre, x.EstadoLlanta.Nombre, x.Centro.Nombre, x.UbicacionActual,
+        x.Referencia.Nombre, x.Dimension.Nombre, x.TipoLlanta == null ? "No informado" : x.TipoLlanta.Nombre, x.EstadoLlanta.Nombre, x.Centro.Nombre, x.UbicacionActual,
         x.ProfundidadInicial,x.KilometrajeAcumulado,x.NumeroReencauches,
         db.AsignacionesLlantaPosicion.Where(a=>a.LlantaId==x.Id&&a.EsActiva).Select(a=>a.PosicionVehiculo.EjeVehiculo.Vehiculo.NumeroInterno+" · "+a.PosicionVehiculo.EjeVehiculo.Vehiculo.Placa).FirstOrDefault(),
         db.AsignacionesLlantaPosicion.Where(a=>a.LlantaId==x.Id&&a.EsActiva).Select(a=>a.PosicionVehiculo.Codigo).FirstOrDefault(),
@@ -113,7 +128,7 @@ public sealed class LlantaService(LlantasDbContext db) : ILlantaService
         db.InspeccionesDetalle.Where(d=>d.LlantaId==x.Id).OrderByDescending(d=>d.Inspeccion.FechaCreacion).Select(d=>new[]{d.ProfundidadExterior,d.ProfundidadCentro,d.ProfundidadInterior}.Min()).FirstOrDefault(),
         db.OrdenesServicioLlanta.Count(o=>o.LlantaId==x.Id&&o.Activo&&o.Tipo==TipoServicioLlanta.Reparacion),db.AsignacionesLlantaPosicion.Count(a=>a.LlantaId==x.Id&&a.Activo),
         db.AlertasInspeccion.Where(a=>a.LlantaId==x.Id&&a.Activo&&(a.Estado==EstadoAlerta.ABIERTA||a.Estado==EstadoAlerta.EN_PROCESO)).OrderByDescending(a=>a.Tipo.Contains("PROFUNDIDAD")).Select(a=>a.Tipo).FirstOrDefault()??db.OrdenesServicioLlanta.Where(o=>o.LlantaId==x.Id&&o.Activo&&o.Estado!="CERRADA"&&o.Estado!="DISPOSICION_FINAL"&&o.Estado!="RETORNADA_INVENTARIO").Select(o=>o.Tipo==TipoServicioLlanta.Reparacion?"Pendiente reparación":o.Tipo==TipoServicioLlanta.Reencauche?"Pendiente reencauche":"Atención requerida").FirstOrDefault()??"Normal",
-        x.Activo, Convert.ToBase64String(x.RowVersion));
+        x.Activo, Convert.ToBase64String(x.RowVersion)) { MarcaReencaucheId=x.MarcaReencaucheId, MarcaReencauche=x.MarcaReencauche == null ? null : x.MarcaReencauche.Nombre };
 
     private async Task<List<LlantaResumenDto>> ConKilometrajeActivo(IReadOnlyList<LlantaResumenDto> items,CancellationToken ct)
     {

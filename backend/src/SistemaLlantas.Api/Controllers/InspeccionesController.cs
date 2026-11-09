@@ -14,12 +14,12 @@ namespace SistemaLlantas.Api.Controllers;
 public sealed partial class InspeccionesController(IInspeccionService service, LlantasDbContext db, IWebHostEnvironment environment) : ControllerBase
 {
     [HttpGet("vehiculos")]
-    public Task<IReadOnlyList<VehiculoInspeccionDto>> Vehiculos([FromQuery]string? buscar,CancellationToken ct) => service.ObtenerVehiculosAsync(Usuario(), false,buscar, User.AlcanceCentros(), ct);
+    public Task<IReadOnlyList<VehiculoInspeccionDto>> Vehiculos([FromQuery]string? buscar,CancellationToken ct) => service.ObtenerVehiculosAsync(Usuario(), false,buscar, User.AlcanceCentros(), ct, PuedeInspeccionarNacional);
     [HttpGet("opciones")]
     public Task<OpcionesInspeccionDto> Opciones(CancellationToken ct) => service.ObtenerOpcionesAsync(ct);
     [HttpGet("contexto/{vehiculoId:guid}")]
     public async Task<ActionResult<ContextoInspeccionDto>> Contexto(Guid vehiculoId, CancellationToken ct) =>
-        await service.ObtenerContextoAsync(vehiculoId, User.AlcanceCentros(), ct) is { } x ? Ok(x) : NotFound();
+        await service.ObtenerContextoAsync(vehiculoId, User.AlcanceCentros(), ct, PuedeInspeccionarNacional) is { } x ? Ok(x) : NotFound();
     [HttpGet("resumen")]
     public Task<ResumenInspeccionesDto> Resumen(CancellationToken ct)=>service.ResumenAsync(Usuario(),User.IsInRole("TECNICO"),User.AlcanceCentros(),ct);
     [HttpGet("historial")]
@@ -34,14 +34,15 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
         if(!inspeccionId.HasValue || !await InspeccionAsignable(inspeccionId.Value).AnyAsync(ct))return NotFound();
         if(string.IsNullOrWhiteSpace(termino)||termino.Trim().Length<2)return Ok(Array.Empty<object>());
         var term=termino.Trim();
-        return Ok(await SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db)
+        var disponibles=SistemaLlantas.Infrastructure.Services.LlantasDisponibles.Consulta(db);
+        return Ok(await db.Llantas.AsNoTracking().Where(x=>x.Activo)
             .Where(x=>x.Codigo.Contains(term)||(x.Serial != null && x.Serial.Contains(term))).OrderBy(x=>x.Codigo).Take(30)
-            .Select(x=>new{x.Id,x.Codigo,x.Serial,Marca=x.Marca.Nombre,Referencia=x.Referencia.Nombre,Dimension=x.Dimension.Nombre,Estado=x.EstadoLlanta.Nombre,x.CentroId,Centro=x.Centro.Nombre}).ToListAsync(ct));
+            .Select(x=>new{x.Id,x.Codigo,x.Serial,Marca=x.Marca.Nombre,Referencia=x.Referencia.Nombre,Dimension=x.Dimension.Nombre,Estado=x.EstadoLlanta.Nombre,x.CentroId,Centro=x.Centro.Nombre,Disponible=disponibles.Any(d=>d.Id==x.Id),x.MarcaReencaucheId,MarcaReencauche=x.MarcaReencauche==null?null:x.MarcaReencauche.Nombre,x.NumeroReencauches,EsReencauchada=x.NumeroReencauches>0,Vida=(long)x.NumeroReencauches+1}).ToListAsync(ct));
     }
     private IQueryable<Inspeccion> InspeccionEnAlcance(Guid id)
     {
-        var a=User.AlcanceCentros();
-        return db.Inspecciones.Where(x=>x.Id==id&&x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)));
+        var a=User.AlcanceCentros();var usuario=Usuario();var nacional=PuedeInspeccionarNacional;
+        return db.Inspecciones.Where(x=>x.Id==id&&x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)||(nacional&&x.TecnicoId==usuario)));
     }
     private async Task ExigirAlcance(Guid id,CancellationToken ct)
     {
@@ -49,9 +50,9 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
     }
     private IQueryable<Inspeccion> InspeccionAsignable(Guid id)
     {
-        var a=User.AlcanceCentros();var usuario=Usuario();
+        var a=User.AlcanceCentros();var usuario=Usuario();var nacional=PuedeInspeccionarNacional;
         return db.Inspecciones.Where(x=>x.Id==id&&x.Activo&&x.TecnicoId==usuario&&x.Estado==EstadoInspeccion.Borrador&&x.Vehiculo.Activo
-            &&(a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)));
+            &&(nacional||a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)));
     }
     public sealed record AsignarLlantaDto(Guid LlantaId,string Motivo,bool DiscrepanciaFisica=false,string? IdentificadorFisico=null,Guid? LlantaAnteriorId=null);
     [HttpPost("{id:guid}/posiciones/{posicionId:guid}/asignar"),Authorize(Policy="Inspecciones.Crear")]
@@ -70,7 +71,9 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
             await CorregirLlantaFisicaAsync(inspection,posicionId,dto,operaciones,ciclo,ct);
             await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
         });
-        return Ok(await service.ObtenerContextoAsync(vehicleId,User.AlcanceCentros(),ct));
+        var contexto=await service.ObtenerContextoAsync(vehicleId,User.AlcanceCentros(),ct,PuedeInspeccionarNacional);
+        var estado=await service.ObtenerAsync(id,User.AlcanceCentros(),ct,Usuario(),true);
+        return Ok(contexto is null?null:contexto with {Inspeccion=estado});
     }
     private async Task CorregirLlantaFisicaAsync(Inspeccion inspection,Guid posicionId,AsignarLlantaDto dto,
         SistemaLlantas.Application.Operaciones.IOperacionService operaciones,
@@ -88,7 +91,7 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
             var correction=new InconsistenciaInspeccion{InspeccionId=id,PosicionVehiculoId=posicionId,LlantaEsperadaId=dto.LlantaAnteriorId,LlantaEncontradaId=tire.Id,IdentificadorEncontrado=identificador,TecnicoId=Usuario(),Observacion=dto.Motivo.Trim(),Estado=EstadoInconsistencia.Regularizada,UsuarioAutorizador=Usuario(),FechaAutorizacion=DateTimeOffset.UtcNow,ObservacionAutorizacion="Corrección de realidad física observada por el inspector",UsuarioCreacion=Usuario()};
             db.InconsistenciasInspeccion.Add(correction);
             // El alcance acotado se utiliza después de validar la propiedad de la inspección.
-            var scope=User.AlcanceCentros();
+            var scope=new SistemaLlantas.Application.Common.AlcanceCentros(false,[inspection.CentroId,inspection.Vehiculo.CentroId]);
             var reason="Corrección física en inspección: "+dto.Motivo.Trim();
             if(tire.CentroId!=inspection.Vehiculo.CentroId)await ciclo.TrasladarParaInspeccionAsync(tire.Id,id,reason,Usuario(),scope,ct);
             await operaciones.MontarEnInspeccionAsync(new(){LlantaId=tire.Id,PosicionDestinoId=posicionId,LlantaDesplazadaId=dto.LlantaAnteriorId,TipoDestino="Posicion",Motivo=reason,KilometrajeVehiculo=inspection.Kilometraje,Observaciones=$"Inspección {id}"},id,Usuario(),scope,ct);
@@ -102,7 +105,7 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<InspeccionDto>> Obtener(Guid id, CancellationToken ct) => await service.ObtenerAsync(id, User.AlcanceCentros(), ct,Usuario(),User.IsInRole("TECNICO")) is { } x ? Ok(x) : NotFound();
     [HttpPost, Authorize(Policy = "Inspecciones.Crear")]
-    public async Task<ActionResult<InspeccionDto>> Crear(CrearInspeccionDto dto, CancellationToken ct) { var x=await service.CrearAsync(dto,Usuario(),User.AlcanceCentros(),ct); return CreatedAtAction(nameof(Obtener),new{id=x.Id},x); }
+    public async Task<ActionResult<InspeccionDto>> Crear(CrearInspeccionDto dto, CancellationToken ct) { var x=await service.CrearAsync(dto,Usuario(),User.AlcanceCentros(),ct,PuedeInspeccionarNacional); return CreatedAtAction(nameof(Obtener),new{id=x.Id},x); }
     [HttpPost("{id:guid}/finalizar"),Authorize(Policy="Inspecciones.Crear")]
     public async Task<InspeccionDto> Finalizar(Guid id,CancellationToken ct){await ExigirAlcance(id,ct);return await service.FinalizarAsync(id,Usuario(),ct);}
     [HttpPut("{id:guid}/posiciones/{posicionId:guid}"), Authorize(Policy = "Inspecciones.Crear")]
@@ -124,7 +127,7 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
         if (extension is not ".jpg" and not ".jpeg" and not ".png" and not ".pdf" || archivo.ContentType is not "image/jpeg" and not "image/png" and not "application/pdf")
             return BadRequest(new { message = "Formato no permitido. Adjunta JPG, PNG o PDF." });
         var alcance = User.AlcanceCentros();
-        if (!await db.Inspecciones.AsNoTracking().AnyAsync(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.Vehiculo.CentroId)), ct)) return NotFound(new { message = "La inspección no existe o no está autorizada." });
+        if (!await InspeccionEnAlcance(id).AnyAsync(ct)) return NotFound(new { message = "La inspección no existe o no está autorizada." });
         await using var input = archivo.OpenReadStream();
         var signature = new byte[8]; var read = await input.ReadAsync(signature, ct); input.Position = 0;
         var jpeg = read >= 3 && signature[0] == 0xff && signature[1] == 0xd8 && signature[2] == 0xff;
@@ -142,14 +145,39 @@ public sealed partial class InspeccionesController(IInspeccionService service, L
         return Created(string.Empty, new { evidence.Id, evidence.NombreArchivo, archivo.Length, evidence.Hash });
     }
     [HttpGet("{id:guid}/evidencias")]
-    public async Task<ActionResult<IReadOnlyList<EvidenciaDto>>> Evidencias(Guid id,CancellationToken ct){var alcance=User.AlcanceCentros();if(!await db.Inspecciones.AnyAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.Vehiculo.CentroId)),ct))return NotFound();return await db.EvidenciasInspeccion.AsNoTracking().IgnoreQueryFilters().Where(x=>x.InspeccionId==id).OrderByDescending(x=>x.FechaCreacion).Select(x=>new EvidenciaDto(x.Id,x.NombreArchivo,x.MimeType,x.TamanoBytes,x.Hash,x.FechaCreacion,x.Activo)).ToListAsync(ct);}
+    public async Task<ActionResult<IReadOnlyList<EvidenciaDto>>> Evidencias(Guid id,CancellationToken ct){var alcance=User.AlcanceCentros();if(!await InspeccionEnAlcance(id).AnyAsync(ct))return NotFound();return await db.EvidenciasInspeccion.AsNoTracking().IgnoreQueryFilters().Where(x=>x.InspeccionId==id).OrderByDescending(x=>x.FechaCreacion).Select(x=>new EvidenciaDto(x.Id,x.NombreArchivo,x.MimeType,x.TamanoBytes,x.Hash,x.FechaCreacion,x.Activo)).ToListAsync(ct);}
     [HttpGet("evidencias/{evidenciaId:guid}/archivo")]
-    public async Task<IActionResult> Descargar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var usuario=Usuario();var tecnico=User.IsInRole("TECNICO");var e=await db.EvidenciasInspeccion.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.Activo&&x.InspeccionId!=null&&db.Inspecciones.Any(i=>i.Id==x.InspeccionId&&(alcance.VerTodos||alcance.CentroIds.Contains(i.Vehiculo.CentroId))),ct);if(e is null)return NotFound();var root=Path.GetFullPath(Path.Combine(environment.ContentRootPath,"App_Data","evidencias"));var path=Path.GetFullPath(Path.Combine(environment.ContentRootPath,e.Ubicacion));if(!path.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)||!System.IO.File.Exists(path))return NotFound();return PhysicalFile(path,e.MimeType,e.NombreArchivo);}
+    public async Task<IActionResult> Descargar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var usuario=Usuario();var tecnico=User.IsInRole("TECNICO");var accesibles=InspeccionesAccesibles();var e=await db.EvidenciasInspeccion.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.Activo&&x.InspeccionId!=null&&accesibles.Any(i=>i.Id==x.InspeccionId),ct);if(e is null)return NotFound();var root=Path.GetFullPath(Path.Combine(environment.ContentRootPath,"App_Data","evidencias"));var path=Path.GetFullPath(Path.Combine(environment.ContentRootPath,e.Ubicacion));if(!path.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)||!System.IO.File.Exists(path))return NotFound();return PhysicalFile(path,e.MimeType,e.NombreArchivo);}
     [HttpDelete("evidencias/{evidenciaId:guid}"),Authorize(Policy="Evidencias.Eliminar")]
-    public async Task<IActionResult> Eliminar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var e=await db.EvidenciasInspeccion.SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.InspeccionId!=null&&db.Inspecciones.Any(i=>i.Id==x.InspeccionId&&(alcance.VerTodos||alcance.CentroIds.Contains(i.Vehiculo.CentroId))),ct);if(e is null)return NotFound();e.Activo=false;e.UsuarioModificacion=Usuario();e.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return NoContent();}
+    public async Task<IActionResult> Eliminar(Guid evidenciaId,CancellationToken ct){var alcance=User.AlcanceCentros();var accesibles=InspeccionesAccesibles();var e=await db.EvidenciasInspeccion.SingleOrDefaultAsync(x=>x.Id==evidenciaId&&x.InspeccionId!=null&&accesibles.Any(i=>i.Id==x.InspeccionId),ct);if(e is null)return NotFound();e.Activo=false;e.UsuarioModificacion=Usuario();e.FechaModificacion=DateTimeOffset.UtcNow;await db.SaveChangesAsync(ct);return NoContent();}
     [HttpPost("inconsistencias/{id:guid}/autorizar"), Authorize(Policy = "Inspecciones.AutorizarInconsistencia")]
     public Task<InconsistenciaDto> Autorizar(Guid id,ResolverInconsistenciaDto dto,CancellationToken ct) => service.ResolverAsync(id,dto,true,Usuario(),User.HasClaim("permiso","inspecciones.autorizar_propia_inconsistencia"),ct,User.AlcanceCentros());
     [HttpPost("inconsistencias/{id:guid}/rechazar"), Authorize(Policy = "Inspecciones.AutorizarInconsistencia")]
     public Task<InconsistenciaDto> Rechazar(Guid id,ResolverInconsistenciaDto dto,CancellationToken ct) => service.ResolverAsync(id,dto,false,Usuario(),User.HasClaim("permiso","inspecciones.autorizar_propia_inconsistencia"),ct,User.AlcanceCentros());
+    private bool PuedeInspeccionarNacional => User.HasClaim("permiso", "inspecciones.crear");
+    private IQueryable<Inspeccion> InspeccionesAccesibles()
+    {
+        var a=User.AlcanceCentros();var usuario=Usuario();var nacional=PuedeInspeccionarNacional;
+        return db.Inspecciones.Where(x=>x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.Vehiculo.CentroId)||(nacional&&x.TecnicoId==usuario)));
+    }
+    [HttpGet("centros-fisicos")]
+    public async Task<IActionResult> CentrosFisicos(CancellationToken ct)
+    {
+        var a=User.AlcanceCentros();
+        return Ok(await db.Centros.AsNoTracking().Where(x=>x.Activo&&(a.VerTodos||a.CentroIds.Contains(x.Id)))
+            .OrderBy(x=>x.Nombre).Select(x=>new OpcionInspeccionDto(x.Id,x.Codigo,x.Nombre)).ToListAsync(ct));
+    }
+    [HttpGet("{id:guid}/posiciones/{posicionId:guid}/asignacion"),Authorize(Policy="Inspecciones.Crear")]
+    public async Task<IActionResult> VerificarAsignacion(Guid id,Guid posicionId,CancellationToken ct)
+    {
+        if(!await InspeccionAsignable(id).AnyAsync(ct))return NotFound();
+        var detalle=await db.InspeccionesDetalle.AsNoTracking().Where(x=>x.InspeccionId==id&&x.PosicionVehiculoId==posicionId)
+            .Select(x=>new{x.LlantaId,ActualId=x.PosicionVehiculo.LlantaActualId}).SingleOrDefaultAsync(ct);
+        if(detalle is null)return NotFound();
+        var activas=await db.AsignacionesLlantaPosicion.AsNoTracking().Where(x=>x.PosicionVehiculoId==posicionId&&x.EsActiva)
+            .Select(x=>new{x.LlantaId,Codigo=x.Llanta.Codigo}).ToListAsync(ct);
+        return Ok(new{asignaciones=activas,llantaInspeccionId=detalle.LlantaId,llantaActualId=detalle.ActualId,
+            vacanteVerificada=activas.Count==0&&detalle.LlantaId==null&&detalle.ActualId==null});
+    }
     private string Usuario()=>User.Username();
 }

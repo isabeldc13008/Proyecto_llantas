@@ -22,7 +22,10 @@ public sealed partial class InspeccionesController
         public Guid MarcaId { get; init; }
         public Guid ReferenciaId { get; init; }
         public Guid DimensionId { get; init; }
-        public Guid TipoLlantaId { get; init; }
+        public Guid? TipoLlantaId { get; init; } // Legacy clients; the correction form does not request it.
+        public bool EsReencauchada { get; init; }
+        public Guid? MarcaReencaucheId { get; init; }
+        public int? Vida { get; init; }
         public Guid CentroId { get; init; }
         [Range(0,100)] public decimal ProfundidadInicial { get; init; }
         [Required, StringLength(400)] public string Motivo { get; init; } = "";
@@ -32,8 +35,12 @@ public sealed partial class InspeccionesController
             if(!DiscrepanciaFisica) throw new ValidacionException("Confirma que la llanta ya está físicamente instalada. Un montaje operativo requiere Programación o Montajes.");
             if(string.IsNullOrWhiteSpace(Serial)||Serial.Length>100
                 ||string.IsNullOrWhiteSpace(Motivo)||Motivo.Length>400||ProfundidadInicial is <0 or >100
-                ||new[]{PosicionId,MarcaId,ReferenciaId,DimensionId,TipoLlantaId,CentroId}.Contains(Guid.Empty))
+                ||new[]{PosicionId,MarcaId,ReferenciaId,DimensionId,CentroId}.Contains(Guid.Empty))
                 throw new ValidacionException("Completa serial, catálogos, posición, centro y motivo válidos. La profundidad inicial debe estar entre 0 y 100 mm.");
+            if (EsReencauchada && (!MarcaReencaucheId.HasValue || MarcaReencaucheId == Guid.Empty))
+                throw new ValidacionException("Selecciona la marca de reencauche.");
+            if (EsReencauchada && (!Vida.HasValue || Vida < 2))
+                throw new ValidacionException("La vida de una llanta reencauchada debe ser un entero mayor o igual a 2; la vida 1 corresponde a una llanta nueva.");
         }
     }
     public sealed record ReferenciaEncontradaDto(Guid Id,string Codigo,string Nombre,Guid MarcaId);
@@ -66,8 +73,8 @@ public sealed partial class InspeccionesController
                 var inspeccion=await InspeccionAsignable(id).Include(x=>x.Vehiculo).SingleOrDefaultAsync(ct)
                     ??throw new UnauthorizedAccessException("La inspección no te pertenece, está finalizada o fuera de alcance.");
                 vehiculoId=inspeccion.VehiculoId;
-                if(dto.CentroId!=inspeccion.Vehiculo.CentroId||dto.CentroId!=inspeccion.CentroId)
-                    throw new ValidacionException("El centro físico debe ser el centro autorizado de la inspección y del vehículo.");
+                if(dto.CentroId!=inspeccion.CentroId)
+                    throw new ValidacionException("El centro físico debe ser el centro físico registrado de la inspección.");
                 if(!await db.InspeccionesDetalle.AnyAsync(d=>d.InspeccionId==id&&d.PosicionVehiculoId==dto.PosicionId
                     &&d.PosicionVehiculo.EjeVehiculo.VehiculoId==vehiculoId&&d.LlantaId==dto.LlantaAnteriorId
                     &&d.PosicionVehiculo.LlantaActualId==dto.LlantaAnteriorId,ct))
@@ -75,16 +82,17 @@ public sealed partial class InspeccionesController
                 if(!await db.Marcas.AnyAsync(x=>x.Id==dto.MarcaId&&x.Activo,ct)
                     ||!await db.Referencias.AnyAsync(x=>x.Id==dto.ReferenciaId&&x.MarcaId==dto.MarcaId&&x.Activo,ct)
                     ||!await db.Dimensiones.AnyAsync(x=>x.Id==dto.DimensionId&&x.Activo,ct)
-                    ||!await db.TiposLlanta.AnyAsync(x=>x.Id==dto.TipoLlantaId&&x.Activo,ct)
+                    ||(dto.TipoLlantaId.HasValue&&!await db.TiposLlanta.AnyAsync(x=>x.Id==dto.TipoLlantaId&&x.Activo,ct))
                     ||!await db.Centros.AnyAsync(x=>x.Id==dto.CentroId&&x.Activo,ct))
                     throw new ValidacionException("Los catálogos deben estar activos y la referencia debe pertenecer a la marca.");
                 var estado=await db.EstadosLlanta.Where(x=>x.Activo&&x.PermiteMontaje&&!x.EsDisposicionFinal&&(x.Codigo=="DISPONIBLE"||x.Codigo=="DIS"))
                     .OrderByDescending(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).FirstOrDefaultAsync(ct)
                     ??throw new ConflictoException("No hay estado disponible activo configurado para registrar la llanta.");
                 var motivo=$"Llanta registrada durante inspección física · {id}. {dto.Motivo.Trim()}";
-                var nueva=await llantas.CrearAsync(new(){Codigo="",Serial=dto.Serial!.Trim(),MarcaId=dto.MarcaId,ReferenciaId=dto.ReferenciaId,
-                    DimensionId=dto.DimensionId,TipoLlantaId=dto.TipoLlantaId,CentroId=dto.CentroId,EstadoLlantaId=estado,
-                    UbicacionActual="Inventario",ProfundidadInicial=dto.ProfundidadInicial,Observaciones=motivo},Usuario(),User.AlcanceCentros(),ct);
+                var nueva=await llantas.CrearEncontradaAsync(new(){Codigo="",Serial=dto.Serial!.Trim(),MarcaId=dto.MarcaId,ReferenciaId=dto.ReferenciaId,
+                    DimensionId=dto.DimensionId,TipoLlantaId=dto.TipoLlantaId??Guid.Empty,CentroId=dto.CentroId,EstadoLlantaId=estado,
+                    UbicacionActual="Inventario",ProfundidadInicial=dto.ProfundidadInicial,Observaciones=motivo},
+                    dto.EsReencauchada?dto.MarcaReencaucheId:null,dto.EsReencauchada?dto.Vida!.Value-1:0,Usuario(),User.AlcanceCentros(),ct);
                 await CorregirLlantaFisicaAsync(inspeccion,dto.PosicionId,new(nueva.Id,dto.Motivo,true,nueva.Serial,dto.LlantaAnteriorId),operaciones,ciclo,ct);
                 await db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
@@ -92,6 +100,8 @@ public sealed partial class InspeccionesController
         }
         catch(DbUpdateException e) when(e.InnerException is SqlException {Number:2601 or 2627})
         { throw new ConflictoException("Ya existe una llanta con el código o serial indicado. Busca la llanta existente."); }
-        return Created(string.Empty,await service.ObtenerContextoAsync(vehiculoId,User.AlcanceCentros(),ct));
+        var contexto=await service.ObtenerContextoAsync(vehiculoId,User.AlcanceCentros(),ct,PuedeInspeccionarNacional);
+        var estado=await service.ObtenerAsync(id,User.AlcanceCentros(),ct,Usuario(),true);
+        return Created(string.Empty,contexto is null?null:contexto with {Inspeccion=estado});
     }
 }

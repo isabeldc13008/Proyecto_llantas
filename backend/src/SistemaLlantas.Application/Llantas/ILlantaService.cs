@@ -9,6 +9,7 @@ public interface ILlantaService
     Task<IReadOnlyList<LlantaResumenDto>> ExportarAsync(ConsultaPaginada consulta, AlcanceCentros alcance, CancellationToken cancellationToken);
     Task<LlantaResumenDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken cancellationToken);
     Task<LlantaResumenDto> CrearAsync(GuardarLlantaDto dto, string usuario, AlcanceCentros alcance, CancellationToken cancellationToken);
+    Task<LlantaResumenDto> CrearEncontradaAsync(GuardarLlantaDto dto, Guid? marcaReencaucheId, int numeroReencauches, string usuario, AlcanceCentros alcance, CancellationToken cancellationToken);
     Task<LlantaResumenDto?> ActualizarAsync(Guid id, GuardarLlantaDto dto, string usuario, AlcanceCentros alcance, CancellationToken cancellationToken);
     Task<bool> CambiarEstadoAsync(Guid id, bool activo, string usuario, AlcanceCentros alcance, CancellationToken cancellationToken);
 }

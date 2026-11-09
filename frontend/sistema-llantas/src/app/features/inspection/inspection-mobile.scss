@@ -11,3 +11,10 @@
  .overlay{padding:.35rem;z-index:1100}.overlay .modal{width:100%;max-height:calc(100dvh - .7rem);overflow-y:auto;overscroll-behavior:contain;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom))}.physical-modal .physical-choices,.new-tire-fields{grid-template-columns:minmax(0,1fr)}
  .editor>footer{position:static;flex-wrap:wrap}.continue{position:static}.tire-head{flex-wrap:wrap}.vehicle-results>button{gap:.5rem}.vehicle-results>button>span:nth-child(2){display:grid;grid-column:1/-1}.title span{overflow-wrap:anywhere}
 }
+
+.editor fieldset{border:0;margin:0;padding:0;min-width:0}.position-navigation{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}.position-navigation button,.mobile-edit{min-height:44px}.mobile-edit{display:none}.vehicle,.editor{scroll-margin-top:1rem}.new-tire-fields app-single-select-filter{min-width:0}
+@media(max-width:650px){.workspace:not(.position-editing)>.editor{display:none}.workspace.position-editing>.vehicle{display:none}.mobile-edit{display:block}.editor fieldset>footer{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}.editor fieldset>footer button{min-height:44px;flex:1}.position-navigation{position:sticky;top:0;background:white;z-index:2;padding:.5rem 0}}
+
+.editor fieldset>footer{display:flex;justify-content:space-between;gap:.7rem;margin-top:1rem;padding-top:1rem;border-top:1px solid #e4ebee}.editor fieldset>footer button{padding:.75rem 1rem;border-radius:10px;font-weight:900}.position-error{padding:.75rem;border:1px solid #edc278;border-radius:8px;background:#fff4df;color:#795b17}
+
+.position-status-list{list-style:none;padding:0;display:grid;gap:.4rem}.position-status-list button{width:100%;min-height:44px;text-align:left;white-space:normal;overflow-wrap:anywhere;padding:.5rem;border:1px solid #dbe6ea;border-radius:8px;background:#fff;color:#173d52}

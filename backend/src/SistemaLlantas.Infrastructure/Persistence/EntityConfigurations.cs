@@ -21,9 +21,13 @@ public sealed class LlantaConfiguration : IEntityTypeConfiguration<Llanta>
         b.HasIndex(x => x.Serial).IsUnique().HasDatabaseName("IX_Llanta_Serial");
         b.HasIndex(x => new { x.CentroId, x.EstadoLlantaId }).HasDatabaseName("IX_Llanta_CentroEstado");
         b.HasOne(x => x.Marca).WithMany().HasForeignKey(x => x.MarcaId).OnDelete(DeleteBehavior.Restrict);
+        b.Property(x => x.MarcaReencaucheId).HasColumnName("GMarcaReencaucheId");
+        b.HasIndex(x => x.MarcaReencaucheId).HasDatabaseName("IX_Llanta_GMarcaReencaucheId");
+        b.HasOne(x => x.MarcaReencauche).WithMany().HasForeignKey(x => x.MarcaReencaucheId)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_TBL_Llanta_TBL_Marca_GMarcaReencaucheId");
         b.HasOne(x => x.Referencia).WithMany().HasForeignKey(x => x.ReferenciaId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x => x.Dimension).WithMany().HasForeignKey(x => x.DimensionId).OnDelete(DeleteBehavior.Restrict);
-        b.HasOne(x => x.TipoLlanta).WithMany().HasForeignKey(x => x.TipoLlantaId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.TipoLlanta).WithMany().HasForeignKey(x => x.TipoLlantaId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x => x.EstadoLlanta).WithMany().HasForeignKey(x => x.EstadoLlantaId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x => x.Centro).WithMany().HasForeignKey(x => x.CentroId).OnDelete(DeleteBehavior.Restrict);
     }

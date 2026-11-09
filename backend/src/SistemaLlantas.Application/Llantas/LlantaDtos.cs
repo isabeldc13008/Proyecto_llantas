@@ -7,7 +7,13 @@ public sealed record LlantaResumenDto(
     string Dimension, string Tipo, string Estado, string Centro, string UbicacionActual,
     decimal? ProfundidadInicial, decimal KilometrajeAcumulado, int NumeroReencauches,
     string? VehiculoActual, string? PosicionActual, DateTimeOffset? UltimaInspeccion,decimal? UltimaProfundidadMinima,int NumeroReparaciones,int NumeroMontajes,string Atencion,
-    bool Activo, string RowVersion);
+    bool Activo, string RowVersion)
+{
+    public Guid? MarcaReencaucheId { get; init; }
+    public string? MarcaReencauche { get; init; }
+    public bool EsReencauchada => NumeroReencauches > 0;
+    public long Vida => (long)NumeroReencauches + 1;
+}
 
 public sealed record EventoVidaLlantaDto(DateTimeOffset? Fecha,string Tipo,string Descripcion,string Usuario,string? Centro,string? Vehiculo,string? Posicion,decimal? Kilometraje,decimal? Recorrido);
 public sealed record MontajeVidaDto(DateTimeOffset? FechaInicio,DateTimeOffset? FechaFin,string Vehiculo,string Placa,string Centro,string Posicion,decimal? KilometrajeInicio,decimal? KilometrajeFin,decimal? Recorrido,bool Actual,bool InconsistenciaKilometraje);
