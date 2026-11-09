@@ -10,7 +10,7 @@ public sealed class VehiculoService(LlantasDbContext db) : IVehiculoService
 {
     public async Task<Pagina<VehiculoResumenDto>> ConsultarAsync(ConsultaPaginada c,AlcanceCentros alcance,CancellationToken ct)
     {
-        var q=db.Vehiculos.AsNoTracking().Where(x=>alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId));
+        var q=db.Vehiculos.AsNoTracking().VisiblePara(alcance);
         if(c.CentroId.HasValue){if(!alcance.Autoriza(c.CentroId.Value))q=q.Where(_=>false);else q=q.Where(x=>x.CentroId==c.CentroId);}
         if(c.Activo.HasValue)q=q.Where(x=>x.Activo==c.Activo);
         if(!string.IsNullOrWhiteSpace(c.Search)){var s=c.Search.Trim();q=q.Where(x=>x.NumeroInterno.Contains(s)||x.Placa.Contains(s)||x.Tipo.Contains(s));}
@@ -21,7 +21,7 @@ public sealed class VehiculoService(LlantasDbContext db) : IVehiculoService
 
     public async Task<VehiculoDetalleDto?> ObtenerAsync(Guid id,AlcanceCentros alcance,CancellationToken ct)
     {
-        var v=await db.Vehiculos.AsNoTracking().Include(x=>x.Centro).Include(x=>x.ConfiguracionVehiculo).Include(x=>x.Ejes).ThenInclude(x=>x.Posiciones).ThenInclude(x=>x.LlantaActual).SingleOrDefaultAsync(x=>x.Id==id&&(alcance.VerTodos||alcance.CentroIds.Contains(x.CentroId)),ct);
+        var v=await db.Vehiculos.AsNoTracking().VisiblePara(alcance).Include(x=>x.Centro).Include(x=>x.ConfiguracionVehiculo).Include(x=>x.Ejes).ThenInclude(x=>x.Posiciones).ThenInclude(x=>x.LlantaActual).SingleOrDefaultAsync(x=>x.Id==id,ct);
         if(v is null)return null;
         var ids=v.Ejes.SelectMany(x=>x.Posiciones).Select(x=>x.Id).ToArray();
         var active=await db.AsignacionesLlantaPosicion.AsNoTracking().Where(x=>ids.Contains(x.PosicionVehiculoId)&&x.EsActiva).Include(x=>x.Llanta).ThenInclude(x=>x.Marca).Include(x=>x.Llanta).ThenInclude(x=>x.Referencia).Include(x=>x.Llanta).ThenInclude(x=>x.Dimension).Include(x=>x.Llanta).ThenInclude(x=>x.EstadoLlanta).ToDictionaryAsync(x=>x.PosicionVehiculoId,ct);

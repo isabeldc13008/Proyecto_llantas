@@ -10,7 +10,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 {
     public async Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados,string? buscar, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculosGlobales = false)
     {
-        var q = db.Vehiculos.AsNoTracking().Where(x => x.Activo && (permitirVehiculosGlobales || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)));
+        var q = db.Vehiculos.AsNoTracking().VisiblePara(alcance).Where(x => x.Activo);
         if (soloAsignados)
             q = q.Where(x => db.ActividadesProgramadas.Any(a => (a.TecnicoId == usuario || a.TecnicoId == usuario + ".local") && a.VehiculoId == x.Id && a.Estado != EstadoActividad.Cancelada && a.Estado != EstadoActividad.Cumplida));
         if(!string.IsNullOrWhiteSpace(buscar)){var s=buscar.Trim();q=q.Where(x=>x.NumeroInterno.Contains(s)||x.Placa.Contains(s)||x.Tipo.Contains(s)||x.Centro.Nombre.Contains(s));}
@@ -26,7 +26,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
     {
         var v = await db.Vehiculos.AsNoTracking().Include(x => x.Centro).ThenInclude(x=>x.Regional)
             .Include(x => x.Ejes).ThenInclude(x => x.Posiciones)
-            .SingleOrDefaultAsync(x => x.Id == vehiculoId && (permitirVehiculoGlobal || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct);
+            .SingleOrDefaultAsync(x => x.Id == vehiculoId && (x.SGrupoOperativo == "T1" || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct);
         if(v is null)return null;var positionIds=v.Ejes.SelectMany(x=>x.Posiciones).Select(x=>x.Id).ToArray();var active=await db.AsignacionesLlantaPosicion.AsNoTracking().Where(x=>positionIds.Contains(x.PosicionVehiculoId)&&x.EsActiva).Include(x=>x.Llanta).ThenInclude(x=>x.EstadoLlanta).Include(x=>x.Llanta).ThenInclude(x=>x.Marca).Include(x=>x.Llanta).ThenInclude(x=>x.Referencia).Include(x=>x.Llanta).ThenInclude(x=>x.Dimension).Include(x=>x.Llanta).ThenInclude(x=>x.MarcaReencauche).ToDictionaryAsync(x=>x.PosicionVehiculoId,ct);var last=await db.Inspecciones.AsNoTracking().Where(x=>x.VehiculoId==v.Id&&x.Estado==EstadoInspeccion.Finalizada).MaxAsync(x=>(DateTimeOffset?)x.FechaCreacion,ct);return new(v.Id, v.NumeroInterno, v.Placa, v.Tipo, v.CentroId, v.Centro.Nombre, v.Centro.Relevancia,v.Centro.Regional!=null?v.Centro.Regional.Nombre:null,v.Kilometraje,last,
             v.Ejes.OrderBy(e => e.Numero).Select(e => new EjeInspeccionDto(e.Id, e.Numero, e.Nombre,
                 e.Posiciones.OrderBy(p => p.Orden).Select(p => new PosicionInspeccionDto(p.Id, p.Codigo, p.Lado, p.Orden,active.TryGetValue(p.Id,out var a)?new(a.Llanta.Id,a.Llanta.Codigo,a.Llanta.EstadoLlanta.Nombre,a.Llanta.Marca.Nombre,a.Llanta.Referencia.Nombre,a.Llanta.Dimension.Nombre){MarcaReencaucheId=a.Llanta.MarcaReencaucheId,MarcaReencauche=a.Llanta.MarcaReencauche?.Nombre,NumeroReencauches=a.Llanta.NumeroReencauches}:null)).ToList()){Tipo=e.TipoEje}).ToList());
@@ -36,7 +36,7 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
     {
         if(!dto.Kilometraje.HasValue)throw new ValidacionException("Ingresa el kilometraje actual para continuar.");
         var vehiculo = await db.Vehiculos.Include(x => x.Ejes).ThenInclude(x => x.Posiciones)
-            .SingleOrDefaultAsync(x => x.Id == dto.VehiculoId && x.Activo && (permitirVehiculoGlobal || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct)
+            .SingleOrDefaultAsync(x => x.Id == dto.VehiculoId && x.Activo && (x.SGrupoOperativo == "T1" || alcance.VerTodos || alcance.CentroIds.Contains(x.CentroId)), ct)
             ?? throw new KeyNotFoundException("Vehículo no encontrado o fuera del centro autorizado.");
         if(vehiculo.Kilometraje.HasValue&&dto.Kilometraje.Value<vehiculo.Kilometraje.Value)throw new ValidacionException($"El kilometraje actual no puede ser inferior al último kilometraje registrado ({vehiculo.Kilometraje:0} km).");
         var centroFisico = dto.CentroId ?? vehiculo.CentroId;
