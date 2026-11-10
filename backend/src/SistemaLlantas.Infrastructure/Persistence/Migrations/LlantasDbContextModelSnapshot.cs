@@ -3978,6 +3978,10 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("STipo");
 
+                    b.Property<string>("SGrupoOperativo")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SGrupoOperativo");
+
                     b.Property<string>("UsuarioCreacion")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
