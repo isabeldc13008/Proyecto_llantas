@@ -17,8 +17,26 @@ namespace SistemaLlantas.Api.IntegrationTests;
 
 public sealed class InspectionFoundTireContractTests
 {
+    [Fact]
+    public void AltaNormalConservaTipoObligatorio()
+    {
+        var service=new SistemaLlantas.Infrastructure.Services.LlantaService(null!);
+        Assert.Throws<ValidacionException>(()=>{_ = service.CrearAsync(new(),"inspector",new(true,[]),default);});
+    }
+    [Theory][InlineData(false, null, false, true)][InlineData(true, 2, true, true)]
+    [InlineData(true, null, true, false)][InlineData(true, 1, true, false)][InlineData(true, 2, false, false)]
+    public void CorreccionNoExigeTipoYValidaReencaucheCondicional(bool reencauchada, int? vida, bool marca, bool valida)
+    {
+        var dto=new InspeccionesController.RegistrarLlantaEncontradaDto {
+            PosicionId=Guid.NewGuid(),CentroId=Guid.NewGuid(),MarcaId=Guid.NewGuid(),ReferenciaId=Guid.NewGuid(),DimensionId=Guid.NewGuid(),
+            Serial="SERIAL",Motivo="Observación física",DiscrepanciaFisica=true,ProfundidadInicial=0,
+            EsReencauchada=reencauchada,MarcaReencaucheId=marca?Guid.NewGuid():null,Vida=vida
+        };
+        if(valida)dto.Validar();else Assert.Throws<ValidacionException>(()=>dto.Validar());
+        Assert.Null(dto.TipoLlantaId);
+    }
     [Theory]
-    [InlineData("fisica")][InlineData("codigo")][InlineData("serial")][InlineData("motivo")]
+    [InlineData("fisica")][InlineData("serial")][InlineData("motivo")]
     [InlineData("posicion")][InlineData("centro")][InlineData("catalogo")][InlineData("profundidad")]
     public async Task EntradaInvalidaSeRechazaAntesDeSql(string campo)
     {

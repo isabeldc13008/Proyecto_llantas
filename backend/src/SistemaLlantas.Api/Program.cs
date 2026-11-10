@@ -5,12 +5,14 @@ using SistemaLlantas.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+builder.Services.AddDataProtection();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.AddApplicationAuthentication();
 builder.Services.AddAuthorization(o =>
 {
+    o.FallbackPolicy=new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
     o.AddPolicy("Inventario.Consultar", p =>
     p.RequireAuthenticatedUser()
      .RequireClaim("permiso", "modulos.inventario.consultar"));
@@ -58,7 +60,9 @@ app.UseStaticFiles();
 app.UseCors("Angular"); app.UseAuthentication(); app.UseMiddleware<LocalPasswordChangeMiddleware>(); app.UseAuthorization(); app.MapControllers();
 // Unknown API paths must remain 404 instead of returning the Angular page.
 app.MapFallback("/api/{**path}", () => Results.NotFound());
-app.MapFallbackToFile("index.html");
+// The SPA shell and its client-side routes must load before either login.
+// APIs remain protected by the fallback authorization policy above.
+app.MapFallbackToFile("index.html").AllowAnonymous();
 app.Run();
 
 public partial class Program { }

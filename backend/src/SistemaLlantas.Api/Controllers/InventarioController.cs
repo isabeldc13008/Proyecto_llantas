@@ -348,7 +348,7 @@ public sealed record ReservaInventarioDto(
 public sealed record CompatibleInventarioDto(
     Guid Id,
     string Codigo,
-    string Serial,
+    string? Serial,
     string Dimension,
     string Tipo,
     string Ubicacion

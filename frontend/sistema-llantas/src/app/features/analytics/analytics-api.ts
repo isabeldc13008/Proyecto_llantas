@@ -18,6 +18,9 @@ export type AnalyticsView='desgaste'|'resumen'|'vida-util'|'marcas-referencias'|
 @Injectable({providedIn:'root'})
 export class AnalyticsApi {
  private http=inject(HttpClient);
+ fleetWear(filters:MaintenanceFilters,group='marca',page=1,tirePage=1){return this.http.get<FleetWear>('/api/analitica/desgaste-flota',{params:this.maintenanceParams(filters).set('agrupar',group).set('pagina',page).set('paginaLlantas',tirePage).set('tamano',20)});}
+ interventions(id:string,page=1){return this.http.get<AnalyticsPage<WearIntervention>>('/api/analitica/llantas/'+encodeURIComponent(id)+'/intervenciones',{params:{pagina:page}});}
+ quality(filters:MaintenanceFilters,page=1,categoria='todas'){return this.http.get<QualityData>('/api/analitica/calidad-datos',{params:this.maintenanceParams(filters).set('pagina',page).set('tamano',20).set('categoria',categoria)});}
  maintenance(filters:MaintenanceFilters,page=1){return this.http.get<MaintenanceQueueData>('/api/analitica/mantenimiento',{params:this.maintenanceParams(filters).set('pagina',page).set('tamano',20)});}
  maintenanceDetail(id:string){return this.http.get<MaintenanceDetail>('/api/analitica/mantenimiento/llantas/'+encodeURIComponent(id));}
  maintenanceAlerts(id:string,page=1){return this.http.get<AnalyticsPage<ObservedAlert>>('/api/analitica/mantenimiento/llantas/'+encodeURIComponent(id)+'/alertas',{params:{pagina:page,tamano:20}});}
@@ -38,5 +41,16 @@ export class AnalyticsApi {
 }
 
 export interface AnalyticsTire {id:string;codigo:string;serial:string;centro:string;estado:string;alertas:number;profundidad:number|null;km:number|null}
-export interface AnalyticsMeasurement {lectura:{id:string;inspeccionId:string;fecha:string;posicionId:string;posicion:string;odometro:number|null;exterior:number|null;centro:number|null;interior:number|null};minima:number|null;tramoId:string|null;kmDesdeMontaje:number|null;calidad:string}
-export interface AnalyticsWear {id:string;codigo:string;totalLecturas:number;lecturasCompletas:number;lecturasConTramo:number;mediciones:AnalyticsMeasurement[];reglas:{codigo:string;operador:string;valor:number;unidad:string;alcance:string}[];pronostico:string;limitaciones:string[]}
+export interface AnalyticsMeasurement {normalizada?:{exterior:number|null;centro:number|null;interior:number|null;invertida:boolean;girosAplicados:string[]}|null;orientacion?:string;lectura:{id:string;inspeccionId:string;fecha:string;posicionId:string;posicion:string;odometro:number|null;exterior:number|null;centro:number|null;interior:number|null};minima:number|null;tramoId:string|null;kmDesdeMontaje:number|null;calidad:string}
+export interface AnalyticsWear {id:string;codigo:string;totalLecturas:number;lecturasCompletas:number;lecturasConTramo:number;mediciones:AnalyticsMeasurement[];reglas:{codigo:string;operador:string;valor:number;unidad:string;alcance:string}[];pronostico:string;limitaciones:string[];tasas?:WearRate[]}
+export interface WearRate{desde:string;hasta:string;zona:string;km:number|null;mmPorMilKm:number|null;motivo:string|null}
+export interface WearGroup{id:string;nombre:string;total:number;muestraProfundidad:number;profundidadMedia:number|null;muestraKm:number;kmMedio:number|null}
+export interface FleetWear{generadoEn:string;procedencia:string;total:WearGroup;grupos:AnalyticsPage<WearGroup>;llantas:AnalyticsPage<{id:string;codigo:string;profundidad:number|null;km:number|null}>}
+export interface WearIntervention{id:string;movimientoId:string;numero:string;tipo:string;fecha:string;motivo:string;usuario:string;kilometrajeGiro:number|null;origen:string|null;destino:string|null}
+export interface QualityGroup{id:string;nombre:string;total:number;conInspeccion:number}
+export interface QualityRow{id:string;codigo:string;centro:string;estado:string;inspeccionId:string|null;fechaRegistro:string|null;ultimaCompleta:boolean;alertasActivas:number}
+export interface QualityData{
+ generadoEn:string;procedencia:string;
+ totales:{total:number;montadas:number;disponibles:number;conAlertas:number;conInspeccion:number;ultimaCompleta:number;sinInspeccion:number;ultimaIncompleta:number;coberturaInspeccion:number|null};
+ estados:QualityGroup[];centros:QualityGroup[];llantas:AnalyticsPage<QualityRow>;
+}

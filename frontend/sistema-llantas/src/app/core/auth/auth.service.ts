@@ -1,3 +1,4 @@
+import { EntraAuthService } from './entra-auth.service';
 import {Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
@@ -10,6 +11,8 @@ interface LoginResponse extends AuthUser{accessToken:string;expiresAt:string}
 export class AuthService {
  private readonly http=inject(HttpClient);private readonly router=inject(Router);
  readonly user=signal<AuthUser|null>(null); readonly loginError=signal('');
+ readonly entra=inject(EntraAuthService);
+ private entraIdentity='';
  private token=''; private expiresAt=0;
  private readonly sessionKey='glld_session';
  private generation=0;
@@ -19,6 +22,8 @@ export class AuthService {
    localStorage.removeItem('access_token');
    const session=JSON.parse(localStorage.getItem(this.sessionKey)??'null');
    if(!session||typeof session.accessToken!=='string'||!session.accessToken.trim()||typeof session.expiresAt!=='string'||!(Date.parse(session.expiresAt)>Date.now())){this.clearSession();return;}
+   if(this.entra.enabled()&&(!this.entra.authenticated()||session.entraIdentity!==this.entra.identity())){this.clearSession();return;}
+   this.entraIdentity=this.entra.enabled()?this.entra.identity():'';
    this.token=session.accessToken;this.expiresAt=Date.parse(session.expiresAt);
    const user=await firstValueFrom(this.http.get<AuthUser>('/api/auth/me'));
    if(generation===this.generation&&this.validToken())this.user.set(user);
@@ -26,21 +31,26 @@ export class AuthService {
  }
  async login(username:string,password:string){
   this.clearSession();this.loginError.set('');const generation=this.generation;
+  const microsoftReady=this.entra.enabled()?await this.entra.ensureAuthenticated():true;
+  const identity=this.entra.identity();
+  if(this.entra.enabled()&&!microsoftReady){this.loginError.set(this.entra.error()||'No se pudo validar la sesión Microsoft.');return false;}
   try{
    const response=await firstValueFrom(this.http.post<LoginResponse>('/api/auth/login',{username,password}));
    if(generation!==this.generation)return false;
+   if(this.entra.enabled()&&identity!==this.entra.identity()){this.clearSession();return false;}
+   this.entraIdentity=this.entra.enabled()?identity:'';
    this.token=response.accessToken;this.expiresAt=Date.parse(response.expiresAt);
    if(!this.token||!(this.expiresAt>Date.now()))throw new Error('Sesión inválida.');
    const user=await firstValueFrom(this.http.get<AuthUser>('/api/auth/me'));
    if(generation!==this.generation||!this.validToken())return false;
-   localStorage.setItem(this.sessionKey,JSON.stringify({accessToken:this.token,expiresAt:response.expiresAt}));
+   localStorage.setItem(this.sessionKey,JSON.stringify({accessToken:this.token,expiresAt:response.expiresAt,...(this.entra.enabled()?{entraIdentity:this.entraIdentity}:{})}));
    this.user.set(user);return true;
   }catch(error:any){if(generation===this.generation){this.clearSession();this.loginError.set(error?.userMessage??error?.error?.message??'No fue posible iniciar sesión.');}return false;}
  }
- private validToken(){if(this.token&&Date.now()<this.expiresAt)return true;if(this.token||this.expiresAt||this.user())this.clearSession();return false;}
+ private validToken(){if(this.token&&Date.now()<this.expiresAt&&(!this.entra.enabled()||(this.entra.authenticated()&&this.entraIdentity===this.entra.identity())))return true;if(this.token||this.expiresAt||this.user())this.clearSession();return false;}
  async accessToken():Promise<string>{return this.validToken()?this.token:'';}
- clearSession(){this.generation++;this.token='';this.expiresAt=0;this.user.set(null);try{localStorage.removeItem(this.sessionKey);localStorage.removeItem('access_token');}catch{/* Storage can be unavailable; the in-memory session is still cleared. */}}
- logout(){this.clearSession();this.loginError.set('');void this.router.navigateByUrl('/acceso',{replaceUrl:true});}
+ clearSession(){this.generation++;this.entraIdentity='';this.token='';this.expiresAt=0;this.user.set(null);try{localStorage.removeItem(this.sessionKey);localStorage.removeItem('access_token');}catch{/* Storage can be unavailable; the in-memory session is still cleared. */}}
+ logout(endMicrosoftSession=true){this.clearSession();this.loginError.set('');if(endMicrosoftSession&&this.entra.enabled())void this.entra.logout();void this.router.navigateByUrl('/acceso',{replaceUrl:true});}
  isLoggedIn(){return this.validToken()&&this.user()!==null}
  requiereCambioClave(){return this.user()?.requiereCambioClave===true}
  async cambiarClave(actual:string,nueva:string,confirmacion:string){await firstValueFrom(this.http.post('/api/auth/cambiar-clave',{actual,nueva,confirmacion}));this.user.set(await firstValueFrom(this.http.get<AuthUser>('/api/auth/me')))}

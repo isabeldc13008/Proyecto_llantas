@@ -20,7 +20,7 @@ public sealed record MedicionResumen(Guid LecturaId, Guid InspeccionId, DateTime
             completa ? Math.Min(exterior!.Value, Math.Min(centro!.Value, interior!.Value)) : null, completa, odometro);
     }
 }
-public sealed record FilaMantenimiento(Guid Id, string Codigo, string Serial, ReferenciaMantenimiento Centro,
+public sealed record FilaMantenimiento(Guid Id, string Codigo, string? Serial, ReferenciaMantenimiento Centro,
     ReferenciaMantenimiento EstadoOperativo, UbicacionMantenimiento Ubicacion, Evaluacion<string?> Clasificacion,
     bool EnCola, MotivoMantenimiento? MotivoPrincipal, IReadOnlyList<MotivoMantenimiento> MotivosSecundarios,
     MedicionResumen? UltimaLectura, MedicionResumen? UltimaCompleta, Evaluacion<bool?> Vigencia,
@@ -42,6 +42,7 @@ public sealed class FiltroMantenimiento
     [StringLength(100)] public string? Buscar { get; init; }
     public Guid? CentroId { get; init; }
     public Guid? VehiculoId { get; init; }
+    public Guid? EstadoId { get; init; }
     public Guid? MarcaId { get; init; }
     public Guid? ReferenciaId { get; init; }
     public Guid? DimensionId { get; init; }
@@ -59,5 +60,5 @@ public sealed class FiltroMantenimiento
         if (Pagina is < 1 or > 100000 || Tamano is < 1 or > 100 || Buscar?.Length > 100 || TipoVehiculo?.Length > 100)
             throw new ValidacionException("Filtro o paginación fuera de rango.");
     }
-    public FiltroAnalitica FiltroBase() => new() { Buscar = Buscar, CentroId = CentroId, MarcaId = MarcaId, ReferenciaId = ReferenciaId, DimensionId = DimensionId };
+    public FiltroAnalitica FiltroBase() => new() { Buscar = Buscar, CentroId = CentroId, MarcaId = MarcaId, ReferenciaId = ReferenciaId, DimensionId = DimensionId, EstadoId = EstadoId };
 }

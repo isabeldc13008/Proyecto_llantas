@@ -2,8 +2,8 @@ using SistemaLlantas.Application.Common;
 
 namespace SistemaLlantas.Application.Catalogos;
 
-public sealed record CatalogoDto(Guid Id, string Codigo, string Nombre, bool Activo, Guid? PadreId=null, string? PadreNombre=null,string? Relevancia=null);
-public sealed record GuardarCatalogoDto(string Codigo, string Nombre, Guid? PadreId = null,string? Relevancia=null);
+public sealed record CatalogoDto(Guid Id, string Codigo, string Nombre, bool Activo, Guid? PadreId=null, string? PadreNombre=null,string? Relevancia=null, string? Abreviatura=null);
+public sealed record GuardarCatalogoDto(string Codigo, string Nombre, Guid? PadreId = null,string? Relevancia=null, string? Abreviatura=null);
 
 public interface ICatalogoService
 {

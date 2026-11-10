@@ -929,6 +929,7 @@ internal static class ExistingDatabaseSchemaConfiguration
             b.Property(x => x.Placa).HasColumnName("SPlaca");
             b.Property(x => x.RowVersion).HasColumnName("TRowVersion");
             b.Property(x => x.Tipo).HasColumnName("STipo");
+            b.Property(x => x.SGrupoOperativo).HasColumnName("SGrupoOperativo");
             b.Property(x => x.UsuarioCreacion).HasColumnName("SUsuarioCreacion");
             b.Property(x => x.UsuarioModificacion).HasColumnName("SUsuarioModificacion");
             b.HasIndex(x => x.CentroId).HasDatabaseName("IX_Vehiculo_GCentroId").HasFilter(null);

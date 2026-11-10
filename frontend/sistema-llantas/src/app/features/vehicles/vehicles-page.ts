@@ -13,13 +13,15 @@ import {VehicleConfiguration,VehicleConfigurationInput,VehicleDetail,VehicleInpu
 export class VehiclesPage implements OnInit{
  private readonly api=inject(VehiclesApi);private readonly catalogs=inject(CatalogsApi);private readonly router=inject(Router);readonly auth=inject(AuthService);
  readonly vehicles=signal<VehicleSummary[]>([]);readonly configurations=signal<VehicleConfiguration[]>([]);readonly centers=signal<CatalogItem[]>([]);readonly selected=signal<VehicleDetail|null>(null);readonly loading=signal(false);readonly message=signal('');
- search='';showForm=false;showConfiguration=false;editing=false;tab:'resumen'|'posiciones'|'inspecciones'|'movimientos'|'historial'='resumen';mode:'scheme'|'operational'='operational';selectedPosition=signal<VehiclePosition|null>(null);form:VehicleInput=this.blank();configurationForm:VehicleConfigurationInput=this.blankConfiguration();
+ search='';groupFilter='';showForm=false;showConfiguration=false;editing=false;tab:'resumen'|'posiciones'|'inspecciones'|'movimientos'|'historial'='resumen';mode:'scheme'|'operational'='operational';selectedPosition=signal<VehiclePosition|null>(null);form:VehicleInput=this.blank();configurationForm:VehicleConfigurationInput=this.blankConfiguration();
  readonly diagram=computed<DiagramAxle[]>(()=>this.selected()?.ejes.map(e=>({id:e.id,name:e.nombre,type:e.tipoEje,positions:e.posiciones.map(p=>({id:p.id,code:p.codigo,side:[p.lado,p.ubicacion].filter(Boolean).join(' · '),tire:p.llantaCodigo??undefined,state:!p.llantaCodigo?'empty':this.mode==='scheme'?'normal':p.atencion==='Normal'?'normal':p.atencion.toLowerCase().includes('crit')?'alert':'inconsistency'}))}))??[]);
  readonly positions=computed(()=>this.selected()?.ejes.flatMap(e=>e.posiciones)??[]);readonly covered=computed(()=>this.positions().filter(x=>x.llantaId).length);readonly completion=computed(()=>this.positions().length?Math.round(this.covered()*1000/this.positions().length)/10:null);
  async ngOnInit(){await this.reload();const[cfg,centers]=await Promise.all([firstValueFrom(this.api.configurations()),firstValueFrom(this.catalogs.all('centros',true))]);this.configurations.set(cfg);this.centers.set(centers)}
- async reload(){this.loading.set(true);try{const p=await firstValueFrom(this.api.list(this.search));this.vehicles.set(p.items);if(!this.selected()&&p.items.length)await this.open(p.items[0].id)}catch(e:any){this.message.set(e?.error?.detail??'No fue posible cargar los vehículos.')}finally{this.loading.set(false)}}
+ async reload(){this.loading.set(true);try{const p=await firstValueFrom(this.api.list(this.search,this.groupFilter));this.vehicles.set(p.items);if(!this.selected()&&p.items.length)await this.open(p.items[0].id)}catch(e:any){this.message.set(e?.error?.detail??'No fue posible cargar los vehículos.')}finally{this.loading.set(false)}}
  async open(id:string){try{this.selected.set(await firstValueFrom(this.api.get(id)));this.selectedPosition.set(null);this.tab='resumen'}catch{this.message.set('No fue posible cargar el detalle del vehículo.')}}
- selectDiagram(p:{id:string|number}){this.selectedPosition.set(this.positions().find(x=>x.id===p.id)??null)}openTire(id:string){void this.router.navigate(['/llantas'],{queryParams:{llantaId:id}})}
+ closeDetail(){this.selected.set(null);this.selectedPosition.set(null)}
+groupLabel(group:string|null){return group==='T1'||group==='T2'?group:'Sin clasificar'}
+selectDiagram(p:{id:string|number}){this.selectedPosition.set(this.positions().find(x=>x.id===p.id)??null)}openTire(id:string){void this.router.navigate(['/llantas'],{queryParams:{llantaId:id}})}
  newVehicle(){this.editing=false;this.form=this.blank();this.showForm=true}
  edit(){const v=this.selected();if(!v)return;this.editing=true;this.form={numeroInterno:v.numeroInterno,placa:v.placa,tipo:v.tipo,centroId:v.centroId,configuracionVehiculoId:v.configuracionVehiculoId,kilometraje:v.kilometraje,estado:v.estado,rowVersion:v.rowVersion};this.showForm=true}
  async save(){try{const v=this.editing&&this.selected()?await firstValueFrom(this.api.update(this.selected()!.id,this.form)):await firstValueFrom(this.api.create(this.form));this.showForm=false;await this.reload();await this.open(v.id);this.message.set('Vehículo guardado en SQL Server.')}catch(e:any){this.message.set(e?.error?.detail??e?.error?.title??'No se pudo guardar el vehículo.')}}
@@ -35,3 +37,8 @@ export class VehiclesPage implements OnInit{
  private blankConfiguration():VehicleConfigurationInput{return{codigo:'',nombre:'',tipoVehiculo:'',ejes:[]}}
  private renumberConfiguration(){this.configurationForm.ejes.forEach((e,ei)=>{e.orden=ei+1;e.posiciones.forEach((p,pi)=>p.orden=pi+1)})}
 }
+
+
+
+
+

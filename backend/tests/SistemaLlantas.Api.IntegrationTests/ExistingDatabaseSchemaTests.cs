@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SistemaLlantas.Infrastructure.Persistence;
 namespace SistemaLlantas.Api.IntegrationTests;
@@ -20,6 +20,12 @@ public sealed class ExistingDatabaseSchemaTests
         // No se derivan del modelo bajo prueba: nombres, tipos y nulabilidad siguen verificándose.
         void AddColumn(string table, string name, string type, int length, bool nullable)
             => columns.Add(("dbo", table, name), new[] { "dbo", table, "0", name, type, length.ToString(), "0", "0", nullable ? "1" : "0" });
+        // AddTireTurnEvidence: nullable evidence; existing inspections are never changed.
+        AddColumn("TBL_Movimiento", "DFechaGiro", "datetimeoffset", 10, true);
+        AddColumn("TBL_Movimiento", "NKilometrajeGiro", "decimal", 9, true);
+        columns[("dbo", "TBL_Movimiento", "NKilometrajeGiro")][6] = "18";
+        columns[("dbo", "TBL_Movimiento", "NKilometrajeGiro")][7] = "2";
+        AddColumn("TBL_Movimiento", "GTecnicoGiroId", "uniqueidentifier", 16, true);
         // 20260918131215_AddScheduledMountSets
         AddColumn("TBL_SolicitudOperacion", "GGrupoOperacionId", "uniqueidentifier", 16, true);
         // 20260923182748_AddDisposalShipments
@@ -117,7 +123,7 @@ public sealed class ExistingDatabaseSchemaTests
             {
                 var key = (entity.GetSchema()!, entity.GetTableName()!, property.GetColumnName(table)!);
                 Assert.True(columns.TryGetValue(key,out var column), $"Unknown column {key}");
-                Assert.Equal(column![8] == "1", property.IsNullable);
+                Assert.True((column![8] == "1") == property.IsNullable, $"Nullability mismatch: {key}");
                 var sqlType = column[4];
                 if (new[]{"nvarchar","varchar","varbinary","char","nchar"}.Contains(sqlType))
                 {
@@ -129,7 +135,7 @@ public sealed class ExistingDatabaseSchemaTests
                 count++;
             }
         }
-        Assert.Equal(674,count);
+        Assert.Equal(677,count);
         Assert.False(db.Database.HasPendingModelChanges());
     }
 }

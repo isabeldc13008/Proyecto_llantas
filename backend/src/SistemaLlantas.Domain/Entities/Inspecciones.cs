@@ -10,6 +10,7 @@ public sealed class Vehiculo : EntidadAuditable
     public string NumeroInterno { get; set; } = string.Empty;
     public string Placa { get; set; } = string.Empty;
     public string Tipo { get; set; } = string.Empty;
+    public string? SGrupoOperativo { get; set; }
     public Guid CentroId { get; set; }
     public Centro Centro { get; set; } = null!;
     public Guid? ConfiguracionVehiculoId { get; set; }
