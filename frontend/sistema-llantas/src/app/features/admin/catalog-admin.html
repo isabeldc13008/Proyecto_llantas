@@ -1,7 +1,7 @@
 <section class="page">
  <header class="heading"><div><p class="eyebrow">Configuración maestra</p><h1>Administración</h1><p class="muted">Usuarios, seguridad, catálogos y estructura operativa.</p></div></header>
  <div class="admin-layout">
-  <aside class="panel catalog-menu"><h2>Administración</h2><h3>Seguridad</h3>@for(type of types.filter(x=>x.key==='usuarios'||x.key==='roles');track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}<h3>Catálogos de llantas</h3>@for(type of types.filter(x=>['marcas','referencias','dimensiones','tipos-llanta','estados-llanta'].includes(x.key));track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}<h3>Estructura operativa</h3>@for(type of types.filter(x=>x.key==='regionales'||x.key==='centros');track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}</aside>
+  <aside class="panel catalog-menu"><h2>Administración</h2><h3>Seguridad</h3>@for(type of seguridad;track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}<h3>Catálogos de llantas</h3>@for(type of catalogosLlantas;track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}<h3>Estructura operativa</h3>@for(type of estructuraOperativa;track type.key){<button [class.active]="selected().key===type.key" (click)="choose(type)"><span>{{type.name}}</span><small>{{type.description}}</small><b>›</b></button>}</aside>
   <main>
    <div class="info"><div><p class="eyebrow">Catálogo seleccionado</p><h2>{{selected().name}}</h2><p>{{selected().description}}</p></div><button class="primary" (click)="open()">+ Agregar {{selected().name.toLowerCase()}}</button></div>
    @if(selected().key==='usuarios'&&auth.isAdmin()){<button class="secondary import-button" (click)="openUserImport()">Importar usuarios</button>}
@@ -92,3 +92,4 @@
   <div class="actions"><button class="secondary" [disabled]="importBusy" (click)="closeUserImport()">Cancelar</button><button class="primary" [disabled]="importBusy||!importResult?.puedeImportar||!importPassword.trim()" (click)="importUsers()">Importar</button></div>
  </section></div>
 }
+

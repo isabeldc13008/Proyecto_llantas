@@ -21,6 +21,9 @@ export class CatalogAdmin implements OnInit{
  private readonly http=inject(HttpClient);
  private readonly catalogsApi=inject(CatalogsApi);
  readonly types:CatalogType[]=[{key:'usuarios',name:'Usuarios',description:'Cuentas, roles y accesos efectivos'},{key:'roles',name:'Roles',description:'Permisos compartidos por rol'},{key:'marcas',name:'Marcas',description:'Fabricantes de llantas'},{key:'referencias',name:'Referencias',description:'Líneas y modelos asociados a una marca'},{key:'dimensiones',name:'Dimensiones',description:'Medidas homologadas'},{key:'tipos-llanta',name:'Tipos de llanta',description:'Clasificación operativa'},{key:'estados-llanta',name:'Estados',description:'Estados del ciclo de vida'},{key:'regionales',name:'Regionales',description:'Agrupación territorial de centros'},{key:'centros',name:'Centros',description:'Centros operativos por regional'}];
+ readonly seguridad=this.types.filter(x=>x.key==='usuarios'||x.key==='roles');
+ readonly catalogosLlantas=this.types.filter(x=>['marcas','referencias','dimensiones','tipos-llanta','estados-llanta'].includes(x.key));
+ readonly estructuraOperativa=this.types.filter(x=>x.key==='regionales'||x.key==='centros');
  selected=signal(this.types[0]);records=signal<CatalogItem[]>([]);brands=signal<CatalogItem[]>([]);centers=signal<CatalogItem[]>([]);users=signal<UserRow[]>([]);roles=signal<RoleRow[]>([]);selectedUser=signal<UserRow|null>(null);loading=signal(true);error=signal('');showForm=false;codigo='';nombre='';parentId='';relevancia:string|null=null;search='';parentFilter='';roleFilter='';statusFilter='';centerFilter='';message='';username='';password='';roleId='';editingId='';active=true;centerIds:string[]=[];
  managedRoles=signal<ManagedRole[]>([]);permissionCatalog=signal<PermissionRow[]>([]);
  permissionCodes:string[]=[];permissionSearch='';roleWasActive=true;roleSaving=false;
@@ -121,6 +124,7 @@ export class CatalogAdmin implements OnInit{
   const link=document.createElement('a');link.href=url;link.download='errores-usuarios.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
 }
+
 
 
 
