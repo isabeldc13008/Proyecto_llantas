@@ -85,9 +85,36 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
         if(dto.LlantaEncontradaId.HasValue==dto.LlantaNoEncontrada)throw new ValidacionException("Selecciona una llanta existente o marca que no fue encontrada en el sistema.");
         Llanta? encontrada=null;if(dto.LlantaEncontradaId.HasValue)encontrada=await db.Llantas.SingleOrDefaultAsync(x=>x.Id==dto.LlantaEncontradaId.Value&&x.Activo,ct)??throw new KeyNotFoundException("La llanta encontrada no existe.");
         if(dto.LlantaNoEncontrada&&string.IsNullOrWhiteSpace(dto.IdentificadorEncontrado))throw new ValidacionException("Ingresa la identificación encontrada en la llanta.");
+        string observacion = dto.Observacion?.Trim()??string.Empty;
+        if (dto.LlantaNoEncontrada)
+        {
+            var propuesta=dto.LlantaPropuesta ?? throw new ValidacionException("Completa los datos de la llanta encontrada antes de enviar la solicitud.");
+            if (string.IsNullOrWhiteSpace(propuesta.Codigo)||propuesta.Codigo.Length>50
+                ||string.IsNullOrWhiteSpace(propuesta.Serial)||propuesta.Serial.Length>100
+                ||propuesta.MarcaId==Guid.Empty||propuesta.ReferenciaId==Guid.Empty||propuesta.DimensionId==Guid.Empty
+                ||propuesta.TipoLlantaId==Guid.Empty||!propuesta.ProfundidadInicial.HasValue
+                ||propuesta.ProfundidadInicial.Value<0||propuesta.ProfundidadInicial.Value>100)
+                throw new ValidacionException("Completa código, serial, marca, referencia, dimensión, tipo y profundidad inicial válida.");
+            if (!string.Equals(dto.IdentificadorEncontrado.Trim(),propuesta.Codigo.Trim(),StringComparison.OrdinalIgnoreCase))
+                throw new ValidacionException("El identificador reportado debe coincidir con el código de la llanta propuesta.");
+            var marca=await db.Marcas.AsNoTracking().Where(x=>x.Id==propuesta.MarcaId&&x.Activo).Select(x=>x.Nombre).SingleOrDefaultAsync(ct);
+            var referencia=await db.Referencias.AsNoTracking().Where(x=>x.Id==propuesta.ReferenciaId&&x.MarcaId==propuesta.MarcaId&&x.Activo).Select(x=>x.Nombre).SingleOrDefaultAsync(ct);
+            var dimension=await db.Dimensiones.AsNoTracking().Where(x=>x.Id==propuesta.DimensionId&&x.Activo).Select(x=>x.Nombre).SingleOrDefaultAsync(ct);
+            var tipo=await db.TiposLlanta.AsNoTracking().Where(x=>x.Id==propuesta.TipoLlantaId&&x.Activo).Select(x=>x.Nombre).SingleOrDefaultAsync(ct);
+            if (marca is null||referencia is null||dimension is null||tipo is null)
+                throw new ValidacionException("La marca, referencia, dimensión y tipo deben estar activos y relacionados correctamente.");
+            if (await db.Llantas.AnyAsync(x=>x.Codigo==propuesta.Codigo.Trim()||x.Serial==propuesta.Serial.Trim(),ct))
+                throw new ConflictoException("La llanta ya existe por código o serial. Utiliza la búsqueda de llanta existente.");
+            // Registro de solicitud sin alta en inventario ni modificación de montaje.
+            // Las claves de catálogo se conservan en la observación para auditoría de la validación.
+            var detalle=$"SOLICITUD DE LLANTA ENCONTRADA (SIN MONTAJE)\\nCódigo: {propuesta.Codigo.Trim()}\\nSerial: {propuesta.Serial.Trim()}\\nMarca: {marca} ({propuesta.MarcaId})\\nReferencia: {referencia} ({propuesta.ReferenciaId})\\nDimensión: {dimension} ({propuesta.DimensionId})\\nTipo: {tipo} ({propuesta.TipoLlantaId})\\nProfundidad inicial: {propuesta.ProfundidadInicial.Value} mm";
+            observacion=detalle.Replace("\\n",Environment.NewLine)+(string.IsNullOrEmpty(observacion)?"":Environment.NewLine+"Observación técnica: "+observacion);
+        }
+        else if (dto.LlantaPropuesta is not null)
+            throw new ValidacionException("La propuesta de nueva llanta solo aplica cuando no se encuentra en el sistema.");
         var identificador=encontrada?.Codigo??dto.IdentificadorEncontrado.Trim().ToUpperInvariant();
         var novedad = new InconsistenciaInspeccion { InspeccionId = inspeccionId, PosicionVehiculoId = posicion.Id, LlantaEsperadaId = posicion.LlantaActualId,LlantaEncontradaId=encontrada?.Id,
-            IdentificadorEncontrado = identificador, TecnicoId = usuario, Observacion = dto.Observacion?.Trim()??string.Empty, UsuarioCreacion = usuario };
+            IdentificadorEncontrado = identificador, TecnicoId = usuario, Observacion = observacion, UsuarioCreacion = usuario };
         if(dto.LlantaNoEncontrada)novedad.LlantaTemporal = new LlantaTemporal { IdentificadorTemporal = $"TMP-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}"[..29],IdentificadorFisico = novedad.IdentificadorEncontrado, UsuarioCreacion = usuario };
         db.InconsistenciasInspeccion.Add(novedad); await db.SaveChangesAsync(ct);
         return await MapInconsistencia(novedad.Id, ct);
