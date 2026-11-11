@@ -39,6 +39,18 @@ public sealed class ReportarInconsistenciaDto
     public bool LlantaNoEncontrada { get; init; }
     [Required, StringLength(100)] public string IdentificadorEncontrado { get; init; } = string.Empty;
     [StringLength(1000)] public string? Observacion { get; init; }
+    public PropuestaLlantaInspeccionDto? LlantaPropuesta { get; init; }
+}
+
+public sealed class PropuestaLlantaInspeccionDto
+{
+    public string Codigo { get; init; } = string.Empty;
+    public string Serial { get; init; } = string.Empty;
+    public Guid MarcaId { get; init; }
+    public Guid ReferenciaId { get; init; }
+    public Guid DimensionId { get; init; }
+    public Guid TipoLlantaId { get; init; }
+    public decimal? ProfundidadInicial { get; init; }
 }
 
 public sealed record InconsistenciaDto(Guid Id, Guid InspeccionId, string Centro, string Vehiculo, string Posicion, string? LlantaEsperada, Guid? LlantaEncontradaId, string LlantaEncontrada, string Tecnico, DateTimeOffset Fecha, string Estado, string? Autorizador, string? ObservacionAutorizacion, string? Observacion,IReadOnlyList<EvidenciaDto> Evidencias);
