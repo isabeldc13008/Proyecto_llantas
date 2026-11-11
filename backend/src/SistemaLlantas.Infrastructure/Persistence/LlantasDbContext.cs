@@ -27,6 +27,8 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<CondicionLlanta> CondicionesLlanta => Set<CondicionLlanta>();
     public DbSet<CausaLlanta> CausasLlanta => Set<CausaLlanta>();
     public DbSet<RecomendacionInspeccion> RecomendacionesInspeccion => Set<RecomendacionInspeccion>();
+    public DbSet<CondicionCausaLlanta> CondicionesCausasLlanta => Set<CondicionCausaLlanta>();
+    public DbSet<CausaRecomendacionInspeccion> CausasRecomendacionesInspeccion => Set<CausaRecomendacionInspeccion>();
     public DbSet<InconsistenciaInspeccion> InconsistenciasInspeccion => Set<InconsistenciaInspeccion>();
     public DbSet<LlantaTemporal> LlantasTemporales => Set<LlantaTemporal>();
     public DbSet<MovimientoLlanta> MovimientosLlanta => Set<MovimientoLlanta>();
