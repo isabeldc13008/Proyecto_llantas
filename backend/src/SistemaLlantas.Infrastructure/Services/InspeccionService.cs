@@ -1,13 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaLlantas.Application.Inspecciones;
 using SistemaLlantas.Application.Common;
-using SistemaLlantas.Application.Llantas;
 using SistemaLlantas.Domain.Entities;
 using SistemaLlantas.Infrastructure.Persistence;
 
 namespace SistemaLlantas.Infrastructure.Services;
 
-public sealed class InspeccionService(LlantasDbContext db, ILlantaService llantas) : IInspeccionService
+public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
 {
     public async Task<IReadOnlyList<VehiculoInspeccionDto>> ObtenerVehiculosAsync(string usuario, bool soloAsignados,string? buscar, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculosGlobales = false)
     {
@@ -51,9 +50,8 @@ public sealed class InspeccionService(LlantasDbContext db, ILlantaService llanta
     public async Task<InspeccionDto?> ObtenerAsync(Guid id, AlcanceCentros alcance, CancellationToken ct, string? usuario = null, bool permitirPropia = false)
     {
         var item = await ConsultaCompleta().AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && (alcance.VerTodos || alcance.CentroIds.Contains(x.Vehiculo.CentroId) || x.TecnicoId==usuario) && (!permitirPropia||x.TecnicoId==usuario), ct);
-        if(item is null)return null;var inconsistencias=await db.InconsistenciasInspeccion.AsNoTracking().Where(x=>x.InspeccionId==id).Select(x=>new InconsistenciaPosicionDto(x.Id,x.PosicionVehiculoId,x.LlantaEncontradaId,x.IdentificadorEncontrado,x.Estado.ToString(),x.Observacion){Propuesta=x.LlantaTemporal==null?null:new PropuestaLlantaDto(x.LlantaTemporal.CodigoPropuesto,x.LlantaTemporal.SerialPropuesto,x.LlantaTemporal.MarcaPropuestaId,x.LlantaTemporal.ReferenciaPropuestaId,x.LlantaTemporal.DimensionPropuestaId,x.LlantaTemporal.TipoLlantaPropuestaId,x.LlantaTemporal.ProfundidadInicialPropuesta,x.LlantaTemporal.MarcaReencauchePropuestaId,x.LlantaTemporal.NumeroReencauchesPropuesto.HasValue?x.LlantaTemporal.NumeroReencauchesPropuesto+1:null){Marca=db.Marcas.Where(m=>m.Id==x.LlantaTemporal.MarcaPropuestaId).Select(m=>m.Nombre).FirstOrDefault(),Referencia=db.Referencias.Where(r=>r.Id==x.LlantaTemporal.ReferenciaPropuestaId).Select(r=>r.Nombre).FirstOrDefault(),Dimension=db.Dimensiones.Where(d=>d.Id==x.LlantaTemporal.DimensionPropuestaId).Select(d=>d.Nombre).FirstOrDefault(),TipoLlanta=db.TiposLlanta.Where(t=>t.Id==x.LlantaTemporal.TipoLlantaPropuestaId).Select(t=>t.Nombre).FirstOrDefault(),MarcaReencauche=db.Marcas.Where(m=>m.Id==x.LlantaTemporal.MarcaReencauchePropuestaId).Select(m=>m.Nombre).FirstOrDefault()}}).ToListAsync(ct);var alertas=await AlertasActivasDeInspeccion(id)
-            .Select(x=>new AlertaPosicionInspeccionDto(x.Id,x.PosicionVehiculoId,x.LlantaId,x.Tipo,x.Descripcion,x.Estado.ToString())).ToListAsync(ct);
-        return Map(item,inconsistencias) with {AlertasPosiciones=alertas};
+        if(item is null)return null;var inconsistencias=await db.InconsistenciasInspeccion.AsNoTracking().Where(x=>x.InspeccionId==id).Select(x=>new InconsistenciaPosicionDto(x.Id,x.PosicionVehiculoId,x.LlantaEncontradaId,x.IdentificadorEncontrado,x.Estado.ToString(),x.Observacion){Propuesta=x.LlantaTemporal==null?null:new PropuestaLlantaDto(x.LlantaTemporal.CodigoPropuesto,x.LlantaTemporal.SerialPropuesto,x.LlantaTemporal.MarcaPropuestaId,x.LlantaTemporal.ReferenciaPropuestaId,x.LlantaTemporal.DimensionPropuestaId,x.LlantaTemporal.TipoLlantaPropuestaId,x.LlantaTemporal.ProfundidadInicialPropuesta,x.LlantaTemporal.MarcaReencauchePropuestaId,x.LlantaTemporal.NumeroReencauchesPropuesto.HasValue?x.LlantaTemporal.NumeroReencauchesPropuesto+1:null){Marca=db.Marcas.Where(m=>m.Id==x.LlantaTemporal.MarcaPropuestaId).Select(m=>m.Nombre).FirstOrDefault(),Referencia=db.Referencias.Where(r=>r.Id==x.LlantaTemporal.ReferenciaPropuestaId).Select(r=>r.Nombre).FirstOrDefault(),Dimension=db.Dimensiones.Where(d=>d.Id==x.LlantaTemporal.DimensionPropuestaId).Select(d=>d.Nombre).FirstOrDefault(),TipoLlanta=db.TiposLlanta.Where(t=>t.Id==x.LlantaTemporal.TipoLlantaPropuestaId).Select(t=>t.Nombre).FirstOrDefault(),MarcaReencauche=db.Marcas.Where(m=>m.Id==x.LlantaTemporal.MarcaReencauchePropuestaId).Select(m=>m.Nombre).FirstOrDefault()}}).ToListAsync(ct);
+        return Map(item,inconsistencias);
     }
 
     public async Task<InspeccionDto?> GuardarDetalleAsync(Guid id, Guid posicionId, GuardarDetalleInspeccionDto dto, string usuario, CancellationToken ct)
@@ -133,10 +131,10 @@ public sealed class InspeccionService(LlantasDbContext db, ILlantaService llanta
                 var p=item.LlantaTemporal;
                 if(string.IsNullOrWhiteSpace(p.CodigoPropuesto)||string.IsNullOrWhiteSpace(p.SerialPropuesto)||!p.MarcaPropuestaId.HasValue||!p.ReferenciaPropuestaId.HasValue||!p.DimensionPropuestaId.HasValue||!p.TipoLlantaPropuestaId.HasValue||!p.ProfundidadInicialPropuesta.HasValue)throw new ValidacionException("La hoja de vida está incompleta y no puede aprobarse.");
                 if(p.NumeroReencauchesPropuesto is < 0 or null || p.NumeroReencauchesPropuesto>0&&!p.MarcaReencauchePropuestaId.HasValue)throw new ValidacionException("La información de reencauche de la hoja de vida es inválida.");
-                if(await db.Llantas.AnyAsync(x=>x.Activo&&(x.Serial==p.SerialPropuesto||x.IdentificadorOriginal==p.CodigoPropuesto),ct))throw new ConflictoException("El código o serial de la hoja de vida ya existe en inventario.");
+                if(await db.Llantas.AnyAsync(x=>x.Activo&&(x.Serial==p.SerialPropuesto||x.Codigo==p.CodigoPropuesto),ct))throw new ConflictoException("El código o serial de la hoja de vida ya existe en inventario.");
                 var estado=await db.EstadosLlanta.Where(x=>x.Activo&&x.PermiteMontaje&&!x.EsDisposicionFinal&&(x.Codigo=="DISPONIBLE"||x.Codigo=="DIS")).OrderByDescending(x=>x.Codigo=="DISPONIBLE").Select(x=>(Guid?)x.Id).FirstOrDefaultAsync(ct)??throw new ConflictoException("No hay estado disponible activo configurado para registrar la llanta.");
-                var propuesta=await llantas.CrearEncontradaAsync(new(){Codigo=string.Empty,Serial=p.SerialPropuesto,MarcaId=p.MarcaPropuestaId.Value,ReferenciaId=p.ReferenciaPropuestaId.Value,DimensionId=p.DimensionPropuestaId.Value,TipoLlantaId=p.TipoLlantaPropuestaId.Value,EstadoLlantaId=estado,CentroId=item.Inspeccion.CentroId,UbicacionActual="Inventario",ProfundidadInicial=p.ProfundidadInicialPropuesta,Observaciones=$"Llanta propuesta en inspección {item.InspeccionId}. Código físico: {p.CodigoPropuesto}."},p.MarcaReencauchePropuestaId,p.NumeroReencauchesPropuesto.Value,usuario,alcance??new(true,[]),ct);
-                llantaAprobadaId=propuesta.Id;
+                var propuesta=new Llanta(p.CodigoPropuesto!,p.SerialPropuesto!) { MarcaId=p.MarcaPropuestaId.Value,ReferenciaId=p.ReferenciaPropuestaId.Value,DimensionId=p.DimensionPropuestaId.Value,TipoLlantaId=p.TipoLlantaPropuestaId.Value,EstadoLlantaId=estado,CentroId=item.Inspeccion.CentroId,UbicacionActual="Inventario",ProfundidadInicial=p.ProfundidadInicialPropuesta.Value,NumeroReencauches=p.NumeroReencauchesPropuesto.Value,Observaciones=$"Llanta propuesta en inspección {item.InspeccionId}." ,UsuarioCreacion=usuario };
+                db.Llantas.Add(propuesta); await db.SaveChangesAsync(ct); llantaAprobadaId=propuesta.Id;
             }
             if(!llantaAprobadaId.HasValue)throw new ValidacionException("Para autorizar debe seleccionar la llanta validada del inventario.");
             var nueva = await db.Llantas.SingleOrDefaultAsync(x => x.Id == llantaAprobadaId, ct) ?? throw new KeyNotFoundException("Llanta de inventario no encontrada.");
