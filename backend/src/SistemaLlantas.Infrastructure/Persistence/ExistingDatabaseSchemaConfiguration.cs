@@ -492,6 +492,15 @@ internal static class ExistingDatabaseSchemaConfiguration
             b.Property(x => x.FechaModificacion).HasColumnName("DFechaModificacion");
             b.Property(x => x.IdentificadorFisico).HasColumnName("SIdentificadorFisico");
             b.Property(x => x.IdentificadorTemporal).HasColumnName("SIdentificadorTemporal");
+            b.Property(x => x.CodigoPropuesto).HasColumnName("SCodigoPropuesto");
+            b.Property(x => x.SerialPropuesto).HasColumnName("SSerialPropuesto");
+            b.Property(x => x.MarcaPropuestaId).HasColumnName("GMarcaPropuestaId");
+            b.Property(x => x.ReferenciaPropuestaId).HasColumnName("GReferenciaPropuestaId");
+            b.Property(x => x.DimensionPropuestaId).HasColumnName("GDimensionPropuestaId");
+            b.Property(x => x.TipoLlantaPropuestaId).HasColumnName("GTipoLlantaPropuestaId");
+            b.Property(x => x.ProfundidadInicialPropuesta).HasColumnName("NProfundidadInicialPropuesta").HasPrecision(8,2);
+            b.Property(x => x.MarcaReencauchePropuestaId).HasColumnName("GMarcaReencauchePropuestaId");
+            b.Property(x => x.NumeroReencauchesPropuesto).HasColumnName("NNumeroReencauchesPropuesto");
             b.Property(x => x.InconsistenciaInspeccionId).HasColumnName("GInconsistenciaInspeccionId");
             b.Property(x => x.RowVersion).HasColumnName("TRowVersion");
             b.Property(x => x.UsuarioCreacion).HasColumnName("SUsuarioCreacion");

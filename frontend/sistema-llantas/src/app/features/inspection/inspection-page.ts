@@ -51,7 +51,7 @@ interface FoundTire{id:string;codigo:string;serial:string;marca:string;referenci
  }
  @if(assignmentOpen()){<div class="overlay"><section class="modal physical-modal" role="dialog" aria-modal="true" aria-label="Corregir llanta física">
  <header><h2>Llanta física · {{selected().code}}</h2><button aria-label="Cerrar corrección" [disabled]="assigning()" (click)="assignmentOpen.set(false)">×</button></header>
- <p>Solo para una llanta que ya está físicamente instalada. Si la posición está libre físicamente, utiliza Programación o Montajes.</p>
+  <p>Busca primero el código o serial de la llanta instalada. Esta corrección no requiere las tres profundidades de inspección.</p><button type="button" [disabled]="assigning()||verifyingVacancy()" (click)="verifyVacancy()">La posición está físicamente vacía: verificar asignación</button>@if(vacancyMessage()){<p role="status">{{vacancyMessage()}}</p>}
  @if(assignmentMode()==='choose'){
   <h3>¿Qué encontraste físicamente?</h3><div class="physical-choices"><button (click)="assignmentMode.set('existing')">Buscar llanta existente</button><button (click)="startNewTire()">Registrar nueva llanta encontrada</button></div>
  }@else{
@@ -62,13 +62,18 @@ interface FoundTire{id:string;codigo:string;serial:string;marca:string;referenci
    @if(assignmentSearched()){<button (click)="startNewTire()">Registrar nueva llanta encontrada</button>}
    @if(assignmentTireId){<label>Código o serial leído físicamente<input [(ngModel)]="physicalIdentifier" maxlength="100"></label>}
   }@else{
-   <p>Centro físico: <b>{{context()?.centroNombre}}</b>. La llanta quedará vinculada a esta inspección.</p>
+   <p>Centro físico: <b>{{physicalCenterName()}}</b>. La hoja de vida quedará vinculada a esta inspección y pendiente de autorización; no se creará inventario todavía.</p>
    @if(catalogLoading()){<p role="status">Cargando catálogos…</p>}@else if(foundCatalogs();as catalogs){
-    <div class="new-tire-fields"><label>Código<input [(ngModel)]="newTire.codigo" maxlength="50"></label><label>Serial<input [(ngModel)]="newTire.serial" maxlength="100"></label>
-    <label>Marca<select [(ngModel)]="newTire.marcaId" (change)="newTire.referenciaId=''"><option value="">Seleccionar</option>@for(o of catalogs.marcas;track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
-    <label>Referencia<select [(ngModel)]="newTire.referenciaId"><option value="">Seleccionar</option>@for(o of newReferences();track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
-    <label>Dimensión<select [(ngModel)]="newTire.dimensionId"><option value="">Seleccionar</option>@for(o of catalogs.dimensiones;track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
-    <label>Tipo<select [(ngModel)]="newTire.tipoLlantaId"><option value="">Seleccionar</option>@for(o of catalogs.tipos;track o.id){<option [value]="o.id">{{o.nombre}}</option>}</select></label>
+    <div class="new-tire-fields"><label>Código<input [(ngModel)]="newTire.codigo" readonly placeholder="Se generará al guardar"></label><label>Serial<input [(ngModel)]="newTire.serial" maxlength="100"></label>
+    <app-single-select-filter label="Marca" [options]="catalogOptions(catalogs.marcas)" [value]="newTire.marcaId" (valueChange)="newTire.marcaId=$event;newTire.referenciaId=''"/>
+    <app-single-select-filter label="Referencia" [options]="catalogOptions(newReferences())" [value]="newTire.referenciaId" (valueChange)="newTire.referenciaId=$event" [disabled]="!newTire.marcaId"/>
+    <app-single-select-filter label="Dimensión" [options]="catalogOptions(catalogs.dimensiones)" [value]="newTire.dimensionId" (valueChange)="newTire.dimensionId=$event"/>
+    <app-single-select-filter label="Tipo de llanta" [options]="catalogOptions(catalogs.tipos)" [value]="newTire.tipoLlantaId" (valueChange)="newTire.tipoLlantaId=$event"/>
+    <label>¿Es reencauchada?<select [(ngModel)]="newTire.esReencauchada" (ngModelChange)="retreadChanged()"><option [ngValue]="false">No</option><option [ngValue]="true">Sí</option></select></label>
+    @if(newTire.esReencauchada){
+     <app-single-select-filter label="Marca de reencauche" [options]="catalogOptions(catalogs.marcas)" [value]="newTire.marcaReencaucheId" (valueChange)="newTire.marcaReencaucheId=$event"/>
+     <label>Vida de reencauche<input type="number" min="2" max="2147483647" step="1" [(ngModel)]="newTire.vida" required><small>Vida 2: primer reencauche. Vida 1 corresponde a una llanta nueva.</small></label>
+    }
     <label>Profundidad inicial (mm)<input type="number" min="0" max="100" step="0.1" [(ngModel)]="newTire.profundidadInicial"></label></div>
    }@else{<button (click)="startNewTire()">Reintentar catálogos</button>}
   }
@@ -76,7 +81,7 @@ interface FoundTire{id:string;codigo:string;serial:string;marca:string;referenci
   <label>Motivo<textarea [(ngModel)]="assignmentReason" maxlength="400"></textarea></label>
  }
  @if(assignmentMessage()){<p role="alert">{{assignmentMessage()}}</p>}
- <footer><button [disabled]="assigning()" (click)="assignmentOpen.set(false)">Cancelar</button>@if(assignmentMode()!=='choose'){<button class="primary" [disabled]="assigning()||!assignmentReady()" (click)="assignTire()">{{assigning()?'Registrando…':'Registrar corrección'}}</button>}</footer>
+ <footer><button [disabled]="assigning()" (click)="assignmentOpen.set(false)">Cancelar</button>@if(assignmentMode()!=='choose'){<button class="primary" [disabled]="assigning()||catalogLoading()||(assignmentMode()==='existing'&&!assignmentReady())" (click)="assignTire()">{{assigning()?'Guardando…':assignmentMode()==='new'?'Solicitar autorización':'Registrar corrección'}}</button>}</footer>
  </section></div>}
  @if(mismatchOpen()){<div class="overlay"><section class="modal"><header><div><small>ALERTA DE TRAZABILIDAD</small><h2>La llanta instalada no coincide</h2></div><button (click)="mismatchOpen.set(false)">×</button></header><div class="expected"><span>Posición {{selected().code}}</span><b>Registrada: {{selected().tire}}</b></div><div class="mismatch-tabs"><button [class.active]="mismatchMode()==='existing'" (click)="mismatchMode.set('existing')">Buscar llanta</button><button [class.active]="mismatchMode()==='unknown'" (click)="mismatchMode.set('unknown')">Llanta no encontrada</button></div>@if(mismatchMode()==='existing'){<label>Buscar por código, serial o ID<div class="lookup"><input [(ngModel)]="tireLookup"><button (click)="searchTire()">Buscar</button></div></label><div class="lookup-results">@for(item of tireResults();track item.id){<label><input type="radio" name="found-tire" [checked]="foundTireId()===item.id" (change)="foundTireId.set(item.id)"><span><b>{{item.codigo}} · {{item.serial}}</b><small>{{item.marca}} · {{item.referencia}} · {{item.dimension}} · {{item.estado}}</small></span></label>}@empty{<p>Escribe una identificación exacta para buscar.</p>}</div>}@else{<label class="unknown-check"><input type="checkbox" [checked]="tireNotFound()" (change)="onTireNotFoundChange($any($event.target).checked)"> Llanta no encontrada en el sistema</label>@if(tireNotFound()){<p>Completa la información física. Se enviará a autorización, sin crear la llanta en inventario ni cambiar su montaje.</p>
 @if(catalogLoading()){<p role="status">Cargando catálogos…</p>}@else if(foundCatalogs();as catalogs){
@@ -94,13 +99,28 @@ interface FoundTire{id:string;codigo:string;serial:string;marca:string;referenci
 export class InspectionPage implements OnInit,OnDestroy{
  assignmentOpen=signal(false);assigning=signal(false);assignmentMessage=signal('');assignmentTires=signal<(FoundTire&{centro:string})[]>([]);assignmentTerm='';assignmentTireId='';assignmentReason='';physicalDiscrepancy=false;physicalIdentifier='';
  assignmentMode=signal<'choose'|'existing'|'new'>('choose');assignmentSearching=signal(false);assignmentSearched=signal(false);foundCatalogs=signal<FoundCatalogs|null>(null);catalogLoading=signal(false);
- newTire={codigo:'',serial:'',marcaId:'',referenciaId:'',dimensionId:'',tipoLlantaId:'',profundidadInicial:null as number|null};
- openAssignment(){if(this.readOnly())return;this.clearMessage();this.assignmentMode.set('choose');this.assignmentTireId='';this.assignmentTerm='';this.assignmentReason='';this.physicalDiscrepancy=false;this.physicalIdentifier='';this.assignmentTires.set([]);this.assignmentMessage.set('');this.assignmentSearched.set(false);this.foundCatalogs.set(null);this.newTire={codigo:'',serial:'',marcaId:'',referenciaId:'',dimensionId:'',tipoLlantaId:'',profundidadInicial:null};this.assignmentOpen.set(true);}
- selectPhysicalTire(t:FoundTire){this.assignmentTireId=t.id;this.physicalIdentifier=t.serial;this.assignmentMessage.set('');}
- async searchAvailable(){if(this.assignmentTerm.trim().length<2)return;this.assignmentSearching.set(true);this.assignmentMessage.set('');this.assignmentTireId='';try{const id=await this.ensureInspection();this.assignmentTires.set(await firstValueFrom(this.http.get<(FoundTire&{centro:string})[]>('/api/inspecciones/llantas/buscar',{params:{termino:this.assignmentTerm,inspeccionId:id}})));this.assignmentSearched.set(true);}catch(e:any){this.assignmentTires.set([]);this.assignmentMessage.set(e?.userMessage??'No se pudo buscar llantas.');}finally{this.assignmentSearching.set(false);}}
- async startNewTire(){this.assignmentMode.set('new');this.assignmentMessage.set('');this.catalogLoading.set(true);try{const id=await this.ensureInspection();this.foundCatalogs.set(await firstValueFrom(this.http.get<FoundCatalogs>(`/api/inspecciones/${id}/llantas-encontradas/opciones`)));}catch(e:any){this.assignmentMessage.set(e?.userMessage??'No se pudieron cargar los catálogos.');}finally{this.catalogLoading.set(false);}}
+ newTire:{codigo:string;serial:string;marcaId:string;referenciaId:string;dimensionId:string;tipoLlantaId?:string;esReencauchada:boolean;marcaReencaucheId:string;vida:number|null;profundidadInicial:number|null}={codigo:'',serial:'',marcaId:'',referenciaId:'',dimensionId:'',tipoLlantaId:'',esReencauchada:false,marcaReencaucheId:'',vida:null,profundidadInicial:null};
+ openCorrection(){if(this.auth.has('inspecciones.crear'))this.openAssignment();else this.openMismatch();}
+ openAssignment(){if(this.readOnly())return;this.clearMessage();this.assignmentMode.set('existing');this.vacancyMessage.set('');this.assignmentTireId='';this.assignmentTerm='';this.assignmentReason='';this.physicalDiscrepancy=false;this.physicalIdentifier='';this.assignmentTires.set([]);this.assignmentMessage.set('');this.assignmentSearched.set(false);this.foundCatalogs.set(null);this.newTire={codigo:'',serial:'',marcaId:'',referenciaId:'',dimensionId:'',tipoLlantaId:'',esReencauchada:false,marcaReencaucheId:'',vida:null,profundidadInicial:null};this.assignmentOpen.set(true);}
+ selectPhysicalTire(t:FoundTire){if(t.disponible===false)return;this.assignmentTireId=t.id;this.physicalIdentifier=t.serial||t.codigo;this.assignmentMessage.set('');}
+ async searchAvailable(){if(this.assigning()||this.assignmentSearching())return;if(this.assignmentTerm.trim().length<2){this.assignmentSearched.set(false);this.assignmentMessage.set('Ingresa al menos dos caracteres del código o serial.');return;}this.assignmentSearched.set(false);this.assignmentSearching.set(true);this.assignmentMessage.set('');this.assignmentTireId='';try{const id=await this.ensureInspection();this.assignmentTires.set(await firstValueFrom(this.http.get<(FoundTire&{centro:string})[]>('/api/inspecciones/llantas/buscar',{params:{termino:this.assignmentTerm,inspeccionId:id}})));this.assignmentSearched.set(true);}catch(e:any){this.assignmentTires.set([]);this.assignmentMessage.set(e?.userMessage??'No se pudo buscar llantas.');}finally{this.assignmentSearching.set(false);}}
+ async startNewTire(){if(!this.assignmentSearched()||this.assignmentTires().length||this.assignmentSearching())return;this.assignmentMode.set('new');this.assignmentMessage.set('');this.catalogLoading.set(true);try{const id=await this.ensureInspection();this.foundCatalogs.set(await firstValueFrom(this.http.get<FoundCatalogs>(`/api/inspecciones/${id}/llantas-encontradas/opciones`)));}catch(e:any){this.assignmentMessage.set(e?.userMessage??'No se pudieron cargar los catálogos.');}finally{this.catalogLoading.set(false);}}
  newReferences(){return this.foundCatalogs()?.referencias.filter(x=>x.marcaId===this.newTire.marcaId)??[];}
- assignmentReady(){if(!this.physicalDiscrepancy||!this.assignmentReason.trim())return false;if(this.assignmentMode()==='new'){const n=this.newTire;return !!(this.foundCatalogs()&&n.codigo.trim()&&n.serial.trim()&&n.marcaId&&n.referenciaId&&n.dimensionId&&n.tipoLlantaId&&n.profundidadInicial!==null&&Number.isFinite(n.profundidadInicial)&&n.profundidadInicial>=0&&n.profundidadInicial<=100);}return !!this.assignmentTireId&&!!this.physicalIdentifier.trim();}
+ retreadChanged(){if(!this.newTire.esReencauchada){this.newTire.marcaReencaucheId='';this.newTire.vida=null;}this.assignmentMessage.set('');}
+ newTireValidation(){const n=this.newTire;
+  if(!this.foundCatalogs())return 'Carga los catálogos antes de guardar.';
+  if(!n.serial.trim())return 'Ingresa el serial leído físicamente.';
+  if(!n.marcaId)return 'Selecciona la marca de la llanta.';
+  if(!n.referenciaId)return 'Selecciona la referencia de la llanta.';
+  if(!n.dimensionId)return 'Selecciona la dimensión de la llanta.';
+  if(!n.tipoLlantaId)return 'Selecciona el tipo de llanta.';
+  if(n.esReencauchada&&!n.marcaReencaucheId)return 'Selecciona la marca de reencauche.';
+  if(n.esReencauchada&&(n.vida===null||!Number.isInteger(n.vida)||n.vida<2||n.vida>2147483647))return 'La vida de reencauche debe ser un entero mayor o igual a 2.';
+  if(n.profundidadInicial===null||!Number.isFinite(n.profundidadInicial)||n.profundidadInicial<0||n.profundidadInicial>100)return 'Ingresa la profundidad inicial entre 0 y 100 mm.';
+  if(!this.assignmentReason.trim())return 'Ingresa el motivo de la corrección.';
+  return '';
+ }
+ assignmentReady(){if(!this.physicalDiscrepancy||!this.assignmentReason.trim())return false;if(this.assignmentMode()==='new')return !this.newTireValidation();return !!this.assignmentTireId&&!!this.physicalIdentifier.trim();}
  async assignTire(){
   if(this.assigning()||this.readOnly())return;
   if(!this.physicalDiscrepancy)return this.assignmentMessage.set('Para instalar una llanta nueva usa Programación o Montajes. Aquí solo se corrige una discrepancia física observada.');
@@ -110,8 +130,10 @@ export class InspectionPage implements OnInit,OnDestroy{
    const id=await this.ensureInspection();const positionId=this.selected().id;const previous=this.positions();
    const anterior=this.context()?.ejes.flatMap(e=>e.posiciones).find(p=>p.id===positionId)?.llanta?.id??null;
    const isNew=this.assignmentMode()==='new';
-   const url=isNew?`/api/inspecciones/${id}/llantas-encontradas`:`/api/inspecciones/${id}/posiciones/${positionId}/asignar`;
-   const body=isNew?{...this.newTire,posicionId:positionId,centroId:this.context()!.centroId,motivo:this.assignmentReason,discrepanciaFisica:true,llantaAnteriorId:anterior}:{llantaId:this.assignmentTireId,motivo:this.assignmentReason,discrepanciaFisica:true,identificadorFisico:this.physicalIdentifier,llantaAnteriorId:anterior};
+   const url=isNew?`/api/inspecciones/${id}/inconsistencias`:`/api/inspecciones/${id}/posiciones/${positionId}/asignar`;
+   const {marcaReencaucheId,vida,...identity}=this.newTire;
+   const body=isNew?{posicionId:positionId,llantaNoEncontrada:true,identificadorEncontrado:identity.codigo||identity.serial,codigoPropuesto:identity.codigo||null,serialPropuesto:identity.serial,marcaPropuestaId:identity.marcaId,referenciaPropuestaId:identity.referenciaId,dimensionPropuestaId:identity.dimensionId,tipoLlantaPropuestaId:null,profundidadInicialPropuesta:identity.profundidadInicial,marcaReencauchePropuestaId:identity.esReencauchada?marcaReencaucheId:null,vidaPropuesta:identity.esReencauchada?vida:null,observacion:this.assignmentReason}:{llantaId:this.assignmentTireId,motivo:this.assignmentReason,discrepanciaFisica:true,identificadorFisico:this.physicalIdentifier,llantaAnteriorId:anterior};
+   if(isNew){const proposed={...body,tipoLlantaPropuestaId:this.newTire.tipoLlantaId||null};if(!proposed.tipoLlantaPropuestaId){this.assignmentMessage.set('Selecciona el tipo de llanta de la hoja de vida.');return;}const result=await firstValueFrom(this.http.post<{id:string}>(url,proposed));this.assignmentOpen.set(false);this.notify('Solicitud enviada. El supervisor debe validar la hoja de vida; no se creó inventario ni se modificó el montaje.','success');this.selected().state='inconsistency';this.selected().identification='unknown';this.selected().inconsistencyId=result.id;this.positions.set([...this.positions()]);return;}
    const context=await firstValueFrom(this.http.post<ApiContext>(url,body));
    this.mapContext(context);for(const p of this.positions()){const old=previous.find(x=>x.id===p.id);if(old&&p.id!==positionId)Object.assign(p,old);}
    this.positions.set([...this.positions()]);this.selectedId.set(positionId);this.assignmentOpen.set(false);

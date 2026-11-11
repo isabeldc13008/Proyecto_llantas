@@ -134,6 +134,15 @@ public sealed class LlantaTemporal : EntidadAuditable
     public InconsistenciaInspeccion InconsistenciaInspeccion { get; set; } = null!;
     public string IdentificadorTemporal { get; set; } = string.Empty;
     public string IdentificadorFisico { get; set; } = string.Empty;
+    public string? CodigoPropuesto { get; set; }
+    public string? SerialPropuesto { get; set; }
+    public Guid? MarcaPropuestaId { get; set; }
+    public Guid? ReferenciaPropuestaId { get; set; }
+    public Guid? DimensionPropuestaId { get; set; }
+    public Guid? TipoLlantaPropuestaId { get; set; }
+    public decimal? ProfundidadInicialPropuesta { get; set; }
+    public Guid? MarcaReencauchePropuestaId { get; set; }
+    public int? NumeroReencauchesPropuesto { get; set; }
     public EstadoInconsistencia Estado { get; set; } = EstadoInconsistencia.PendienteAutorizacion;
 }
 
