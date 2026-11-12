@@ -16,15 +16,16 @@ public sealed partial class ProgramacionService
  {
   if(!EsMontaje(dto.Tipo)){var regular=await Construir(dto,usuario,ct);db.ActividadesProgramadas.Add(regular);await db.SaveChangesAsync(ct);return regular;}
   await new OperacionService(db).ValidarAsignacionesAsync(dto.VehiculoId??Guid.Empty,dto.Asignaciones!,alcance,null,ct);
-  var group=Guid.NewGuid();ActividadProgramada? first=null;
+  var group=Guid.NewGuid();
+  var activity=await Construir(dto,usuario,ct);
+  activity.TipoActividad=dto.Tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase)?"Montaje":dto.Tipo.Trim().Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)?"Reemplazar llanta":"Cambio de juego";
+  activity.GrupoProgramacionId=group;
+  db.ActividadesProgramadas.Add(activity);
   foreach(var fila in dto.Asignaciones!)
   {
-   var activity=await Construir(dto,usuario,ct);activity.TipoActividad=dto.Tipo.Trim().Equals("Montaje",StringComparison.OrdinalIgnoreCase)?"Montaje":dto.Tipo.Trim().Equals("Reemplazar llanta",StringComparison.OrdinalIgnoreCase)?"Reemplazar llanta":"Cambio de juego";activity.GrupoProgramacionId=group;activity.LlantaId=fila.LlantaId;activity.PosicionVehiculoId=fila.PosicionId;
-   if(first is not null)activity.IdempotencyKey=null;
-   first??=activity;db.ActividadesProgramadas.Add(activity);
    db.SolicitudesOperacion.Add(new(){Tipo=activity.TipoActividad,GrupoOperacionId=group,ActividadProgramadaId=activity.Id,CentroId=activity.CentroId,LlantaId=fila.LlantaId,PosicionDestinoId=fila.PosicionId,LlantaDesplazadaId=fila.LlantaActualId,TipoDestino="Posicion",DestinoDesplazada="Inventario",Motivo=dto.Motivo!.Trim(),Observaciones=dto.Observaciones,Estado=EstadoSolicitudOperacion.APROBADO,Solicitante=usuario,Aprobador=usuario,FechaDecision=DateTimeOffset.UtcNow,UsuarioCreacion=usuario});
   }
-  await db.SaveChangesAsync(ct);return first!;
+  await db.SaveChangesAsync(ct);return activity;
  }
  private async Task CancelarTrabajo(Guid id,string motivo,string usuario,AlcanceCentros alcance,CancellationToken ct)
  {

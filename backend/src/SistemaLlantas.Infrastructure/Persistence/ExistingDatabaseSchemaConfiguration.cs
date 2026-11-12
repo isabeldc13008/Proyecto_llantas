@@ -363,6 +363,14 @@ internal static class ExistingDatabaseSchemaConfiguration
             b.Property(x => x.FechaCreacion).HasColumnName("DFechaCreacion");
             b.Property(x => x.FechaModificacion).HasColumnName("DFechaModificacion");
             b.Property(x => x.IdentificadorEncontrado).HasColumnName("SIdentificadorEncontrado");
+            b.Property(x => x.FichaSerial).HasColumnName("SFichaSerial");
+            b.Property(x => x.FichaMarcaId).HasColumnName("GFichaMarcaId");
+            b.Property(x => x.FichaReferenciaId).HasColumnName("GFichaReferenciaId");
+            b.Property(x => x.FichaDimensionId).HasColumnName("GFichaDimensionId");
+            b.Property(x => x.FichaEsReencauchada).HasColumnName("BFichaEsReencauchada");
+            b.Property(x => x.FichaMarcaReencaucheId).HasColumnName("GFichaMarcaReencaucheId");
+            b.Property(x => x.FichaVida).HasColumnName("NFichaVida");
+            b.Property(x => x.FichaProfundidadInicial).HasColumnName("DFichaProfundidadInicial");
             b.Property(x => x.InspeccionId).HasColumnName("GInspeccionId");
             b.Property(x => x.LlantaEncontradaId).HasColumnName("GLlantaEncontradaId");
             b.Property(x => x.LlantaEsperadaId).HasColumnName("GLlantaEsperadaId");

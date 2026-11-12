@@ -72,9 +72,23 @@ public sealed class PosicionVehiculo : EntidadAuditable
     public Llanta? LlantaActual { get; set; }
 }
 
-public sealed class CondicionLlanta : CatalogoBase { public bool RequiereCausa { get; set; } }
-public sealed class CausaLlanta : CatalogoBase { }
-public sealed class RecomendacionInspeccion : CatalogoBase { public bool EsCandidataReencauche { get; set; } }
+public sealed class CondicionLlanta : CatalogoBase { public bool RequiereCausa { get; set; } public ICollection<CondicionCausaLlanta> Causas { get; set; } = []; }
+public sealed class CausaLlanta : CatalogoBase { public ICollection<CondicionCausaLlanta> Condiciones { get; set; } = []; public ICollection<CausaRecomendacionInspeccion> Recomendaciones { get; set; } = []; }
+public sealed class RecomendacionInspeccion : CatalogoBase { public bool EsCandidataReencauche { get; set; } public ICollection<CausaRecomendacionInspeccion> Causas { get; set; } = []; }
+public sealed class CondicionCausaLlanta : EntidadAuditable
+{
+    public Guid CondicionLlantaId { get; set; }
+    public CondicionLlanta CondicionLlanta { get; set; } = null!;
+    public Guid CausaLlantaId { get; set; }
+    public CausaLlanta CausaLlanta { get; set; } = null!;
+}
+public sealed class CausaRecomendacionInspeccion : EntidadAuditable
+{
+    public Guid CausaLlantaId { get; set; }
+    public CausaLlanta CausaLlanta { get; set; } = null!;
+    public Guid RecomendacionId { get; set; }
+    public RecomendacionInspeccion Recomendacion { get; set; } = null!;
+}
 
 public sealed class Inspeccion : EntidadAuditable
 {
@@ -120,6 +134,14 @@ public sealed class InconsistenciaInspeccion : EntidadAuditable
     public Guid? LlantaEncontradaId { get; set; }
     public Llanta? LlantaEncontrada { get; set; }
     public string IdentificadorEncontrado { get; set; } = string.Empty;
+    public string? FichaSerial { get; set; }
+    public Guid? FichaMarcaId { get; set; }
+    public Guid? FichaReferenciaId { get; set; }
+    public Guid? FichaDimensionId { get; set; }
+    public bool? FichaEsReencauchada { get; set; }
+    public Guid? FichaMarcaReencaucheId { get; set; }
+    public int? FichaVida { get; set; }
+    public decimal? FichaProfundidadInicial { get; set; }
     public string TecnicoId { get; set; } = string.Empty;
     public string Observacion { get; set; } = string.Empty;
     public EstadoInconsistencia Estado { get; set; } = EstadoInconsistencia.PendienteAutorizacion;
