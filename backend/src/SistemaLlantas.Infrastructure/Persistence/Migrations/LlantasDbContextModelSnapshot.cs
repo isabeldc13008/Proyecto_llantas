@@ -694,6 +694,50 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.ToTable("TBL_CausaLlanta", "dbo");
                 });
 
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.CausaRecomendacionInspeccion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("CausaLlantaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("FechaCreacion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("FechaModificacion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RecomendacionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("UsuarioCreacion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsuarioModificacion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecomendacionId");
+
+                    b.HasIndex("CausaLlantaId", "RecomendacionId")
+                        .IsUnique();
+
+                    b.ToTable("TBL_CausaRecomendacionInspeccion", (string)null);
+                });
+
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Centro", b =>
                 {
                     b.Property<Guid>("Id")
@@ -761,6 +805,50 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("IX_Centro_GRegionalId");
 
                     b.ToTable("TBL_Centro", "dbo");
+                });
+
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.CondicionCausaLlanta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("CausaLlantaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CondicionLlantaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("FechaCreacion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("FechaModificacion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("UsuarioCreacion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsuarioModificacion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CausaLlantaId");
+
+                    b.HasIndex("CondicionLlantaId", "CausaLlantaId")
+                        .IsUnique();
+
+                    b.ToTable("TBL_CondicionCausaLlanta", (string)null);
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.CondicionLlanta", b =>
@@ -4141,6 +4229,25 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Navigation("PosicionVehiculo");
                 });
 
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.CausaRecomendacionInspeccion", b =>
+                {
+                    b.HasOne("SistemaLlantas.Domain.Entities.CausaLlanta", "CausaLlanta")
+                        .WithMany("Recomendaciones")
+                        .HasForeignKey("CausaLlantaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemaLlantas.Domain.Entities.RecomendacionInspeccion", "Recomendacion")
+                        .WithMany("Causas")
+                        .HasForeignKey("RecomendacionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CausaLlanta");
+
+                    b.Navigation("Recomendacion");
+                });
+
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Centro", b =>
                 {
                     b.HasOne("SistemaLlantas.Domain.Entities.Regional", "Regional")
@@ -4150,6 +4257,25 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasConstraintName("FK_TBL_Centro_TBL_Regional_GRegionalId");
 
                     b.Navigation("Regional");
+                });
+
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.CondicionCausaLlanta", b =>
+                {
+                    b.HasOne("SistemaLlantas.Domain.Entities.CausaLlanta", "CausaLlanta")
+                        .WithMany("Condiciones")
+                        .HasForeignKey("CausaLlantaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemaLlantas.Domain.Entities.CondicionLlanta", "CondicionLlanta")
+                        .WithMany("Causas")
+                        .HasForeignKey("CondicionLlantaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CausaLlanta");
+
+                    b.Navigation("CondicionLlanta");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ConfiguracionEje", b =>
@@ -4726,6 +4852,18 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                     b.Navigation("Historial");
                 });
 
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.CausaLlanta", b =>
+                {
+                    b.Navigation("Condiciones");
+
+                    b.Navigation("Recomendaciones");
+                });
+
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.CondicionLlanta", b =>
+                {
+                    b.Navigation("Causas");
+                });
+
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.ConfiguracionEje", b =>
                 {
                     b.Navigation("Posiciones");
@@ -4788,6 +4926,11 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.PermisoSistema", b =>
                 {
                     b.Navigation("Roles");
+                });
+
+            modelBuilder.Entity("SistemaLlantas.Domain.Entities.RecomendacionInspeccion", b =>
+                {
+                    b.Navigation("Causas");
                 });
 
             modelBuilder.Entity("SistemaLlantas.Domain.Entities.Regional", b =>

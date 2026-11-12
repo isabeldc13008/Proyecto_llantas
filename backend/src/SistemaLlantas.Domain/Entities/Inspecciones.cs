@@ -72,9 +72,23 @@ public sealed class PosicionVehiculo : EntidadAuditable
     public Llanta? LlantaActual { get; set; }
 }
 
-public sealed class CondicionLlanta : CatalogoBase { public bool RequiereCausa { get; set; } }
-public sealed class CausaLlanta : CatalogoBase { }
-public sealed class RecomendacionInspeccion : CatalogoBase { public bool EsCandidataReencauche { get; set; } }
+public sealed class CondicionLlanta : CatalogoBase { public bool RequiereCausa { get; set; } public ICollection<CondicionCausaLlanta> Causas { get; set; } = []; }
+public sealed class CausaLlanta : CatalogoBase { public ICollection<CondicionCausaLlanta> Condiciones { get; set; } = []; public ICollection<CausaRecomendacionInspeccion> Recomendaciones { get; set; } = []; }
+public sealed class RecomendacionInspeccion : CatalogoBase { public bool EsCandidataReencauche { get; set; } public ICollection<CausaRecomendacionInspeccion> Causas { get; set; } = []; }
+public sealed class CondicionCausaLlanta : EntidadAuditable
+{
+    public Guid CondicionLlantaId { get; set; }
+    public CondicionLlanta CondicionLlanta { get; set; } = null!;
+    public Guid CausaLlantaId { get; set; }
+    public CausaLlanta CausaLlanta { get; set; } = null!;
+}
+public sealed class CausaRecomendacionInspeccion : EntidadAuditable
+{
+    public Guid CausaLlantaId { get; set; }
+    public CausaLlanta CausaLlanta { get; set; } = null!;
+    public Guid RecomendacionId { get; set; }
+    public RecomendacionInspeccion Recomendacion { get; set; } = null!;
+}
 
 public sealed class Inspeccion : EntidadAuditable
 {
