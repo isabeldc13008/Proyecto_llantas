@@ -1657,6 +1657,39 @@ namespace SistemaLlantas.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("DFechaModificacion");
 
+                    b.Property<Guid?>("FichaDimensionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GFichaDimensionId");
+
+                    b.Property<bool?>("FichaEsReencauchada")
+                        .HasColumnType("bit")
+                        .HasColumnName("BFichaEsReencauchada");
+
+                    b.Property<Guid?>("FichaMarcaId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GFichaMarcaId");
+
+                    b.Property<Guid?>("FichaMarcaReencaucheId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GFichaMarcaReencaucheId");
+
+                    b.Property<decimal?>("FichaProfundidadInicial")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("DFichaProfundidadInicial");
+
+                    b.Property<Guid?>("FichaReferenciaId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("GFichaReferenciaId");
+
+                    b.Property<string>("FichaSerial")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("SFichaSerial");
+
+                    b.Property<int?>("FichaVida")
+                        .HasColumnType("int")
+                        .HasColumnName("NFichaVida");
+
                     b.Property<string>("IdentificadorEncontrado")
                         .IsRequired()
                         .HasMaxLength(100)

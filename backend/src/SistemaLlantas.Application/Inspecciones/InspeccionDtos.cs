@@ -54,10 +54,18 @@ public sealed class ReportarInconsistenciaDto
     public Guid? LlantaEncontradaId { get; init; }
     public bool LlantaNoEncontrada { get; init; }
     [Required, StringLength(100)] public string IdentificadorEncontrado { get; init; } = string.Empty;
+    [StringLength(100)] public string? FichaSerial { get; init; }
+    public Guid? FichaMarcaId { get; init; }
+    public Guid? FichaReferenciaId { get; init; }
+    public Guid? FichaDimensionId { get; init; }
+    public bool? FichaEsReencauchada { get; init; }
+    public Guid? FichaMarcaReencaucheId { get; init; }
+    public int? FichaVida { get; init; }
+    [Range(0,100)] public decimal? FichaProfundidadInicial { get; init; }
     [StringLength(1000)] public string? Observacion { get; init; }
 }
 
-public sealed record InconsistenciaDto(Guid Id, Guid InspeccionId, string Centro, string Vehiculo, string Posicion, string? LlantaEsperada, Guid? LlantaEncontradaId, string LlantaEncontrada, string Tecnico, DateTimeOffset Fecha, string Estado, string? Autorizador, string? ObservacionAutorizacion, string? Observacion,IReadOnlyList<EvidenciaDto> Evidencias);
+public sealed record InconsistenciaDto(Guid Id, Guid InspeccionId, string Centro, string Vehiculo, string Posicion, string? LlantaEsperada, Guid? LlantaEncontradaId, string LlantaEncontrada, string Tecnico, DateTimeOffset Fecha, string Estado, string? Autorizador, string? ObservacionAutorizacion, string? Observacion, string? FichaSerial, Guid? FichaMarcaId, Guid? FichaReferenciaId, Guid? FichaDimensionId, bool? FichaEsReencauchada, Guid? FichaMarcaReencaucheId, int? FichaVida, decimal? FichaProfundidadInicial, IReadOnlyList<EvidenciaDto> Evidencias);
 public sealed class ResolverInconsistenciaDto { [Required, StringLength(1000)] public string Observacion { get; init; } = string.Empty; public Guid? LlantaInventarioId { get; init; } }
 public sealed record AlertaDto(Guid Id,string Tipo,string Descripcion,string Estado,DateTimeOffset Fecha,Guid InspeccionId,string Vehiculo,string Centro,string Posicion,string? Llanta,IReadOnlyList<AlertaEventoDto> Historial);
 public sealed record AlertaEventoDto(DateTimeOffset Fecha,string EstadoAnterior,string EstadoNuevo,string Usuario,string? Observacion);
