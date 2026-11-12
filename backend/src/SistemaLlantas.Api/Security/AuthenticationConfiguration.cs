@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +14,7 @@ public static class AuthenticationConfiguration
     public static void AddApplicationAuthentication(this WebApplicationBuilder builder)
     {
         var config = builder.Configuration;
+        if (EntraAuthentication.Enabled(config)) EntraAuthentication.ValidateConfiguration(config);
         if (string.IsNullOrWhiteSpace(config["Jwt:Key"]))
         {
             if (!builder.Environment.IsDevelopment())
@@ -23,7 +25,9 @@ public static class AuthenticationConfiguration
             throw new InvalidOperationException("Jwt:Key requiere al menos 32 bytes.");
         if (string.IsNullOrWhiteSpace(config["Jwt:Issuer"]) || string.IsNullOrWhiteSpace(config["Jwt:Audience"]))
             throw new InvalidOperationException("Configure Jwt:Issuer y Jwt:Audience.");
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(EntraAuthentication.Scheme,options=>{if(EntraAuthentication.Enabled(config))EntraAuthentication.Configure(options,config);})
+            .AddJwtBearer(options =>
         {
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new()
@@ -37,6 +41,15 @@ public static class AuthenticationConfiguration
             {
                 OnTokenValidated = async context =>
                 {
+                    if (EntraAuthentication.Enabled(config))
+                    {
+                    var entra=await context.HttpContext.AuthenticateAsync(EntraAuthentication.Scheme);
+                    if(!entra.Succeeded||!EntraAuthentication.IsBound(context.Principal!,entra.Principal!))
+                    {
+                        context.HttpContext.Response.Headers["X-Auth-Failure-Code"]="identity_binding_rejected";
+                        context.Fail("Se requieren ambas autenticaciones vinculadas a la misma identidad Entra.");return;
+                    }
+                    }
                     if (!Guid.TryParse(context.Principal!.FindFirstValue("sub"), out var id))
                     { context.Fail("Identidad inválida."); return; }
                     var db = context.HttpContext.RequestServices.GetRequiredService<LlantasDbContext>();

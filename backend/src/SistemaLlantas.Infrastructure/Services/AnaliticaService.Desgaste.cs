@@ -35,7 +35,7 @@ public sealed partial class AnaliticaService
             && (a.VerTodos || a.CentroIds.Contains(d.Inspeccion.Vehiculo.CentroId)))
             .OrderBy(d => d.Inspeccion.FechaCreacion).ThenBy(d => d.Id).Take(limite + 1)
             .Select(d => new LecturaAnalitica(d.Id, d.InspeccionId, d.Inspeccion.FechaCreacion, d.PosicionVehiculoId,
-                d.PosicionVehiculo.Codigo, d.Inspeccion.Kilometraje, d.ProfundidadExterior, d.ProfundidadCentro, d.ProfundidadInterior)).ToListAsync(ct);
+                d.PosicionVehiculo.Codigo, d.Inspeccion.Kilometraje, d.ProfundidadExterior, d.ProfundidadCentro, d.ProfundidadInterior, d.FechaModificacion ?? d.Inspeccion.FechaModificacion ?? d.FechaCreacion)).ToListAsync(ct);
         var tramos = await Asignaciones(new(), a).Where(x => x.LlantaId == id).OrderBy(x => x.FechaInicio).Take(limite + 1)
             .Select(x => new TramoAnalitica(x.Id, x.PosicionVehiculoId, x.FechaInicio, x.FechaFin, x.EsActiva, x.KilometrajeMontaje, x.KilometrajeDesmontaje, x.PosicionVehiculo.EjeVehiculo.Vehiculo.Kilometraje)).ToListAsync(ct);
         if (lecturas.Count > limite || tramos.Count > limite)
@@ -44,7 +44,21 @@ public sealed partial class AnaliticaService
             && (!x.CentroId.HasValue || x.CentroId == tire.CentroId)).OrderBy(x => x.Codigo)
             .Select(x => new ReglaProfundidadAnalitica(x.Codigo, x.Operador, x.Valor, x.Unidad, x.CentroId.HasValue ? "Centro actual" : "Global")).ToListAsync(ct);
         var mediciones = DesgasteAnaliticaCalculo.Vincular(lecturas, tramos);
+        if (lecturas.Count > 0)
+        {
+            // Inspect presence outside scope without exposing dates, technicians or event identifiers.
+            var historial = db.MovimientosDetalle.AsNoTracking().Where(d => d.LlantaId == id && d.Movimiento.Tipo == "Giro en el mismo rin");
+            var ocultos = !a.VerTodos && await historial.AnyAsync(d => !a.CentroIds.Contains(d.Movimiento.CentroId), ct);
+            var giros = await historial.Where(d => a.VerTodos || a.CentroIds.Contains(d.Movimiento.CentroId))
+                .OrderBy(d => d.Movimiento.FechaGiro).Take(limite + 1)
+                .Select(d => new GiroOrientacion(d.MovimientoId, d.Movimiento.FechaGiro, d.Movimiento.KilometrajeGiro, d.Movimiento.TecnicoGiroId,
+                    d.Activo && d.Movimiento.Activo && d.TipoDestino == TipoDestinoLlanta.Posicion && d.PosicionOrigenId.HasValue && d.PosicionOrigenId == d.PosicionDestinoId && !d.CentroDestinoId.HasValue
+                    && d.Movimiento.FechaGiro <= d.Movimiento.FechaCreacion)).ToListAsync(ct);
+            mediciones = OrientacionLlanta.Normalizar(mediciones, giros, !ocultos && giros.Count <= limite);
+        }
         var limitaciones = new List<string>();
+        if (mediciones.Any(m => m.Normalizada is null)) limitaciones.Add("Comparativo de hombros no verificable en lecturas sin evidencia suficiente de orientación.");
+        limitaciones.Add("Exterior e interior normalizados a una referencia automática por llanta; el centro no cambia. No se infieren giros anteriores desconocidos ni se reinicia la orientación por montaje.");
         if (mediciones.Count(x => x.Minima.HasValue && x.TramoId.HasValue) < 3)
             limitaciones.Add("Menos de tres lecturas completas vinculadas a tramos consistentes.");
         if (reglas.Count != 1 || reglas.Any(x => x.Unidad.Trim().ToLowerInvariant() != "mm" || x.Valor < 0 || x.Operador is not ("<" or "<=")))

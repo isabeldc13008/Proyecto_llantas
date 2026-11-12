@@ -23,9 +23,9 @@ export class AnalyticsPageComponent implements OnInit,OnDestroy{
  ngOnDestroy(){this.routeSubscription?.unsubscribe();this.version++;this.vehicleVersion++;}
  async loadOptions(){this.optionsError.set('');try{this.options.set(await firstValueFrom(this.api.options()))}catch(e:any){this.optionsError.set(e?.userMessage??'No se pudieron cargar los filtros')}}
  async load(page=this.page()){const version=++this.version;this.loading.set(true);this.error.set('');try{const data=await firstValueFrom(this.api.maintenance(this.applied,page));if(version===this.version)this.data.set(data)}catch(e:any){if(version===this.version){this.data.set(null);this.error.set(e?.userMessage??e?.error?.message??'No fue posible consultar mantenimiento')}}finally{if(version===this.version)this.loading.set(false)}}
- async apply(){this.showFilters=false;const changed=JSON.stringify(this.filters)!==JSON.stringify(this.applied)||this.page()!==1||!!this.selectedId();await this.router.navigate([],{relativeTo:this.route,queryParams:{...this.filters,pagina:1,seleccion:null}});if(!changed)await this.load(1)}
+ async apply(){this.showFilters=false;const changed=JSON.stringify(this.filters)!==JSON.stringify(this.applied)||this.page()!==1||!!this.selectedId();await this.router.navigate([],{relativeTo:this.route,queryParams:{...this.filters,pagina:1,seleccion:null},queryParamsHandling:'merge'});if(!changed)await this.load(1)}
  async setView(view:MaintenanceFilters['vista']){this.filters.vista=view;this.filters.clasificacion='';await this.apply()}
- async verifyOnly(){this.filters.vista='COLA';this.filters.clasificacion=this.filters.clasificacion?'':'CONDICION_POR_VERIFICAR';await this.apply()}
+ async verifyOnly(){await this.router.navigate([],{relativeTo:this.route,queryParams:{seccion:'calidad',categoria:'todas',pagina:1,clasificacion:null},queryParamsHandling:'merge'});}
  select(id:string){void this.router.navigate([],{relativeTo:this.route,queryParams:{seleccion:id},queryParamsHandling:'merge'});}
  changePage(page:number){void this.router.navigate([],{relativeTo:this.route,queryParams:{pagina:page,seleccion:null},queryParamsHandling:'merge'});}
  async clear(){this.filters=maintenanceDefaults();this.vehicleSearch='';await this.apply()}

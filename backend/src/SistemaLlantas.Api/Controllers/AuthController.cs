@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using System.ComponentModel.DataAnnotations;
 using SistemaLlantas.Api.Security;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,14 +18,38 @@ namespace SistemaLlantas.Api.Controllers;
 public sealed class AuthController(LlantasDbContext db,IConfiguration config):ControllerBase
 {
     [AllowAnonymous,HttpGet("local-config")]
-    public IActionResult LocalConfig() => Ok(new { mode = "Local" });
+    public IActionResult LocalConfig() => Ok(new {
+        enabled=EntraAuthentication.Enabled(config),mode=EntraAuthentication.Enabled(config)?"EntraThenLocal":"Local",clientId=config["Entra:ClientId"],tenantId=config["Entra:TenantId"],
+        scope=config["Entra:Scope"],redirectUri=config["Entra:RedirectUri"],postLogoutRedirectUri=config["Entra:PostLogoutRedirectUri"]
+    });
     [AllowAnonymous,HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request,CancellationToken ct)
     {
+        ClaimsPrincipal? entraUser=null;
+        if(EntraAuthentication.Enabled(config))
+        {
+            var hasEntraHeader=Request.Headers.ContainsKey(EntraAuthentication.Header)
+                || (Request.Path.Equals("/api/auth/login") && Request.Headers.ContainsKey("Authorization"));
+            if(!hasEntraHeader)
+                return Unauthorized(new { code="entra_token_missing", message="No se recibió la autenticación Microsoft Entra para continuar." });
+            var entra=await HttpContext.AuthenticateAsync(EntraAuthentication.Scheme);
+            if(!entra.Succeeded)
+                return Unauthorized(new { code=entra.Failure is null ? "entra_token_rejected" : EntraAuthentication.AuthenticationFailureCode(entra.Failure), message="La autenticación Microsoft Entra fue rechazada por la API." });
+            var identityFailure=EntraAuthentication.DelegatedIdentityFailure(entra.Principal!,config);
+            if(identityFailure is not null)
+                return Unauthorized(new { code=identityFailure, message="La identidad Microsoft Entra no está autorizada para este registro." });
+            entraUser=entra.Principal;
+        }
         var username=request.Username.Trim().ToLowerInvariant();
         var user=await db.UsuariosSistema.AsNoTracking().AsSplitQuery().Include(x=>x.Centros).ThenInclude(x=>x.Centro).Include(x=>x.Rol).ThenInclude(x=>x.Permisos).ThenInclude(x=>x.Permiso).SingleOrDefaultAsync(x=>x.Username==username&&x.Activo&&x.Rol.Activo,ct);
-        if(user is null||string.IsNullOrEmpty(user.PasswordHash)||new PasswordHasher<UsuarioSistema>().VerifyHashedPassword(user,user.PasswordHash,request.Password)==PasswordVerificationResult.Failed)return Unauthorized(new{message="Usuario o contraseña incorrectos."});
+        if(user is null||string.IsNullOrEmpty(user.PasswordHash)||new PasswordHasher<UsuarioSistema>().VerifyHashedPassword(user,user.PasswordHash,request.Password)==PasswordVerificationResult.Failed)
+            return Unauthorized(new { code="internal_credentials_invalid", message="Las credenciales internas no son correctas." });
         var claims=new List<Claim>{new(JwtRegisteredClaimNames.Sub,user.Id.ToString()),new(ClaimTypes.NameIdentifier,user.Id.ToString()),new("username",user.Username),new(ClaimTypes.Name,user.Nombre),new(ClaimTypes.Role,user.Rol.Codigo),new("rol_nombre",user.Rol.Nombre)};
+        if(entraUser is not null)
+        {
+            claims.Add(new(EntraAuthentication.TenantClaim,entraUser.FindFirstValue("tid")!));
+            claims.Add(new(EntraAuthentication.ObjectClaim,entraUser.FindFirstValue("oid")!));
+        }
         claims.AddRange(user.Centros.Where(x=>x.Activo && x.Centro.Activo).Select(x=>new Claim("centro_id",x.CentroId.ToString())));
         claims.AddRange(user.Rol.Permisos.Where(x=>x.Permiso.Activo).Select(x=>new Claim("permiso",x.Permiso.Codigo)));
         var key=config["Jwt:Key"]??throw new InvalidOperationException("Jwt:Key no configurada.");var expires=DateTime.UtcNow.AddHours(8);

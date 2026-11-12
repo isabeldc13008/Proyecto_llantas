@@ -1,0 +1,75 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bulk {
+  width: 100%;
+  max-width: 100%;
+  // Match the existing Operations container without changing the shared layout.
+  padding: clamp(1rem, 2.4vw, 2rem);
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
+.import-form, .result, .form-section {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+label {
+  display: grid;
+  gap: .5rem;
+  font-weight: 700;
+}
+
+select, input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  padding: .75rem;
+}
+
+input::file-selector-button {
+  margin-right: .75rem;
+  padding: .5rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.form-section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+h2 { margin: 0; font-size: 1.2rem; }
+p { margin: 0; line-height: 1.55; }
+small { line-height: 1.5; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.actions button { flex: 0 1 auto; width: auto; max-width: 100%; }
+.muted, .message, .result p { overflow-wrap: anywhere; }
+.message:empty { display: none; }
+.module-table { width: 100%; max-width: 100%; min-width: 0; }
+.preview { max-height: 32rem; }
+.preview th, .preview td { white-space: nowrap; }
+th, td { border-bottom: 1px solid var(--line); text-align: left; }
+.validation-table td { overflow-wrap: anywhere; }
+
+@media (max-width: 650px) {
+  .fields { grid-template-columns: minmax(0, 1fr); }
+}

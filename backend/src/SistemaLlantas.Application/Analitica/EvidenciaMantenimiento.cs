@@ -31,6 +31,7 @@ public static class EvidenciaMantenimiento
         if (entrada.AlertasActivas > 0) acciones.Add("REVISAR_ALERTA");
         if (motivos.Count > 0) { acciones.Add("INSPECCIONAR"); acciones.Add("PROGRAMAR_EVALUACION"); }
         acciones.Add("VER_HISTORIAL");
-        return new(clasificacion, motivos.Count > 0, motivos.FirstOrDefault(), motivos.Skip(1).ToArray(), acciones);
+        // Missing evidence belongs to data quality; only observed active alerts enter maintenance automatically.
+        return new(clasificacion, entrada.AlertasActivas > 0, motivos.FirstOrDefault(), motivos.Skip(1).ToArray(), acciones);
     }
 }

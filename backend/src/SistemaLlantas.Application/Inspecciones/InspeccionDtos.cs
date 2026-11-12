@@ -3,20 +3,36 @@ using System.ComponentModel.DataAnnotations;
 namespace SistemaLlantas.Application.Inspecciones;
 using SistemaLlantas.Application.Common;
 
-public sealed record LlantaPosicionDto(Guid Id, string Codigo, string Estado, string Marca, string Referencia, string Dimension);
+public sealed record LlantaPosicionDto(Guid Id, string Codigo, string Estado, string Marca, string Referencia, string Dimension)
+{
+    public Guid? MarcaReencaucheId { get; init; }
+    public string? MarcaReencauche { get; init; }
+    public int NumeroReencauches { get; init; }
+    public bool EsReencauchada => NumeroReencauches > 0;
+    public long Vida => (long)NumeroReencauches + 1;
+}
 public sealed record PosicionInspeccionDto(Guid Id, string Codigo, string Lado, int Orden, LlantaPosicionDto? Llanta);
-public sealed record EjeInspeccionDto(Guid Id, int Numero, string Nombre, IReadOnlyList<PosicionInspeccionDto> Posiciones);
-public sealed record ContextoInspeccionDto(Guid VehiculoId, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroNombre, string? Relevancia, string? Regional, decimal? Kilometraje, DateTimeOffset? UltimaInspeccion, IReadOnlyList<EjeInspeccionDto> Ejes);
+public sealed record EjeInspeccionDto(Guid Id, int Numero, string Nombre, IReadOnlyList<PosicionInspeccionDto> Posiciones) { public string Tipo { get; init; } = ""; }
+public sealed record ContextoInspeccionDto(Guid VehiculoId, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroNombre, string? Relevancia, string? Regional, decimal? Kilometraje, DateTimeOffset? UltimaInspeccion, IReadOnlyList<EjeInspeccionDto> Ejes)
+{
+    public InspeccionDto? Inspeccion { get; init; }
+}
 public sealed record VehiculoInspeccionDto(Guid Id, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroCodigo, string CentroNombre, string? Regional);
 public sealed record OpcionInspeccionDto(Guid Id, string Codigo, string Nombre);
-public sealed record OpcionesInspeccionDto(IReadOnlyList<OpcionInspeccionDto> Condiciones, IReadOnlyList<OpcionInspeccionDto> Causas, IReadOnlyList<OpcionInspeccionDto> Recomendaciones);
-public sealed record InspeccionDto(Guid Id, Guid VehiculoId, string Vehiculo, Guid CentroId, string Centro, decimal? Kilometraje, string Estado, string TecnicoId, IReadOnlyList<DetalleInspeccionDto> Detalles,IReadOnlyList<InconsistenciaPosicionDto> Inconsistencias);
+public sealed record RelacionInspeccionDto(Guid OrigenId, Guid DestinoId);
+public sealed record OpcionesInspeccionDto(IReadOnlyList<OpcionInspeccionDto> Condiciones, IReadOnlyList<OpcionInspeccionDto> Causas, IReadOnlyList<OpcionInspeccionDto> Recomendaciones, IReadOnlyList<RelacionInspeccionDto> CondicionCausas, IReadOnlyList<RelacionInspeccionDto> CausaRecomendaciones);
+public sealed record InspeccionDto(Guid Id, Guid VehiculoId, string Vehiculo, Guid CentroId, string Centro, decimal? Kilometraje, string Estado, string TecnicoId, IReadOnlyList<DetalleInspeccionDto> Detalles,IReadOnlyList<InconsistenciaPosicionDto> Inconsistencias)
+{
+    public IReadOnlyList<AlertaPosicionInspeccionDto> AlertasPosiciones { get; init; } = [];
+}
+public sealed record AlertaPosicionInspeccionDto(Guid Id, Guid PosicionId, Guid? LlantaId, string Tipo, string Descripcion, string Estado);
 public sealed record DetalleInspeccionDto(Guid Id, Guid PosicionId, string Posicion, Guid? LlantaId, string? Llanta, decimal? Exterior, decimal? Centro, decimal? Interior, Guid? CondicionId, Guid? CausaId, Guid? RecomendacionId, string? Observaciones);
 public sealed record InconsistenciaPosicionDto(Guid Id,Guid PosicionId,Guid? LlantaEncontradaId,string IdentificadorEncontrado,string Estado,string? Observacion);
 
 public sealed class CrearInspeccionDto
 {
     [Required] public Guid VehiculoId { get; init; }
+    public Guid? CentroId { get; init; }
     [Required, Range(0, double.MaxValue)] public decimal? Kilometraje { get; init; }
     [StringLength(1000)] public string? Observaciones { get; init; }
 }
@@ -38,16 +54,31 @@ public sealed class ReportarInconsistenciaDto
     public Guid? LlantaEncontradaId { get; init; }
     public bool LlantaNoEncontrada { get; init; }
     [Required, StringLength(100)] public string IdentificadorEncontrado { get; init; } = string.Empty;
+    [StringLength(100)] public string? FichaSerial { get; init; }
+    public Guid? FichaMarcaId { get; init; }
+    public Guid? FichaReferenciaId { get; init; }
+    public Guid? FichaDimensionId { get; init; }
+    public bool? FichaEsReencauchada { get; init; }
+    public Guid? FichaMarcaReencaucheId { get; init; }
+    public int? FichaVida { get; init; }
+    [Range(0,100)] public decimal? FichaProfundidadInicial { get; init; }
     [StringLength(1000)] public string? Observacion { get; init; }
 }
 
-public sealed record InconsistenciaDto(Guid Id, Guid InspeccionId, string Centro, string Vehiculo, string Posicion, string? LlantaEsperada, Guid? LlantaEncontradaId, string LlantaEncontrada, string Tecnico, DateTimeOffset Fecha, string Estado, string? Autorizador, string? ObservacionAutorizacion, string? Observacion,IReadOnlyList<EvidenciaDto> Evidencias);
+public sealed record InconsistenciaDto(Guid Id, Guid InspeccionId, string Centro, string Vehiculo, string Posicion, string? LlantaEsperada, Guid? LlantaEncontradaId, string LlantaEncontrada, string Tecnico, DateTimeOffset Fecha, string Estado, string? Autorizador, string? ObservacionAutorizacion, string? Observacion, string? FichaSerial, Guid? FichaMarcaId, Guid? FichaReferenciaId, Guid? FichaDimensionId, bool? FichaEsReencauchada, Guid? FichaMarcaReencaucheId, int? FichaVida, decimal? FichaProfundidadInicial, IReadOnlyList<EvidenciaDto> Evidencias);
 public sealed class ResolverInconsistenciaDto { [Required, StringLength(1000)] public string Observacion { get; init; } = string.Empty; public Guid? LlantaInventarioId { get; init; } }
 public sealed record AlertaDto(Guid Id,string Tipo,string Descripcion,string Estado,DateTimeOffset Fecha,Guid InspeccionId,string Vehiculo,string Centro,string Posicion,string? Llanta,IReadOnlyList<AlertaEventoDto> Historial);
 public sealed record AlertaEventoDto(DateTimeOffset Fecha,string EstadoAnterior,string EstadoNuevo,string Usuario,string? Observacion);
 public sealed record CambiarAlertaDto(string Estado,string? Observacion);
 public sealed record EvidenciaDto(Guid Id,string NombreArchivo,string MimeType,long TamanoBytes,string Hash,DateTimeOffset Fecha,bool Activo);
-public sealed record LlantaBusquedaInspeccionDto(Guid Id,string Codigo,string Serial,string Marca,string Referencia,string Dimension,string Estado);
+public sealed record LlantaBusquedaInspeccionDto(Guid Id,string Codigo,string? Serial,string Marca,string Referencia,string Dimension,string Estado)
+{
+    public Guid? MarcaReencaucheId { get; init; }
+    public string? MarcaReencauche { get; init; }
+    public int NumeroReencauches { get; init; }
+    public bool EsReencauchada => NumeroReencauches > 0;
+    public long Vida => (long)NumeroReencauches + 1;
+}
 public sealed record ResumenInspeccionesDto(int PendientesHoy,int RealizadasHoy,int ConNovedad,int ConAlerta);
 public sealed record HistorialInspeccionDto(Guid Id,DateTimeOffset Fecha,string Placa,string NumeroInterno,string Centro,string Tecnico,decimal? Kilometraje,int Inspeccionadas,int Novedades,int Alertas,string Estado);
 

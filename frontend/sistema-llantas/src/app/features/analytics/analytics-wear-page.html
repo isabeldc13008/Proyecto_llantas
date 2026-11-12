@@ -1,0 +1,42 @@
+<section aria-labelledby="wear-heading">
+ <div class="section-title"><div><h2 id="wear-heading">Desgaste y vida útil</h2><p>Evidencia observada, sin pronósticos de vida restante.</p></div><button (click)="load()" [disabled]="loading()">Actualizar</button></div>
+ <div class="filters"><label>Comparar por<select [(ngModel)]="group" (ngModelChange)="regroup()"><option value="marca">Marca</option><option value="referencia">Referencia</option><option value="dimension">Dimensión</option><option value="centro">Centro actual</option><option value="vehiculo">Vehículo actual</option><option value="posicion">Posición actual por vehículo</option></select></label>
+ <label>Indicador del gráfico<select [(ngModel)]="metric"><option value="profundidadMedia">Profundidad mínima media (mm)</option><option value="kmMedio">Recorrido observado medio (km)</option></select></label></div>
+ @if(loading()){<p role="status">Consultando desgaste…</p>}
+ @if(error()){<p class="error" role="alert">{{error()}} <button (click)="load()">Reintentar</button></p>}
+ @if(data();as d){
+  <p class="method">{{d.total.total}} llantas del alcance · Consulta {{d.generadoEn|date:'dd/MM/yyyy HH:mm'}}. {{d.procedencia}}.</p>
+  <section class="metrics">
+   <article><span>Profundidad mínima media</span><strong>{{display(d.total.profundidadMedia)}} @if(d.total.profundidadMedia!==null){<small>mm</small>}</strong><p>Muestra {{d.total.muestraProfundidad}} / {{d.total.total}} llantas · Cobertura {{coverage(d.total.muestraProfundidad,d.total.total)}}.</p><p>Mínimo de exterior, centro e interior de la última inspección finalizada visible; promedio solo de mediciones completas no negativas. 0,0 mm es una lectura real.</p><p>{{d.total.total-d.total.muestraProfundidad}} sin última lectura completa válida. No se sustituyen por lecturas anteriores.</p></article>
+   <article><span>Recorrido observado medio</span><strong>{{display(d.total.kmMedio)}} @if(d.total.kmMedio!==null){<small>km</small>}</strong><p>Muestra {{d.total.muestraKm}} / {{d.total.total}} llantas · Cobertura {{coverage(d.total.muestraKm,d.total.total)}}.</p><p>Suma por llanta de tramos cerrados visibles, todos con fechas, odómetros y recorrido consistentes y sin solapamientos. Luego promedio entre llantas evaluables.</p><p>{{d.total.total-d.total.muestraKm}} sin tramos cerrados o con evidencia inconsistente. Excluye recorrido de montajes abiertos y no certifica toda la vida de la llanta.</p></article>
+   <article><span>Vida útil proyectada</span><strong>Sin datos suficientes</strong><p>No se calcula vida restante ni fecha de cambio. El recorrido observado es evidencia parcial, no una proyección ni vida útil total certificada.</p></article>
+  </section>
+  <section class="panel"><h3>Comparativo descriptivo</h3><p>Agrupación según atributos y asignación actuales; los valores incluyen historial visible anterior. No representa desempeño causal ni un ranking de marcas. Barras relativas al máximo de esta página.</p>
+   @for(g of d.grupos.items;track g.id){<div class="bar-item"><div><span>{{g.nombre}}</span><b>{{display(g[metric])}} @if(g[metric]!==null){ {{metric==='kmMedio'?'km':'mm'}} }</b></div><div class="track" aria-hidden="true"><span [style.width.%]="width(g)"></span></div><p>Muestra {{metric==='kmMedio'?g.muestraKm:g.muestraProfundidad}} / {{g.total}} · Cobertura {{coverage(metric==='kmMedio'?g.muestraKm:g.muestraProfundidad,g.total)}}. @if(g[metric]===null){Sin evidencia válida para este indicador; consulta las definiciones anteriores.}</p></div>}
+   @empty{<p>No hay grupos en esta página.</p>}
+   <footer class="pagination"><span>{{d.grupos.totalItems}} grupos · Página {{page}} / {{d.grupos.totalPages||1}}</span><button (click)="changePage(page-1)" [disabled]="page<=1">Grupos anteriores</button><button (click)="changePage(page+1)" [disabled]="page>=d.grupos.totalPages">Más grupos</button></footer>
+  </section>
+  <section class="panel"><h3>Explorar evidencia por llanta</h3><div class="table-scroll" role="region" aria-label="Evidencia de desgaste" tabindex="0"><table><thead><tr><th>Llanta</th><th>Profundidad mínima (mm)</th><th>Recorrido observado (km)</th><th>Historial</th></tr></thead><tbody>
+   @for(t of d.llantas.items;track t.id){<tr><td><a [routerLink]="['/analitica/llantas',t.id]" [queryParams]="{volver:router.url}">{{t.codigo}}</a></td><td>{{display(t.profundidad)}}</td><td>{{display(t.km)}}</td><td><button (click)="select(t.id)" [attr.aria-pressed]="selected()===t.id">Ver evolución e intervenciones</button></td></tr>}@empty{<tr><td colspan="4">No hay llantas en esta página.</td></tr>}
+  </tbody></table></div></section>
+  <footer class="pagination"><span>{{d.llantas.totalItems}} llantas · Página {{tirePage}} / {{d.llantas.totalPages||1}}</span><button (click)="changeTirePage(tirePage-1)" [disabled]="tirePage<=1">Llantas anteriores</button><button (click)="changeTirePage(tirePage+1)" [disabled]="tirePage>=d.llantas.totalPages">Más llantas</button></footer>
+ }
+ @if(selected()){
+  <section class="panel evidence"><div class="section-title"><h3>Evolución individual</h3><a [routerLink]="['/analitica/llantas',selected()]" [queryParams]="{volver:router.url}">Abrir ficha individual</a><button (click)="clearSelection()">Cerrar evidencia</button></div>
+   @if(detailLoading()){<p role="status">Cargando lecturas…</p>}
+   @if(detailError()){<p role="alert" class="error">{{detailError()}} <button (click)="select(selected())">Reintentar</button></p>}
+   @if(wear();as w){<h4>{{w.codigo}}</h4><p>{{w.lecturasCompletas}} / {{w.totalLecturas}} lecturas completas; {{w.lecturasConTramo}} / {{w.totalLecturas}} vinculadas a tramo.</p><app-tire-depth-chart [mediciones]="w.mediciones"/>
+    <h4>Desgaste por 1.000 km · misma zona física</h4><p>{{validRates()}} / {{w.tasas?.length??0}} comparaciones de zona evaluables. Diferencia de profundidad × 1.000 / incremento de km, entre lecturas consecutivas del mismo tramo. Exterior e interior usan la referencia normalizada, no el lado físico actual.</p>
+    <div class="table-scroll" role="region" aria-label="Tasas de desgaste" tabindex="0"><table><thead><tr><th>Intervalo de registro</th><th>Zona de referencia</th><th>Δ km</th><th>mm / 1.000 km</th><th>Motivo no evaluable</th></tr></thead><tbody>
+     @for(t of w.tasas??[];track $index){<tr><td>{{readingDate(t.desde)|date:'dd/MM/yyyy HH:mm'}} → {{readingDate(t.hasta)|date:'dd/MM/yyyy HH:mm'}}</td><td>{{t.zona}}</td><td>{{display(t.km)}}</td><td>{{display(t.mmPorMilKm)}}</td><td>{{t.motivo??'Comparación evaluable'}}</td></tr>}@empty{<tr><td colspan="5">Sin datos suficientes: se requieren al menos dos mediciones comparables.</td></tr>}
+    </tbody></table></div><details><summary>Limitaciones de la serie</summary>@for(l of w.limitaciones;track l){<p>{{l}}</p>}</details>
+   }
+   <h4>Montajes, desmontajes, rotaciones y giros registrados</h4><p>Movimientos visibles en el alcance autorizado. Fecha de registro, excepto giros con fecha explícita. No se infieren operaciones ausentes.</p>
+   @if(historyLoading()){<p role="status">Cargando intervenciones…</p>}
+   @if(historyError()){<p role="alert" class="error">{{historyError()}} <button (click)="loadHistory()">Reintentar</button></p>}
+   @if(history();as h){<div class="table-scroll" role="region" aria-label="Historial de intervenciones" tabindex="0"><table><thead><tr><th>Fecha / movimiento</th><th>Operación / responsable registrado</th><th>Origen → destino</th><th>Motivo</th></tr></thead><tbody>
+    @for(i of h.items;track i.id){<tr><td>{{i.fecha|date:'dd/MM/yyyy HH:mm'}}<small>{{i.numero}}</small></td><td>{{i.tipo}}<small>{{i.usuario||'Sin responsable registrado'}} @if(i.kilometrajeGiro!==null){ · {{display(i.kilometrajeGiro)}} km}</small></td><td>{{i.origen??'Sin posición de origen'}} → {{i.destino??'Destino no documentado'}}</td><td>{{i.motivo||'Sin motivo registrado'}}</td></tr>}@empty{<tr><td colspan="4">Sin intervenciones visibles registradas.</td></tr>}
+   </tbody></table></div><footer class="pagination"><span>{{h.totalItems}} intervenciones · Página {{h.pageNumber}} / {{h.totalPages||1}}</span><button (click)="loadHistory(h.pageNumber-1)" [disabled]="h.pageNumber<=1">Anteriores</button><button (click)="loadHistory(h.pageNumber+1)" [disabled]="h.pageNumber>=h.totalPages">Siguientes</button></footer>}
+  </section>
+ }
+</section>

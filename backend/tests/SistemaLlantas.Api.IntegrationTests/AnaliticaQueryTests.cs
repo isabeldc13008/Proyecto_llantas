@@ -12,13 +12,26 @@ namespace SistemaLlantas.Api.IntegrationTests;
 /// <summary>Compiles real SQL Server queries, but substitutes readers. Not a SQL execution/integration test.</summary>
 public sealed class AnaliticaQueryTests
 {
+    [Theory][InlineData("marca")][InlineData("referencia")][InlineData("dimension")][InlineData("centro")][InlineData("vehiculo")][InlineData("posicion")]
+    public void WearAggregatesAndPagesOnServerWithSharedScope(string group)
+    {
+        using var db = Context(new(false));var service = new AnaliticaService(db);var center = Guid.NewGuid();var vehicle = Guid.NewGuid();
+        var f = new FiltroMantenimiento { CentroId = center, VehiculoId = vehicle, DimensionId = Guid.NewGuid(), Montaje = "TODAS", Vista = "TODAS" };
+        var q = service.ConsultaDesgaste(f, group, new(false, [center]));
+        var sql = q.GroupBy(x => new { x.GrupoId, x.Grupo }).OrderBy(g => g.Key.GrupoId).Skip(20).Take(20)
+            .Select(g => new { Total = g.Count(), Muestra = g.Count(x => x.Profundidad != null), Profundidad = g.Average(x => x.Profundidad), Km = g.Average(x => x.Km) }).ToQueryString();
+        Assert.Contains("GROUP BY", sql);Assert.Contains("OFFSET", sql);Assert.Contains("FETCH NEXT", sql);
+        Assert.Contains(center.ToString(), sql);Assert.Contains(vehicle.ToString(), sql);Assert.Contains("Dimension", sql);
+        Assert.Empty(db.ChangeTracker.Entries());
+        Assert.Throws<UnauthorizedAccessException>(() => service.ConsultaDesgaste(f, group, new(false, [])));
+    }
     private static LlantasDbContext Context(SqlProbe probe) => new(new DbContextOptionsBuilder<LlantasDbContext>()
         .UseSqlServer("Server=localhost;Database=AnaliticaQueryOnly;Integrated Security=True;TrustServerCertificate=True")
         .AddInterceptors(probe, new NoConnection()).Options);
 
     [Theory]
     [InlineData("resumen")] [InlineData("marca")] [InlineData("centro")] [InlineData("posiciones")]
-    [InlineData("llantas")] [InlineData("movimientos")] [InlineData("opciones")]
+    [InlineData("llantas")] [InlineData("movimientos")] [InlineData("opciones")] [InlineData("desgaste-flota")]
     public async Task QueriesTranslateWithoutClientEvaluatingHistory(string endpoint)
     {
         var probe = new SqlProbe(endpoint is "resumen" or "marca" or "centro");
@@ -26,6 +39,9 @@ public sealed class AnaliticaQueryTests
         var scope = new AlcanceCentros(false, [Guid.NewGuid()]);var filter = new FiltroAnalitica { TipoVehiculo = "Camión" };
         switch (endpoint)
         {
+            case "desgaste-flota":
+                var wear = await service.DesgasteFlotaAsync(new() { Montaje = "TODAS", VehiculoId = Guid.NewGuid() }, "posicion", 1, scope, default);
+                Assert.Equal(0, wear.Total.Total);Assert.Null(wear.Total.ProfundidadMedia);Assert.Null(wear.Total.KmMedio);break;
             case "llantas": await service.LlantasAsync(filter, "alertas", scope, default);break;
             case "resumen": var summary = await service.ResumenAsync(filter, scope, default);Assert.Equal(1, summary.Total);Assert.Equal(1, summary.SinKm);Assert.Null(summary.EnOperacion.Promedio);break;
             case "marca": case "centro": var groups = await service.CompararAsync(filter, endpoint, scope, default);Assert.Single(groups.Items);Assert.False(groups.Items[0].MuestraSuficiente);break;
@@ -90,12 +106,22 @@ public sealed class AnaliticaQueryTests
         await Assert.ThrowsAsync<ValidacionException>(() => new AnaliticaService(db).LlantasAsync(new(), "inventado", new(true, []), default));
         Assert.Empty(probe.Commands);
     }
+    [Theory][InlineData(false)][InlineData(true)]
+    public async Task WearNormalizesKnownTurnsAndRejectsHiddenEvidence(bool hidden)
+    {
+        var probe=new SqlProbe(false,wear:true,orientation:true,hidden:hidden);await using var db=Context(probe);
+        var result=await new AnaliticaService(db).DesgasteAsync(Guid.NewGuid(),new(false,[Guid.NewGuid()]),default);
+        Assert.Equal(2,result.Mediciones.Count);
+        if(hidden)Assert.All(result.Mediciones,m=>Assert.Null(m.Normalizada));
+        else {Assert.False(result.Mediciones[0].Normalizada!.Invertida);Assert.True(result.Mediciones[1].Normalizada!.Invertida);Assert.Equal(6,result.Mediciones[1].Normalizada!.Exterior);Assert.Equal(8,result.Mediciones[1].Lectura.Exterior);}
+        Assert.Equal(6,probe.Commands.Count);Assert.Contains("CentroId",probe.Commands[5]);Assert.Contains("DFechaGiro",probe.Commands[5]);Assert.Empty(db.ChangeTracker.Entries());
+    }
     private sealed class NoConnection : DbConnectionInterceptor
     {
         public override ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = default)
             => ValueTask.FromResult(InterceptionResult.Suppress());
     }
-    private sealed class SqlProbe(bool supplyTire, int tireCount = 1, bool wear = false) : DbCommandInterceptor
+    private sealed class SqlProbe(bool supplyTire, int tireCount = 1, bool wear = false, bool orientation = false, bool hidden = false) : DbCommandInterceptor
     {
         public List<string> Commands { get; } = [];
         public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
@@ -105,6 +131,18 @@ public sealed class AnaliticaQueryTests
             {
                 table.Columns.Add("Id", typeof(Guid));table.Columns.Add("Codigo", typeof(string));table.Columns.Add("CentroId", typeof(Guid));
                 table.Rows.Add(Guid.NewGuid(), "LL-1", Guid.NewGuid());
+            }
+            else if(orientation && Commands.Count == 2)
+            {
+                object[] values=[Guid.NewGuid(),Guid.NewGuid(),new DateTimeOffset(2026,10,1,10,0,0,TimeSpan.Zero),Guid.NewGuid(),"P1",1000m,8m,7m,6m,new DateTimeOffset(2026,10,1,10,1,0,TimeSpan.Zero)];
+                for(var i=0;i<values.Length;i++)table.Columns.Add("c"+i,values[i].GetType());table.Rows.Add(values);
+                values[0]=Guid.NewGuid();values[1]=Guid.NewGuid();values[2]=((DateTimeOffset)values[2]).AddDays(2);values[9]=((DateTimeOffset)values[9]).AddDays(2);table.Rows.Add(values);
+            }
+            else if(orientation && Commands.Count == 5){table.Columns.Add("hidden",typeof(bool));table.Rows.Add(hidden);}
+            else if(orientation && Commands.Count == 6)
+            {
+                object[] values=[Guid.NewGuid(),new DateTimeOffset(2026,10,2,10,0,0,TimeSpan.Zero),1000m,Guid.NewGuid(),true];
+                for(var i=0;i<values.Length;i++)table.Columns.Add("c"+i,values[i].GetType());table.Rows.Add(values);
             }
             else if (supplyTire && Commands.Count == 1)
             {

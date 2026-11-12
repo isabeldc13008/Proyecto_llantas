@@ -19,7 +19,7 @@ describe('Odómetro común en montajes',()=>{
   const fixture=TestBed.createComponent(MovementsPage);const c=fixture.componentInstance;c.centers.set([{id:'c1'}]);c.setModeActive=mode==='juego';fixture.detectChanges();
   if(mode==='programado'){http.expectOne('/api/actividades/a1/montaje').flush({tipo:'Montaje',vehiculoId:'v1',motivo:'Montar',observaciones:'',asignaciones:[]});await Promise.resolve();http.expectOne('/api/operaciones/vehiculos/v1').flush(vehicle);}
   else{http.expectOne(r=>r.url==='/api/operaciones/vehiculos').flush({items:[vehicle]});http.expectOne('/api/operaciones/vehiculos/v1').flush(vehicle);http.expectOne('/api/operaciones/solicitudes').flush([]);http.expectOne(r=>r.url==='/api/operaciones/llantas-disponibles').flush([]);}
-  await Promise.resolve();fixture.detectChanges();for(const req of http.match(r=>r.url==='/api/operaciones/llantas-disponibles'))req.flush([]);await fixture.whenStable();fixture.detectChanges();
+  await Promise.resolve();fixture.detectChanges();for(const req of http.match(r=>r.url==='/api/operaciones/llantas-disponibles'))req.flush([]);for(const req of http.match(r=>r.url==='/api/operaciones/trabajos-montaje'))req.flush([]);await fixture.whenStable();fixture.detectChanges();
   const input=fixture.nativeElement.querySelector('input[type=number]') as HTMLInputElement;expect(input.min).toBe('100000');expect(input.value).toBe('100000');expect(fixture.nativeElement.textContent).toContain('Odómetro registrado');fixture.destroy();
  });
 });

@@ -27,6 +27,8 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
     public DbSet<CondicionLlanta> CondicionesLlanta => Set<CondicionLlanta>();
     public DbSet<CausaLlanta> CausasLlanta => Set<CausaLlanta>();
     public DbSet<RecomendacionInspeccion> RecomendacionesInspeccion => Set<RecomendacionInspeccion>();
+    public DbSet<CondicionCausaLlanta> CondicionesCausasLlanta => Set<CondicionCausaLlanta>();
+    public DbSet<CausaRecomendacionInspeccion> CausasRecomendacionesInspeccion => Set<CausaRecomendacionInspeccion>();
     public DbSet<InconsistenciaInspeccion> InconsistenciasInspeccion => Set<InconsistenciaInspeccion>();
     public DbSet<LlantaTemporal> LlantasTemporales => Set<LlantaTemporal>();
     public DbSet<MovimientoLlanta> MovimientosLlanta => Set<MovimientoLlanta>();
@@ -64,11 +66,42 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
             modelBuilder.Entity(type).Property(nameof(EntidadAuditable.RowVersion)).IsRowVersion();
 
         ExistingDatabaseSchemaConfiguration.Configure(modelBuilder);
+        modelBuilder.Entity<Movimiento>().Property(x => x.FechaGiro).HasColumnName("DFechaGiro");
+        modelBuilder.Entity<Movimiento>().Property(x => x.KilometrajeGiro).HasColumnName("NKilometrajeGiro").HasPrecision(18, 2);
+        modelBuilder.Entity<Movimiento>().Property(x => x.TecnicoGiroId).HasColumnName("GTecnicoGiroId");
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.DestinoSolicitadoJson).HasColumnName("SDestinoSolicitadoJson");
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.HistorialRevisionJson).HasColumnName("SHistorialRevisionJson");
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.Ejecutor).HasColumnName("SEjecutor").HasMaxLength(100);
+        modelBuilder.Entity<SolicitudOperacion>().Property(x=>x.FechaEjecucion).HasColumnName("DFechaEjecucion");
+        modelBuilder.Entity<Marca>().Property(x => x.Abreviatura).HasColumnName("SAbreviatura").HasMaxLength(2);
+        modelBuilder.Entity<Marca>().HasIndex(x => x.Abreviatura).IsUnique().HasDatabaseName("UX_Marca_SAbreviatura").HasFilter("[SAbreviatura] IS NOT NULL");
+        modelBuilder.Entity<Llanta>().HasIndex(x => x.Serial).HasFilter("[SSerial] IS NOT NULL");
+        modelBuilder.Entity<Llanta>().Property(x => x.IdentificadorOriginal).HasColumnName("SIdentificadorOriginal").HasMaxLength(100);
+        modelBuilder.Entity<Llanta>().HasIndex(x => x.IdentificadorOriginal).IsUnique().HasDatabaseName("UX_Llanta_SIdentificadorOriginal").HasFilter("[SIdentificadorOriginal] IS NOT NULL");
+        modelBuilder.Entity<Llanta>().Property(x => x.DatosImportacionJson).HasColumnName("SDatosImportacionJson");
+        modelBuilder.Entity<ConsecutivoCodigo>(b => { b.ToTable("TBL_ConsecutivoCodigo", "dbo"); b.HasKey(x=>x.Ambito); b.Property(x=>x.Ambito).HasColumnName("SAmbito").HasMaxLength(80); b.Property(x=>x.Ultimo).HasColumnName("NUltimo"); });
         modelBuilder.Entity<Llanta>().HasQueryFilter(x => x.Activo);
     }
 
+    private bool deferAccept;
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        if (Database.CurrentTransaction is null && ChangeTracker.Entries().Any(x=>x.State==EntityState.Added && x.Entity is CatalogoBase or Llanta))
+        {
+            return await Database.CreateExecutionStrategy().ExecuteAsync(async () => {
+                await using var tx=await Database.BeginTransactionAsync(cancellationToken);
+                deferAccept=true;
+                try {
+                    foreach(var audit in ChangeTracker.Entries<Auditoria>().Where(x=>x.State==EntityState.Added).ToArray())audit.State=EntityState.Detached;
+                    var count=await SaveChangesAsync(cancellationToken);
+                    await tx.CommitAsync(cancellationToken);
+                    ChangeTracker.AcceptAllChanges();
+                    return count;
+                } finally { deferAccept=false; }
+            });
+        }
+        try { await SistemaLlantas.Infrastructure.Services.CodigosAutomaticos.Preparar(this,cancellationToken); }
+        catch(ArgumentException ex) { throw new SistemaLlantas.Application.Common.ValidacionException(ex.Message); }
         await SistemaLlantas.Infrastructure.Services.ReglaLlantaTerminal.ValidarCambiosAsync(this,cancellationToken);
         var cambios = ChangeTracker.Entries<EntidadAuditable>()
             .Where(x => x.State is EntityState.Added or EntityState.Modified)
@@ -80,7 +113,7 @@ public sealed class LlantasDbContext(DbContextOptions<LlantasDbContext> options)
                 ValoresNuevos = JsonSerializer.Serialize(x.CurrentValues.Properties.ToDictionary(p => p.Name, p => EsSensible(p.Name) ? "***" : x.CurrentValues[p]))
             }).ToList();
         Auditorias.AddRange(cambios);
-        return await base.SaveChangesAsync(cancellationToken);
+        return await base.SaveChangesAsync(!deferAccept,cancellationToken);
     }
 
     private static bool EsSensible(string nombre) => nombre.Contains("password", StringComparison.OrdinalIgnoreCase) || nombre.Contains("token", StringComparison.OrdinalIgnoreCase);

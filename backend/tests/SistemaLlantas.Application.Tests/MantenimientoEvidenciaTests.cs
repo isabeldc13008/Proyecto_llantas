@@ -10,7 +10,7 @@ public sealed class MantenimientoEvidenciaTests
     [Fact] public void MissingReadingRequiresVerification()
     {
         var result = EvidenciaMantenimiento.Evaluar(new(0, null, null, null, null));
-        Assert.True(result.EnCola);
+        Assert.False(result.EnCola);
         Assert.Equal("CONDICION_POR_VERIFICAR", result.Clasificacion.Valor);
         Assert.Equal("SIN_MEDICION", result.MotivoPrincipal!.Codigo);
     }
@@ -27,7 +27,7 @@ public sealed class MantenimientoEvidenciaTests
     {
         var complete = Reading(3);
         var result = EvidenciaMantenimiento.Evaluar(new(0, null, null, Reading(null), complete));
-        Assert.True(result.EnCola);
+        Assert.False(result.EnCola);
         Assert.Equal("MEDICION_INCOMPLETA", result.MotivoPrincipal!.Codigo);
         Assert.Contains(result.MotivosSecundarios, x => x.Codigo == "COMPLETA_ANTERIOR");
     }
