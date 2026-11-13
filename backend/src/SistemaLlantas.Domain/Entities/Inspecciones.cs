@@ -134,14 +134,6 @@ public sealed class InconsistenciaInspeccion : EntidadAuditable
     public Guid? LlantaEncontradaId { get; set; }
     public Llanta? LlantaEncontrada { get; set; }
     public string IdentificadorEncontrado { get; set; } = string.Empty;
-    public string? FichaSerial { get; set; }
-    public Guid? FichaMarcaId { get; set; }
-    public Guid? FichaReferenciaId { get; set; }
-    public Guid? FichaDimensionId { get; set; }
-    public bool? FichaEsReencauchada { get; set; }
-    public Guid? FichaMarcaReencaucheId { get; set; }
-    public int? FichaVida { get; set; }
-    public decimal? FichaProfundidadInicial { get; set; }
     public string TecnicoId { get; set; } = string.Empty;
     public string Observacion { get; set; } = string.Empty;
     public EstadoInconsistencia Estado { get; set; } = EstadoInconsistencia.PendienteAutorizacion;

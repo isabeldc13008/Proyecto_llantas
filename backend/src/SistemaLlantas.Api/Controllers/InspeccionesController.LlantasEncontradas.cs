@@ -46,7 +46,7 @@ public sealed partial class InspeccionesController
     public sealed record ReferenciaEncontradaDto(Guid Id,string Codigo,string Nombre,Guid MarcaId);
     public sealed record CatalogosLlantaEncontradaDto(IReadOnlyList<OpcionInspeccionDto> Marcas,IReadOnlyList<ReferenciaEncontradaDto> Referencias,IReadOnlyList<OpcionInspeccionDto> Dimensiones,IReadOnlyList<OpcionInspeccionDto> Tipos);
 
-    [HttpGet("{id:guid}/llantas-encontradas/opciones"),Authorize(Policy="Inspecciones.ReportarInconsistencia")]
+    [HttpGet("{id:guid}/llantas-encontradas/opciones"),Authorize(Policy="Inspecciones.Crear")]
     public async Task<CatalogosLlantaEncontradaDto> CatalogosLlantaEncontrada(Guid id,CancellationToken ct)
     {
         if(!await InspeccionAsignable(id).AnyAsync(ct))throw new UnauthorizedAccessException("La inspección no te pertenece, está finalizada o fuera de alcance.");
