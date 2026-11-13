@@ -129,7 +129,9 @@ public sealed partial class CargaMasivaController
                 if(V(field)=="")return null;
                 if(!decimal.TryParse(V(field),NumberStyles.AllowDecimalPoint|NumberStyles.AllowLeadingSign,CultureInfo.InvariantCulture,out var n)||n<0||n>max||decimal.Round(n,2)!=n){E(field,"Número fuera de rango; máximo dos decimales y punto decimal.");return null;}return n;
             }
-            var brand=Find(brands,"Marca");var rf=Find(refs.Where(x=>x.MarcaId==brand?.Id),"Referencia");var dim=Find(dims,"Dimension");var type=Find(types,"TipoLlanta");var center=Find(centers,"Centro");var state=Find(states,"Estado");
+            var brandMatches=brands.Where(x=>string.Equals(x.Codigo,V("Marca"),StringComparison.OrdinalIgnoreCase)||string.Equals(x.Nombre,V("Marca"),StringComparison.OrdinalIgnoreCase)||string.Equals(x.Abreviatura,V("Marca"),StringComparison.OrdinalIgnoreCase)).Take(2).ToList();
+            if(brandMatches.Count!=1)E("Marca","Catálogo inexistente o ambiguo.");
+            var brand=brandMatches.SingleOrDefault();var rf=Find(refs.Where(x=>x.MarcaId==brand?.Id),"Referencia");var dim=Find(dims,"Dimension");var type=Find(types,"TipoLlanta");var center=Find(centers,"Centro");var state=Find(states,"Estado");
             if(brand?.Abreviatura is not {Length:2} abbr || abbr.Any(c=>c is < 'A' or > 'Z'))E("Marca","La marca requiere abreviatura de dos letras A-Z configurada.");
             if(center is not null&&!scope.Autoriza(center.Id))E("Centro","Centro fuera del alcance autorizado.");
             var original=V("IdentificadorOriginal").ToUpperInvariant();
