@@ -21,6 +21,23 @@ public sealed class CatalogoService(LlantasDbContext db) : ICatalogoService
                 .Select(x => new CatalogoDto(x.Id, x.Codigo, x.Nombre, x.Activo, x.RegionalId, x.Regional == null ? null : x.Regional.Nombre,x.Relevancia)).ToListAsync(ct);
             return new(centrosItems, c.Pagina, c.Tamano, totalCentros);
         }
+        if (tipo.Equals("referencias", StringComparison.OrdinalIgnoreCase))
+        {
+            var referencias = db.Referencias.IgnoreQueryFilters();
+            if (c.Activo.HasValue) referencias = referencias.Where(x => x.Activo == c.Activo);
+            if (!string.IsNullOrWhiteSpace(c.Search))
+            {
+                var s = c.Search.Trim();
+                referencias = referencias.Where(x => x.Codigo.Contains(s) || x.Nombre.Contains(s) || x.Marca.Nombre.Contains(s));
+            }
+
+            var totalReferencias = await referencias.CountAsync(ct);
+            var referenciasItems = await referencias.OrderBy(x => x.Nombre)
+                .Skip((c.Pagina - 1) * c.Tamano).Take(c.Tamano)
+                .Select(x => new CatalogoDto(x.Id, x.Codigo, x.Nombre, x.Activo, x.MarcaId, x.Marca.Nombre))
+                .ToListAsync(ct);
+            return new(referenciasItems, c.Pagina, c.Tamano, totalReferencias);
+        }
         var q = Set(tipo).IgnoreQueryFilters();
         if (c.Activo.HasValue) q = q.Where(x => x.Activo == c.Activo);
         if (!string.IsNullOrWhiteSpace(c.Search)) { var s = c.Search.Trim(); q = q.Where(x => x.Codigo.Contains(s) || x.Nombre.Contains(s)); }
