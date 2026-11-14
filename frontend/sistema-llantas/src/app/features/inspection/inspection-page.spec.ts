@@ -59,15 +59,6 @@ describe('InspectionPage vehicle search', () => {
 
   function position(id:string){return {id,code:id,side:'I',tire:'LL-'+id,brand:'M',reference:'R',dimension:'D',state:'normal' as const,outer:0,center:1,inner:2,condition:'c',cause:'',recommendation:'r',notes:'',saved:false,identification:'confirmed' as const};}
 
-  it('filtra causas y recomendaciones y limpia las selecciones dependientes',()=>{
-    const p=TestBed.runInInjectionContext(()=>new InspectionPage());
-    p.positions.set([position('p')]);p.selectedId.set('p');
-    p.options.set({condiciones:[{id:'cond',codigo:'C',nombre:'Daño'}],causas:[{id:'cause',codigo:'CA',nombre:'Causa'}],recomendaciones:[{id:'rec',codigo:'R',nombre:'Recomendación'}],condicionCausas:[{origenId:'cond',destinoId:'cause'}],causaRecomendaciones:[{origenId:'cause',destinoId:'rec'}]});
-    p.conditionChanged('cond');expect(p.filteredCauses().map(x=>x.id)).toEqual(['cause']);expect(p.selected().cause).toBe('');
-    p.causeChanged('cause');expect(p.filteredRecommendations().map(x=>x.id)).toEqual(['rec']);expect(p.selected().recommendation).toBe('');
-    p.recommendationChanged('rec');p.conditionChanged('cond');expect(p.selected().cause).toBe('');expect(p.selected().recommendation).toBe('');
-  });
-
   it('guarda una vez, vuelve al esquema y destaca la siguiente pendiente conservando su borrador',async()=>{
     const p=TestBed.runInInjectionContext(()=>new InspectionPage());(p as any).inspectionId='i';
     const first=position('p1'),second={...position('p2'),notes:'Pendiente local'};

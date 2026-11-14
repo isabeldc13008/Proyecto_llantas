@@ -19,8 +19,7 @@ public sealed record ContextoInspeccionDto(Guid VehiculoId, string NumeroInterno
 }
 public sealed record VehiculoInspeccionDto(Guid Id, string NumeroInterno, string Placa, string Tipo, Guid CentroId, string CentroCodigo, string CentroNombre, string? Regional);
 public sealed record OpcionInspeccionDto(Guid Id, string Codigo, string Nombre);
-public sealed record RelacionInspeccionDto(Guid OrigenId, Guid DestinoId);
-public sealed record OpcionesInspeccionDto(IReadOnlyList<OpcionInspeccionDto> Condiciones, IReadOnlyList<OpcionInspeccionDto> Causas, IReadOnlyList<OpcionInspeccionDto> Recomendaciones, IReadOnlyList<RelacionInspeccionDto> CondicionCausas, IReadOnlyList<RelacionInspeccionDto> CausaRecomendaciones);
+public sealed record OpcionesInspeccionDto(IReadOnlyList<OpcionInspeccionDto> Condiciones, IReadOnlyList<OpcionInspeccionDto> Causas, IReadOnlyList<OpcionInspeccionDto> Recomendaciones);
 public sealed record InspeccionDto(Guid Id, Guid VehiculoId, string Vehiculo, Guid CentroId, string Centro, decimal? Kilometraje, string Estado, string TecnicoId, IReadOnlyList<DetalleInspeccionDto> Detalles,IReadOnlyList<InconsistenciaPosicionDto> Inconsistencias)
 {
     public IReadOnlyList<AlertaPosicionInspeccionDto> AlertasPosiciones { get; init; } = [];

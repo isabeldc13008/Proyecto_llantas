@@ -57,7 +57,7 @@ public sealed class InspeccionesConfiguration :
     IEntityTypeConfiguration<Inspeccion>, IEntityTypeConfiguration<InspeccionDetalle>, IEntityTypeConfiguration<InconsistenciaInspeccion>,
     IEntityTypeConfiguration<LlantaTemporal>, IEntityTypeConfiguration<MovimientoLlanta>, IEntityTypeConfiguration<EvidenciaInspeccion>,
     IEntityTypeConfiguration<ParametroReencauche>, IEntityTypeConfiguration<CondicionLlanta>, IEntityTypeConfiguration<CausaLlanta>,
-    IEntityTypeConfiguration<RecomendacionInspeccion>, IEntityTypeConfiguration<CondicionCausaLlanta>, IEntityTypeConfiguration<CausaRecomendacionInspeccion>
+    IEntityTypeConfiguration<RecomendacionInspeccion>
 {
     public void Configure(EntityTypeBuilder<Vehiculo> b) { Base(b,"Vehiculo"); b.Property(x=>x.NumeroInterno).HasMaxLength(50).IsRequired(); b.Property(x=>x.Placa).HasMaxLength(20); b.Property(x=>x.Tipo).HasMaxLength(100); b.Property(x=>x.Estado).HasMaxLength(30).IsRequired(); b.Property(x=>x.Kilometraje).HasPrecision(18,2); b.HasIndex(x=>x.NumeroInterno).IsUnique(); b.HasOne(x=>x.Centro).WithMany().HasForeignKey(x=>x.CentroId).OnDelete(DeleteBehavior.Restrict); b.HasOne(x=>x.ConfiguracionVehiculo).WithMany(x=>x.Vehiculos).HasForeignKey(x=>x.ConfiguracionVehiculoId).OnDelete(DeleteBehavior.Restrict); }
     public void Configure(EntityTypeBuilder<ConfiguracionVehiculo> b) { Base(b,"ConfiguracionVehiculo"); b.Property(x=>x.Codigo).HasMaxLength(50).IsRequired(); b.Property(x=>x.Nombre).HasMaxLength(150).IsRequired(); b.Property(x=>x.TipoVehiculo).HasMaxLength(100).IsRequired(); b.HasIndex(x=>x.Codigo).IsUnique(); }
@@ -75,20 +75,6 @@ public sealed class InspeccionesConfiguration :
     public void Configure(EntityTypeBuilder<CondicionLlanta> b) => Catalogo(b,"CondicionLlanta");
     public void Configure(EntityTypeBuilder<CausaLlanta> b) => Catalogo(b,"CausaLlanta");
     public void Configure(EntityTypeBuilder<RecomendacionInspeccion> b) => Catalogo(b,"RecomendacionInspeccion");
-    public void Configure(EntityTypeBuilder<CondicionCausaLlanta> b)
-    {
-        Base(b,"CondicionCausaLlanta");
-        b.HasIndex(x=>new{x.CondicionLlantaId,x.CausaLlantaId}).IsUnique();
-        b.HasOne(x=>x.CondicionLlanta).WithMany(x=>x.Causas).HasForeignKey(x=>x.CondicionLlantaId).OnDelete(DeleteBehavior.Cascade);
-        b.HasOne(x=>x.CausaLlanta).WithMany(x=>x.Condiciones).HasForeignKey(x=>x.CausaLlantaId).OnDelete(DeleteBehavior.Cascade);
-    }
-    public void Configure(EntityTypeBuilder<CausaRecomendacionInspeccion> b)
-    {
-        Base(b,"CausaRecomendacionInspeccion");
-        b.HasIndex(x=>new{x.CausaLlantaId,x.RecomendacionId}).IsUnique();
-        b.HasOne(x=>x.CausaLlanta).WithMany(x=>x.Recomendaciones).HasForeignKey(x=>x.CausaLlantaId).OnDelete(DeleteBehavior.Cascade);
-        b.HasOne(x=>x.Recomendacion).WithMany(x=>x.Causas).HasForeignKey(x=>x.RecomendacionId).OnDelete(DeleteBehavior.Cascade);
-    }
     private static void Base<T>(EntityTypeBuilder<T> b,string tabla) where T:EntidadAuditable { b.ToTable($"TBL_{tabla}"); b.HasKey(x=>x.Id); }
     private static void Catalogo<T>(EntityTypeBuilder<T> b,string tabla) where T:CatalogoBase { Base(b,tabla); b.Property(x=>x.Codigo).HasMaxLength(30).IsRequired(); b.Property(x=>x.Nombre).HasMaxLength(150).IsRequired(); b.HasIndex(x=>x.Codigo).IsUnique(); }
 }

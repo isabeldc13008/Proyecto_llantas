@@ -17,15 +17,10 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
         return await q.OrderBy(x => x.NumeroInterno).Select(x => new VehiculoInspeccionDto(x.Id, x.NumeroInterno, x.Placa, x.Tipo, x.CentroId, x.Centro.Codigo, x.Centro.Nombre,x.Centro.Regional!=null?x.Centro.Regional.Nombre:null)).ToListAsync(ct);
     }
 
-    public async Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct)
-    {
-        var conditions = await db.CondicionesLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct);
-        var causes = await db.CausasLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct);
-        var recommendations = await db.RecomendacionesInspeccion.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct);
-        var conditionCauses = await db.CondicionesCausasLlanta.AsNoTracking().Where(x => x.CondicionLlanta.Activo && x.CausaLlanta.Activo).Select(x => new RelacionInspeccionDto(x.CondicionLlantaId, x.CausaLlantaId)).ToListAsync(ct);
-        var causeRecommendations = await db.CausasRecomendacionesInspeccion.AsNoTracking().Where(x => x.CausaLlanta.Activo && x.Recomendacion.Activo).Select(x => new RelacionInspeccionDto(x.CausaLlantaId, x.RecomendacionId)).ToListAsync(ct);
-        return new(conditions, causes, recommendations, conditionCauses, causeRecommendations);
-    }
+    public async Task<OpcionesInspeccionDto> ObtenerOpcionesAsync(CancellationToken ct) => new(
+        await db.CondicionesLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct),
+        await db.CausasLlanta.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct),
+        await db.RecomendacionesInspeccion.AsNoTracking().Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionInspeccionDto(x.Id, x.Codigo, x.Nombre)).ToListAsync(ct));
 
     public async Task<ContextoInspeccionDto?> ObtenerContextoAsync(Guid vehiculoId, AlcanceCentros alcance, CancellationToken ct, bool permitirVehiculoGlobal = false)
     {
@@ -68,7 +63,6 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
         var detalle = await db.InspeccionesDetalle.Include(x => x.Inspeccion).SingleOrDefaultAsync(x => x.InspeccionId == id && x.PosicionVehiculoId == posicionId && x.Inspeccion.TecnicoId == usuario, ct);
         if (detalle is null) return null;
         if (detalle.Inspeccion.Estado != EstadoInspeccion.Borrador) throw new ConflictoException("Solo se puede modificar una inspección en borrador.");
-        await ValidarNovedadAsync(dto, ct);
         detalle.ProfundidadExterior = dto.ProfundidadExterior; detalle.ProfundidadCentro = dto.ProfundidadCentro; detalle.ProfundidadInterior = dto.ProfundidadInterior;
         detalle.CondicionLlantaId = dto.CondicionId; detalle.CausaLlantaId = dto.CausaId; detalle.RecomendacionId = dto.RecomendacionId;
         detalle.Observaciones = dto.Observaciones; detalle.UsuarioModificacion = usuario; detalle.FechaModificacion = DateTimeOffset.UtcNow;
@@ -83,30 +77,6 @@ public sealed class InspeccionService(LlantasDbContext db) : IInspeccionService
             alert.Historial.Add(new(){EstadoAnterior=EstadoAlerta.ABIERTA,EstadoNuevo=EstadoAlerta.ABIERTA,Observacion=$"Generada por regla {rule.Codigo}; lecturas {string.Join(", ",values)} mm.",UsuarioCreacion=usuario});db.AlertasInspeccion.Add(alert);
         }
         await db.SaveChangesAsync(ct); return await ObtenerAsync(id, new(true, []), ct);
-    }
-
-    private async Task ValidarNovedadAsync(GuardarDetalleInspeccionDto dto, CancellationToken ct)
-    {
-        if (!dto.CondicionId.HasValue)
-        {
-            if (dto.CausaId.HasValue || dto.RecomendacionId.HasValue) throw new ValidacionException("Selecciona una condición antes de causa o recomendación.");
-            return;
-        }
-        var condition = await db.CondicionesLlanta.AsNoTracking().SingleOrDefaultAsync(x => x.Id == dto.CondicionId.Value && x.Activo, ct)
-            ?? throw new ValidacionException("La condición no existe o está inactiva.");
-        if (!dto.CausaId.HasValue)
-        {
-            if (condition.RequiereCausa) throw new ValidacionException("La condición seleccionada requiere una causa.");
-            if (dto.RecomendacionId.HasValue && condition.Codigo != "SIN") throw new ValidacionException("Selecciona una causa antes de la recomendación.");
-            if (condition.Codigo == "SIN" && dto.RecomendacionId.HasValue && !await db.RecomendacionesInspeccion.AnyAsync(x => x.Id == dto.RecomendacionId.Value && x.Codigo == "CON" && x.Activo, ct))
-                throw new ValidacionException("Sin novedad solo permite la recomendación Continuar operación.");
-            return;
-        }
-        if (!await db.CondicionesCausasLlanta.AnyAsync(x => x.CondicionLlantaId == condition.Id && x.CausaLlantaId == dto.CausaId.Value && x.CondicionLlanta.Activo && x.CausaLlanta.Activo, ct))
-            throw new ValidacionException("La causa no corresponde a la condición seleccionada.");
-        if (!dto.RecomendacionId.HasValue) throw new ValidacionException("Selecciona una recomendación.");
-        if (!await db.CausasRecomendacionesInspeccion.AnyAsync(x => x.CausaLlantaId == dto.CausaId.Value && x.RecomendacionId == dto.RecomendacionId.Value && x.CausaLlanta.Activo && x.Recomendacion.Activo, ct))
-            throw new ValidacionException("La recomendación no corresponde a la causa seleccionada.");
     }
 
     public async Task<InconsistenciaDto> ReportarAsync(Guid inspeccionId, ReportarInconsistenciaDto dto, string usuario, CancellationToken ct)
