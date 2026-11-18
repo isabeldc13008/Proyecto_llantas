@@ -6,8 +6,8 @@ export interface PersistedReading {
 export interface PositionStatus {
   valid:boolean; novelty:boolean; alerts:string[]; inconsistencies:string[];
 }
-export function validInspectionReading(d:PersistedReading):boolean {
-  return !!d.llantaId&&!!d.condicionId&&!!d.recomendacionId&&
+export function validInspectionReading(d:PersistedReading,allowMissingRecommendation=false):boolean {
+  return !!d.llantaId&&!!d.condicionId&&(allowMissingRecommendation||!!d.recomendacionId)&&
     [d.exterior,d.centro,d.interior].every(x=>x!==null&&x!==undefined&&Number.isFinite(x)&&x>=0&&x<=15);
 }
 export function inspectionVisualStatus(s:PositionStatus|undefined, saved:boolean){
