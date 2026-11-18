@@ -393,6 +393,34 @@ internal static class ExistingDatabaseSchemaConfiguration
             b.Metadata.GetForeignKeys().Single(f => f.Properties.Select(p => p.Name).SequenceEqual(new[] { "PosicionVehiculoId" })).SetConstraintName("FK_TBL_InconsistenciaInspeccion_TBL_PosicionVehiculo_GPosicionVehiculoId");
         }
         {
+            var b = modelBuilder.Entity<CondicionCausaLlanta>();
+            b.ToTable("TBL_CondicionCausaLlanta", "dbo");
+            b.Property(x => x.Id).HasColumnName("GId");
+            b.Property(x => x.CondicionLlantaId).HasColumnName("GCondicionLlantaId");
+            b.Property(x => x.CausaLlantaId).HasColumnName("GCausaLlantaId");
+            b.Property(x => x.Activo).HasColumnName("BActivo");
+            b.Property(x => x.FechaCreacion).HasColumnName("DFechaCreacion");
+            b.Property(x => x.FechaModificacion).HasColumnName("DFechaModificacion");
+            b.Property(x => x.UsuarioCreacion).HasColumnName("SUsuarioCreacion");
+            b.Property(x => x.UsuarioModificacion).HasColumnName("SUsuarioModificacion");
+            b.Property(x => x.RowVersion).HasColumnName("TRowVersion");
+            b.HasKey(x => x.Id).HasName("PK_TBL_CondicionCausaLlanta");
+        }
+        {
+            var b = modelBuilder.Entity<CausaRecomendacionInspeccion>();
+            b.ToTable("TBL_CausaRecomendacionInspeccion", "dbo");
+            b.Property(x => x.Id).HasColumnName("GId");
+            b.Property(x => x.CausaLlantaId).HasColumnName("GCausaLlantaId");
+            b.Property(x => x.RecomendacionId).HasColumnName("GRecomendacionId");
+            b.Property(x => x.Activo).HasColumnName("BActivo");
+            b.Property(x => x.FechaCreacion).HasColumnName("DFechaCreacion");
+            b.Property(x => x.FechaModificacion).HasColumnName("DFechaModificacion");
+            b.Property(x => x.UsuarioCreacion).HasColumnName("SUsuarioCreacion");
+            b.Property(x => x.UsuarioModificacion).HasColumnName("SUsuarioModificacion");
+            b.Property(x => x.RowVersion).HasColumnName("TRowVersion");
+            b.HasKey(x => x.Id).HasName("PK_TBL_CausaRecomendacionInspeccion");
+        }
+        {
             var b = modelBuilder.Entity<Inspeccion>();
             b.ToTable("TBL_Inspeccion", "dbo");
             b.Property(x => x.Id).HasColumnName("GId");
