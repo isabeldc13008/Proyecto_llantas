@@ -38,9 +38,9 @@ public sealed class CrearInspeccionDto
 
 public sealed class GuardarDetalleInspeccionDto
 {
-    [Range(0, 15)] public decimal? ProfundidadExterior { get; init; }
-    [Range(0, 15)] public decimal? ProfundidadCentro { get; init; }
-    [Range(0, 15)] public decimal? ProfundidadInterior { get; init; }
+    [Range(typeof(decimal), "0", "25")] public decimal? ProfundidadExterior { get; init; }
+    [Range(typeof(decimal), "0", "25")] public decimal? ProfundidadCentro { get; init; }
+    [Range(typeof(decimal), "0", "25")] public decimal? ProfundidadInterior { get; init; }
     public Guid? CondicionId { get; init; }
     public Guid? CausaId { get; init; }
     public Guid? RecomendacionId { get; init; }

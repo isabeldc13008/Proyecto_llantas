@@ -136,6 +136,13 @@ describe('InspectionPage vehicle search', () => {
     http.expectNone('/api/inspecciones');
   });
 
+  it('offers tread depths from 0 to 25 mm in 0.5 mm increments', () => {
+    const page = TestBed.createComponent(InspectionPage).componentInstance;
+    expect(page.depthOptions.length).toBe(51);
+    expect(page.depthOptions[0]).toBe(0);
+    expect(page.depthOptions.at(-1)).toBe(25);
+    expect(page.depthOptions.every((value, index) => value === index * 0.5)).toBeTrue();
+  });
   it('filters vehicles by internal number, plate, type, center and without accents', async () => {
     const fixture = TestBed.createComponent(InspectionPage);
     fixture.detectChanges();
@@ -219,5 +226,3 @@ describe('InspectionPage vehicle search', () => {
     expect(page.selected().state).toBe('normal');expect(page.selected().identification).toBe('confirmed');
   });
 });
-
-
